@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Strengthify — Track strength, earn XP, beat benchmarks">
+  <meta name="theme-color" content="#0f0f12">
+  <title>Strengthify</title>
+  <style>
+    /* __STYLE__ */
+  </style>
+</head>
+<body>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<div id="app">
+
+  <!-- ══════════════════════════════════════════════════
+       ONBOARDING
+  ══════════════════════════════════════════════════ -->
+  <section id="onboarding-screen">
+    <div class="ob-logo">
+      <h1>Strengthify</h1>
+      <p>Track strength, earn XP, beat benchmarks.</p>
+    </div>
+
+    <form id="onboarding-form">
+      <div class="card">
+        <div class="card-title">Create your profile</div>
+
+        <div class="form-group">
+          <label class="form-label" for="ob-name">Display name</label>
+          <input class="form-input" id="ob-name" type="text" placeholder="e.g. Alex" maxlength="40" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="ob-sex">Sex</label>
+            <select class="form-select" id="ob-sex" required>
+              <option value="">—</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ob-dob">Date of birth</label>
+            <input class="form-input" id="ob-dob" type="date" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="ob-bw">Bodyweight (kg)</label>
+            <input class="form-input" id="ob-bw" type="number" min="20" max="400" step="0.5" placeholder="75" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ob-height">Height (cm)</label>
+            <input class="form-input" id="ob-height" type="number" min="100" max="250" step="1" placeholder="175" required>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" type="submit" style="margin-top:8px">Get started</button>
+      </div>
+    </form>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       HOME
+  ══════════════════════════════════════════════════ -->
+  <section id="home-screen" class="hidden">
+
+    <div class="page-header">
+      <div>
+        <h1>Strengthify</h1>
+        <div id="home-name" style="font-size:13px;color:var(--muted);margin-top:2px"></div>
+      </div>
+    </div>
+
+    <!-- Level + XP bar -->
+    <div class="card" id="xp-card">
+      <div class="level-badge">
+        <span class="lvl-num" id="home-level">0</span>
+        <span class="lvl-label">level</span>
+      </div>
+      <div class="xp-info">
+        <div class="xp-label">Progress to next level</div>
+        <div class="xp-bar-track"><div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div></div>
+        <div class="xp-nums" id="xp-nums">0 / 100 XP</div>
+      </div>
+    </div>
+
+    <!-- Quick stats -->
+    <div class="stats-row">
+      <div class="stat-chip">
+        <div class="s-val" id="home-streak">0</div>
+        <div class="s-lbl">Day streak</div>
+      </div>
+      <div class="stat-chip">
+        <div class="s-val" id="home-sessions">0</div>
+        <div class="s-lbl">Workouts</div>
+      </div>
+    </div>
+
+    <!-- Start workout CTA -->
+    <div style="padding:0 16px 4px">
+      <button class="btn btn-primary nav-btn" data-screen="workout" style="height:52px">
+        <svg viewBox="0 0 24 24" style="width:20px;height:20px"><path stroke="currentColor" d="M12 3v18M3 12h18"/></svg>
+        Start workout
+      </button>
+    </div>
+
+    <!-- Recent sessions -->
+    <div class="section-label">Recent workouts</div>
+    <div id="recent-sessions"></div>
+
+    <!-- Benchmark overview -->
+    <div class="section-label">Benchmark progress</div>
+    <div class="bench-grid" id="benchmark-grid"></div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       WORKOUT SELECTION
+  ══════════════════════════════════════════════════ -->
+  <section id="workout-screen" class="hidden">
+    <div class="page-header">
+      <h1>Choose lifts</h1>
+      <span style="font-size:12px;color:var(--muted)">up to 4</span>
+    </div>
+
+    <div class="lift-selector" id="lift-selector-grid"></div>
+
+    <div style="padding:0 16px">
+      <button class="btn btn-primary" id="start-logging-btn">Start session →</button>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       LOGGING
+  ══════════════════════════════════════════════════ -->
+  <section id="logging-screen" class="hidden">
+    <div class="page-header">
+      <h1>Log sets</h1>
+      <button class="btn btn-ghost btn-sm back-btn" data-to="workout">← Back</button>
+    </div>
+
+    <div id="logging-lifts"></div>
+
+    <div style="padding:0 16px 16px">
+      <button class="btn btn-primary" id="finish-workout-btn">Finish workout</button>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       RESULTS
+  ══════════════════════════════════════════════════ -->
+  <section id="results-screen" class="hidden">
+
+    <div class="big-xp">
+      <div class="xp-amount" id="result-xp">+0</div>
+      <div class="xp-sub">XP earned</div>
+    </div>
+
+    <div class="level-up-banner hidden" id="level-up-banner">
+      <h2>Level up! 🎉</h2>
+      <p>You reached level <strong class="new-level"></strong></p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Personal bests</div>
+      <div id="pb-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Streak</div>
+      <div class="result-row">
+        <span class="rr-label">Current streak</span>
+        <span class="rr-val" id="result-streak">—</span>
+      </div>
+    </div>
+
+    <div style="padding:0 16px 16px">
+      <button class="btn btn-primary" id="results-done-btn">Done</button>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       PROGRESS
+  ══════════════════════════════════════════════════ -->
+  <section id="progress-screen" class="hidden">
+
+    <div class="page-header"><h1>Progress</h1></div>
+
+    <div class="lift-tab-row" id="progress-lift-tabs"></div>
+
+    <div class="chart-container">
+      <h3>Estimated 1RM over time</h3>
+      <canvas id="progress-chart"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Your numbers</div>
+      <div id="progress-tier"></div>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       STANDARDS
+  ══════════════════════════════════════════════════ -->
+  <section id="standards-screen" class="hidden">
+
+    <div class="page-header">
+      <h1>Standards</h1>
+    </div>
+    <p style="padding:0 16px;font-size:13px;color:var(--muted);margin-bottom:12px">
+      Strength targets personalised to your bodyweight, age &amp; sex.
+    </p>
+
+    <div id="standards-content"></div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       PROFILE
+  ══════════════════════════════════════════════════ -->
+  <section id="profile-screen" class="hidden">
+
+    <div class="page-header"><h1>Profile</h1></div>
+
+    <!-- Stats strip -->
+    <div class="stats-row" style="margin-bottom:0">
+      <div class="stat-chip">
+        <div class="s-val" id="prof-level">0</div>
+        <div class="s-lbl">Level</div>
+      </div>
+      <div class="stat-chip">
+        <div class="s-val" id="prof-total-xp">0</div>
+        <div class="s-lbl">Total XP</div>
+      </div>
+      <div class="stat-chip">
+        <div class="s-val" id="prof-streak">0</div>
+        <div class="s-lbl">Streak</div>
+      </div>
+      <div class="stat-chip">
+        <div class="s-val" id="prof-sessions">0</div>
+        <div class="s-lbl">Workouts</div>
+      </div>
+    </div>
+    <div style="height:12px"></div>
+
+    <!-- Edit form -->
+    <div class="card">
+      <div class="card-title">Edit profile</div>
+
+      <div class="form-group">
+        <label class="form-label" for="prof-name">Name</label>
+        <input class="form-input" id="prof-name" type="text" maxlength="40">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="prof-sex">Sex</label>
+          <select class="form-select" id="prof-sex">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="prof-dob">Date of birth</label>
+          <input class="form-input" id="prof-dob" type="date">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="prof-bw">Bodyweight (kg)</label>
+          <input class="form-input" id="prof-bw" type="number" min="20" max="400" step="0.5">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="prof-height">Height (cm)</label>
+          <input class="form-input" id="prof-height" type="number" min="100" max="250" step="1">
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="save-profile-btn">Save changes</button>
+    </div>
+
+    <!-- Data management -->
+    <div class="card">
+      <div class="card-title">Data</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-secondary" id="export-btn">Export backup (JSON)</button>
+        <button class="btn btn-secondary" id="import-btn">Import backup</button>
+        <input type="file" id="import-input" accept=".json" class="hidden">
+        <button class="btn btn-secondary btn-danger" id="reset-btn" style="background:none;border-color:var(--red);color:var(--red)">Reset all data</button>
+      </div>
+    </div>
+
+  </section>
+
+</div><!-- /#app -->
+
+
+<!-- ══════════════════════════════════════════
+     BOTTOM NAV
+══════════════════════════════════════════ -->
+<nav id="nav-bar" class="hidden">
+
+  <button class="nav-btn active" data-screen="home">
+    <svg viewBox="0 0 24 24"><path stroke="currentColor" d="M3 12L12 3l9 9M5 10v10a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V10"/></svg>
+    Home
+  </button>
+
+  <button class="nav-btn" data-screen="workout">
+    <svg viewBox="0 0 24 24"><path stroke="currentColor" d="M6 4v16M18 4v16M6 12h12M3 8h3M18 8h3M3 16h3M18 16h3"/></svg>
+    Workout
+  </button>
+
+  <button class="nav-btn" data-screen="progress">
+    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="currentColor"/></svg>
+    Progress
+  </button>
+
+  <button class="nav-btn" data-screen="standards">
+    <svg viewBox="0 0 24 24"><path stroke="currentColor" d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    Standards
+  </button>
+
+  <button class="nav-btn" data-screen="profile">
+    <svg viewBox="0 0 24 24"><path stroke="currentColor" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg>
+    Profile
+  </button>
+
+</nav>
+
+<script>
+  /* __DATA_JS__ */
+</script>
+<script>
+  /* __CHART_JS__ */
+</script>
+<script>
+  /* __APP_JS__ */
+</script>
+</body>
+</html>

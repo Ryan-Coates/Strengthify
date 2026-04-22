@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_vertical"
+    android:padding="12dp"
+    android:background="@drawable/widget_background">
+
+    <!-- App name -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Strengthify"
+        android:textColor="#CBA6F7"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.05" />
+
+    <!-- Level -->
+    <TextView
+        android:id="@+id/widget_level"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lvl 1"
+        android:textColor="#CDD6F4"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:layout_marginTop="2dp" />
+
+    <!-- XP label -->
+    <TextView
+        android:id="@+id/widget_xp_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0% XP"
+        android:textColor="#A6ADC8"
+        android:textSize="11sp"
+        android:layout_marginTop="2dp" />
+
+    <!-- XP progress bar -->
+    <ProgressBar
+        android:id="@+id/widget_xp_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="4dp"
+        android:max="100"
+        android:progress="0"
+        android:progressTint="#CBA6F7"
+        android:progressBackgroundTint="#45475A" />
+
+    <!-- Streak -->
+    <TextView
+        android:id="@+id/widget_streak"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start your streak!"
+        android:textColor="#FAB387"
+        android:textSize="12sp"
+        android:layout_marginTop="6dp" />
+
+</LinearLayout>

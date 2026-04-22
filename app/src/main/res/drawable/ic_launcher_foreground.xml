@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Simple barbell icon — purple bar with plates on each side -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Bar (horizontal centre) -->
+    <path
+        android:fillColor="#CBA6F7"
+        android:pathData="M16,51 H92 V57 H16 Z" />
+
+    <!-- Left inner plate -->
+    <path
+        android:fillColor="#CBA6F7"
+        android:pathData="M16,42 H22 V66 H16 Z" />
+
+    <!-- Left outer plate -->
+    <path
+        android:fillColor="#B4BEFE"
+        android:pathData="M8,38 H16 V70 H8 Z" />
+
+    <!-- Right inner plate -->
+    <path
+        android:fillColor="#CBA6F7"
+        android:pathData="M86,42 H92 V66 H86 Z" />
+
+    <!-- Right outer plate -->
+    <path
+        android:fillColor="#B4BEFE"
+        android:pathData="M92,38 H100 V70 H92 Z" />
+
+</vector>

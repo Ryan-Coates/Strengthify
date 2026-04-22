@@ -1,0 +1,96 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Strengthify — Docker Compose service definitions
+#
+# All services share the same build image. The project directory is
+# bind-mounted into /workspace; Gradle's cache lives in a named volume
+# so dependencies survive container restarts.
+#
+# Common commands (run from project root in PowerShell):
+#   docker compose run --rm build            → assemble debug APK
+#   docker compose run --rm test             → run unit tests
+#   docker compose run --rm lint             → run Android lint
+#   docker compose run --rm shell            → interactive shell
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── build ──────────────────────────────────────────────────────────────────
+  # Assembles a debug APK. Output: app/build/outputs/apk/debug/app-debug.apk
+  build:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: strengthify-android:latest
+    volumes:
+      - .:/workspace                      # project source (editable on host)
+      - gradle-cache:/home/gradle/.gradle # persisted dependency cache
+    working_dir: /workspace
+    # Calls 'gradle' directly — no gradle-wrapper.jar binary needed in repo
+    command: ["gradle", "assembleDebug", "--stacktrace"]
+    environment:
+      - GRADLE_OPTS=-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=4
+      - ANDROID_SDK_ROOT=/opt/android-sdk
+      - TERM=dumb
+
+  # ── test ───────────────────────────────────────────────────────────────────
+  # Runs all JVM unit tests. Does NOT require a device or emulator.
+  test:
+    image: strengthify-android:latest
+    volumes:
+      - .:/workspace
+      - gradle-cache:/home/gradle/.gradle
+    working_dir: /workspace
+    command: ["gradle", "test", "--stacktrace"]
+    environment:
+      - GRADLE_OPTS=-Dorg.gradle.daemon=false
+      - ANDROID_SDK_ROOT=/opt/android-sdk
+      - TERM=dumb
+
+  # ── lint ───────────────────────────────────────────────────────────────────
+  # Runs Android lint; report written to app/build/reports/lint-results-debug.html
+  lint:
+    image: strengthify-android:latest
+    volumes:
+      - .:/workspace
+      - gradle-cache:/home/gradle/.gradle
+    working_dir: /workspace
+    command: ["gradle", "lintDebug"]
+    environment:
+      - GRADLE_OPTS=-Dorg.gradle.daemon=false
+      - ANDROID_SDK_ROOT=/opt/android-sdk
+      - TERM=dumb
+
+  # ── release ────────────────────────────────────────────────────────────────
+  # Assembles a release APK. Pass signing env vars or configure in app/build.gradle.kts.
+  release:
+    image: strengthify-android:latest
+    volumes:
+      - .:/workspace
+      - gradle-cache:/home/gradle/.gradle
+    working_dir: /workspace
+    command: ["gradle", "assembleRelease"]
+    environment:
+      - GRADLE_OPTS=-Dorg.gradle.daemon=false
+      - ANDROID_SDK_ROOT=/opt/android-sdk
+      - KEYSTORE_FILE=${KEYSTORE_FILE:-}
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-}
+      - KEY_ALIAS=${KEY_ALIAS:-}
+      - KEY_PASSWORD=${KEY_PASSWORD:-}
+      - TERM=dumb
+
+  # ── shell ──────────────────────────────────────────────────────────────────
+  # Interactive shell inside the build container — useful for debugging.
+  shell:
+    image: strengthify-android:latest
+    volumes:
+      - .:/workspace
+      - gradle-cache:/home/gradle/.gradle
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    entrypoint: ["/bin/bash"]
+
+# ── Volumes ────────────────────────────────────────────────────────────────────
+volumes:
+  gradle-cache:
+    driver: local
