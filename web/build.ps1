@@ -1,7 +1,7 @@
 # =============================================================================
 # Strengthify Web — Build Script
 # Bundles src/style.css + src/data.js + src/chart.js + src/app.js
-# into a single self-contained dist/strengthify.html
+# into a single self-contained dist/index.html
 # =============================================================================
 #Requires -Version 5.1
 
@@ -11,7 +11,7 @@ $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $SrcDir    = Join-Path $ScriptDir 'src'
 $DistDir   = Join-Path $ScriptDir 'dist'
-$OutFile   = Join-Path $DistDir   'strengthify.html'
+$OutFile   = Join-Path $DistDir   'index.html'
 
 # ── Ensure dist directory exists ─────────────────────────────────────────────
 if (-not (Test-Path $DistDir)) {

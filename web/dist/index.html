@@ -1,0 +1,1813 @@
+﻿<!DOCTYPE html>
+<!-- Built: 2026-04-23 12:56:50 -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Strengthify — Track strength, earn XP, beat benchmarks">
+  <meta name="theme-color" content="#0f0f12">
+  <title>Strengthify</title>
+  <style>
+    /* =====================================================================
+   Strengthify Web — Stylesheet
+   ===================================================================== */
+
+:root {
+  --bg:         #0f0f12;
+  --surface:    #1a1a22;
+  --surface2:   #22222e;
+  --border:     #2e2e40;
+  --accent:     #7c6af7;
+  --accent2:    #5b4ecf;
+  --text:       #e8e8f0;
+  --muted:      #8888aa;
+  --green:      #4caf7d;
+  --amber:      #f5a623;
+  --red:        #e05c5c;
+  --radius:     12px;
+  --radius-sm:  8px;
+  --shadow:     0 4px 24px rgba(0,0,0,0.45);
+  --font:       'Inter', system-ui, -apple-system, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ──────────────────────────────────────────────────────── */
+#app { max-width: 480px; margin: 0 auto; padding: 0 0 80px; }
+
+/* ── Nav bar ─────────────────────────────────────────────────────── */
+#nav-bar {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-around; align-items: center;
+  height: 64px;
+  z-index: 100;
+  padding: 0 8px;
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 3px; padding: 8px 4px; border: none; background: none;
+  color: var(--muted); font-size: 11px; cursor: pointer;
+  border-radius: var(--radius-sm); transition: color 0.15s;
+}
+.nav-btn svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+.nav-btn.active { color: var(--accent); }
+
+/* ── Hero / page header ──────────────────────────────────────────── */
+.page-header {
+  padding: 24px 16px 16px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.page-header h1 { font-size: 22px; font-weight: 700; }
+
+/* ── Cards ───────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin: 0 16px 12px;
+}
+.card-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px;
+}
+
+/* ── XP / Level bar ──────────────────────────────────────────────── */
+#xp-card { display: flex; align-items: center; gap: 16px; }
+.level-badge {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; flex-shrink: 0;
+  box-shadow: 0 0 16px rgba(124,106,247,0.4);
+}
+.level-badge .lvl-num  { font-size: 20px; font-weight: 800; line-height: 1; }
+.level-badge .lvl-label{ font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.7); text-transform: uppercase; }
+.xp-info { flex: 1; }
+.xp-info .xp-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.xp-bar-track {
+  height: 8px; border-radius: 99px; background: var(--surface2);
+  overflow: hidden;
+}
+.xp-bar-fill {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width 0.4s ease;
+}
+.xp-info .xp-nums { font-size: 12px; color: var(--muted); margin-top: 4px; text-align: right; }
+
+/* ── Streak / quick stats ─────────────────────────────────────────── */
+.stats-row { display: flex; gap: 10px; margin: 0 16px 12px; }
+.stat-chip {
+  flex: 1; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 10px; text-align: center;
+}
+.stat-chip .s-val { font-size: 22px; font-weight: 700; color: var(--accent); }
+.stat-chip .s-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ── Buttons ─────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 14px 24px; border-radius: var(--radius);
+  font-size: 15px; font-weight: 600; cursor: pointer; border: none;
+  transition: opacity 0.15s, transform 0.1s;
+  text-decoration: none;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; width: 100%;
+  box-shadow: 0 4px 16px rgba(124,106,247,0.35);
+}
+.btn-secondary {
+  background: var(--surface2); color: var(--text);
+  border: 1px solid var(--border); width: 100%;
+}
+.btn-ghost { background: none; color: var(--accent); padding: 8px 12px; }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-sm { padding: 8px 16px; font-size: 13px; border-radius: var(--radius-sm); }
+
+/* ── Section title on home ───────────────────────────────────────── */
+.section-label {
+  font-size: 12px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--muted);
+  padding: 0 16px; margin: 16px 0 8px;
+}
+
+/* ── Session history items ───────────────────────────────────────── */
+.session-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+  margin: 0 16px 8px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.session-item .si-left .si-date { font-size: 12px; color: var(--muted); }
+.session-item .si-left .si-lifts { font-size: 14px; font-weight: 600; margin-top: 2px; }
+.session-item .si-right { text-align: right; }
+.session-item .si-xp { font-size: 15px; font-weight: 700; color: var(--accent); }
+.session-item .si-sets { font-size: 11px; color: var(--muted); }
+
+/* ── Benchmark cards ─────────────────────────────────────────────── */
+.bench-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 16px 12px; }
+.bench-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px;
+}
+.bench-card .bc-lift { font-size: 12px; font-weight: 600; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bench-card .bc-tier {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 2px 8px; border-radius: 99px; margin-bottom: 6px;
+}
+.tier-untrained   { background: rgba(180,60,60,0.2);  color: #c04040; }
+.tier-beginner    { background: rgba(224,120,60,0.2); color: #e07840; }
+.tier-novice      { background: rgba(245,166,35,0.2); color: var(--amber); }
+.tier-intermediate{ background: rgba(76,175,125,0.2); color: var(--green); }
+.tier-advanced    { background: rgba(60,140,220,0.2); color: #4a9fe0; }
+.tier-elite       { background: rgba(124,106,247,0.2);color: var(--accent); }
+.tier-world-class { background: rgba(255,215,0,0.2);  color: #ffd700; }
+.bc-bar-track {
+  height: 5px; border-radius: 99px; background: var(--surface2); overflow: hidden;
+}
+.bc-bar-fill { height: 100%; border-radius: 99px; transition: width 0.4s; }
+.bc-bar-fill.fill-red    { background: var(--red); }
+.bc-bar-fill.fill-orange { background: #e07840; }
+.bc-bar-fill.fill-amber  { background: var(--amber); }
+.bc-bar-fill.fill-green  { background: var(--green); }
+.bc-bar-fill.fill-blue   { background: #4a9fe0; }
+.bc-bar-fill.fill-purple { background: var(--accent); }
+.bc-bar-fill.fill-gold   { background: #ffd700; }
+.bc-pct { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* ── Workout screen ──────────────────────────────────────────────── */
+.lift-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 16px 12px; }
+.lift-toggle {
+  padding: 14px 10px; background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
+  color: var(--text); cursor: pointer; text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+.lift-toggle.selected {
+  border-color: var(--accent); background: rgba(124,106,247,0.12);
+  color: var(--accent);
+}
+
+/* ── Logging screen set rows ─────────────────────────────────────── */
+.logging-lift { margin: 0 16px 16px; }
+.logging-lift h3 { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+.set-row {
+  display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 6px;
+  align-items: center; margin-bottom: 8px;
+}
+.set-row input {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); border-radius: var(--radius-sm);
+  padding: 10px 12px; font-size: 14px; width: 100%;
+}
+.set-row input:focus { outline: none; border-color: var(--accent); }
+.set-row input::placeholder { color: var(--muted); }
+.del-set-btn {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 18px; display: flex; align-items: center; justify-content: center;
+  padding: 4px;
+}
+.del-set-btn:hover { color: var(--red); }
+.set-row-header {
+  display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 6px;
+  font-size: 11px; color: var(--muted); margin-bottom: 4px;
+  padding: 0 2px;
+}
+.prev-hint { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+
+/* ── Results screen ──────────────────────────────────────────────── */
+#results-screen .big-xp {
+  text-align: center; padding: 32px 16px 16px;
+}
+#results-screen .big-xp .xp-amount {
+  font-size: 64px; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), #a090ff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  line-height: 1;
+}
+#results-screen .big-xp .xp-sub { font-size: 16px; color: var(--muted); margin-top: 4px; }
+.result-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.result-row:last-child { border-bottom: none; }
+.result-row .rr-label { color: var(--muted); }
+.result-row .rr-val { font-weight: 600; }
+.level-up-banner {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: var(--radius); padding: 20px; margin: 0 16px 12px;
+  text-align: center;
+  animation: pop 0.4s ease;
+}
+.level-up-banner h2 { font-size: 24px; font-weight: 800; }
+.level-up-banner p  { color: rgba(255,255,255,0.8); margin-top: 4px; }
+@keyframes pop {
+  0%  { transform: scale(0.8); opacity: 0; }
+  80% { transform: scale(1.04); }
+  100%{ transform: scale(1); opacity: 1; }
+}
+
+/* ── Progress / charts ───────────────────────────────────────────── */
+.chart-container {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; margin: 0 16px 12px;
+}
+.chart-container h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+canvas { display: block; width: 100% !important; }
+.lift-tab-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px; margin-bottom: 12px; }
+.lift-tab {
+  padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 600;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer; transition: all 0.15s;
+}
+.lift-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* ── Profile / settings ──────────────────────────────────────────── */
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; display: block; }
+.form-input, .form-select {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); border-radius: var(--radius-sm); padding: 12px 14px;
+  font-size: 14px;
+}
+.form-input:focus, .form-select:focus { outline: none; border-color: var(--accent); }
+.form-select option { background: var(--surface2); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ── Onboarding ──────────────────────────────────────────────────── */
+#onboarding-screen {
+  display: flex; flex-direction: column; justify-content: center;
+  min-height: 100vh; padding: 32px 16px;
+}
+#onboarding-screen .ob-logo {
+  text-align: center; margin-bottom: 40px;
+}
+#onboarding-screen .ob-logo h1 { font-size: 32px; font-weight: 800; color: var(--accent); }
+#onboarding-screen .ob-logo p  { color: var(--muted); margin-top: 6px; }
+
+/* ── Toasts ──────────────────────────────────────────────────────── */
+#toast-container {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+  z-index: 999; display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none; width: 90%; max-width: 400px;
+}
+.toast {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 16px;
+  font-size: 14px; font-weight: 500; box-shadow: var(--shadow);
+  animation: slideIn 0.25s ease, fadeOut 0.4s ease 2.6s forwards;
+}
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error   { border-left: 3px solid var(--red); }
+@keyframes slideIn { from { transform: translateY(-16px); opacity: 0; } }
+@keyframes fadeOut { to { opacity: 0; transform: translateY(-8px); } }
+
+/* ── Standards screen ───────────────────────────────────────────── */
+.std-my-row {
+  display: flex; align-items: center; margin-bottom: 10px;
+  padding: 8px 10px; background: var(--surface2);
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+}
+.std-table { display: flex; flex-direction: column; gap: 4px; }
+.std-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: var(--radius-sm);
+  background: var(--surface2);
+}
+.std-row-me {
+  border: 1px solid var(--accent);
+  background: rgba(124,106,247,0.08);
+}
+.std-pct { font-size: 12px; color: var(--muted); width: 52px; }
+.std-kg  { font-size: 14px; font-weight: 600; margin-left: auto; }
+
+/* ── Empty states ────────────────────────────────────────────────── */
+.empty-state {
+  text-align: center; padding: 40px 16px; color: var(--muted);
+}
+.empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.4; }
+.empty-state p { font-size: 14px; }
+
+/* ── Misc ────────────────────────────────────────────────────────── */
+.hidden { display: none !important; }
+hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px 12px; }
+
+  </style>
+</head>
+<body>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<div id="app">
+
+  <!-- ══════════════════════════════════════════════════
+       ONBOARDING
+  ══════════════════════════════════════════════════ -->
+  <section id="onboarding-screen">
+    <div class="ob-logo">
+      <h1>Strengthify</h1>
+      <p>Track strength, earn XP, beat benchmarks.</p>
+    </div>
+
+    <form id="onboarding-form">
+      <div class="card">
+        <div class="card-title">Create your profile</div>
+
+        <div class="form-group">
+          <label class="form-label" for="ob-name">Display name</label>
+          <input class="form-input" id="ob-name" type="text" placeholder="e.g. Alex" maxlength="40" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="ob-sex">Sex</label>
+            <select class="form-select" id="ob-sex" required>
+              <option value="">—</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ob-dob">Date of birth</label>
+            <input class="form-input" id="ob-dob" type="date" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="ob-bw">Bodyweight (kg)</label>
+            <input class="form-input" id="ob-bw" type="number" min="20" max="400" step="0.5" placeholder="75" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ob-height">Height (cm)</label>
+            <input class="form-input" id="ob-height" type="number" min="100" max="250" step="1" placeholder="175" required>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" type="submit" style="margin-top:8px">Get started</button>
+      </div>
+    </form>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       HOME
+  ══════════════════════════════════════════════════ -->
+  <section id="home-screen" class="hidden">
+
+    <div class="page-header">
+      <div>
+        <h1>Strengthify</h1>
+        <div id="home-name" style="font-size:13px;color:var(--muted);margin-top:2px"></div>
+      </div>
+    </div>
+
+    <!-- Level + XP bar -->
+    <div class="card" id="xp-card">
+      <div class="level-badge">
+        <span class="lvl-num" id="home-level">0</span>
+        <span class="lvl-label">level</span>
+      </div>
+      <div class="xp-info">
+        <div class="xp-label" id="home-level-title">Uninitiated</div>
+        <div class="xp-bar-track"><div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div></div>
+        <div class="xp-nums" id="xp-nums">0 / 100 XP</div>
+      </div>
+    </div>
+
+    <!-- Quick stats -->
+    <div class="stats-row">
+      <div class="stat-chip">
+        <div class="s-val" id="home-sessions">0</div>
+        <div class="s-lbl">Workouts</div>
+      </div>
+    </div>
+
+    <!-- Start workout CTA -->
+    <div style="padding:0 16px 4px">
+      <button class="btn btn-primary nav-btn" data-screen="workout" style="height:52px">
+        <svg viewBox="0 0 24 24" style="width:20px;height:20px"><path stroke="currentColor" d="M12 3v18M3 12h18"/></svg>
+        Start workout
+      </button>
+    </div>
+
+    <!-- Recent sessions -->
+    <div class="section-label">Recent workouts</div>
+    <div id="recent-sessions"></div>
+
+    <!-- Benchmark overview -->
+    <div class="section-label">Benchmark progress</div>
+    <div class="bench-grid" id="benchmark-grid"></div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       WORKOUT SELECTION
+  ══════════════════════════════════════════════════ -->
+  <section id="workout-screen" class="hidden">
+    <div class="page-header">
+      <h1>Choose lifts</h1>
+      <span style="font-size:12px;color:var(--muted)">up to 4</span>
+    </div>
+
+    <div class="lift-selector" id="lift-selector-grid"></div>
+
+    <div style="padding:0 16px">
+      <button class="btn btn-primary" id="start-logging-btn">Start session →</button>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       LOGGING
+  ══════════════════════════════════════════════════ -->
+  <section id="logging-screen" class="hidden">
+    <div class="page-header">
+      <h1>Log sets</h1>
+      <button class="btn btn-ghost btn-sm back-btn" data-to="workout">← Back</button>
+    </div>
+
+    <div id="logging-lifts"></div>
+
+    <div style="padding:0 16px 16px">
+      <button class="btn btn-primary" id="finish-workout-btn">Finish workout</button>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       RESULTS
+  ══════════════════════════════════════════════════ -->
+  <section id="results-screen" class="hidden">
+
+    <div class="big-xp">
+      <div class="xp-amount" id="result-xp">+0</div>
+      <div class="xp-sub">XP earned</div>
+    </div>
+
+    <div class="level-up-banner hidden" id="level-up-banner">
+      <h2>Level up! 🎉</h2>
+      <p>You reached level <strong class="new-level"></strong> &mdash; <em class="new-title"></em></p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Personal bests</div>
+      <div id="pb-list"></div>
+    </div>
+
+    <div style="padding:0 16px 16px">
+      <button class="btn btn-primary" id="results-done-btn">Done</button>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       PROGRESS
+  ══════════════════════════════════════════════════ -->
+  <section id="progress-screen" class="hidden">
+
+    <div class="page-header"><h1>Progress</h1></div>
+
+    <div class="lift-tab-row" id="progress-lift-tabs"></div>
+
+    <div class="chart-container">
+      <h3>Estimated 1RM over time</h3>
+      <canvas id="progress-chart"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Your numbers</div>
+      <div id="progress-tier"></div>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       STANDARDS
+  ══════════════════════════════════════════════════ -->
+  <section id="standards-screen" class="hidden">
+
+    <div class="page-header">
+      <h1>Standards</h1>
+    </div>
+    <p style="padding:0 16px;font-size:13px;color:var(--muted);margin-bottom:4px">
+      Strength targets personalised to your bodyweight, age &amp; sex.
+    </p>
+    <p style="padding:0 16px;font-size:12px;color:var(--muted);margin-bottom:12px">
+      Data sourced from
+      <a href="https://strengthlevel.com/strength-standards" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">Strength Level</a>
+      and
+      <a href="https://exrx.net/Testing/WeightTraining/Standards" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">ExRx.net</a>.
+    </p>
+
+    <div id="standards-content"></div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       PROFILE
+  ══════════════════════════════════════════════════ -->
+  <section id="profile-screen" class="hidden">
+
+    <div class="page-header"><h1>Profile</h1></div>
+
+    <!-- Stats strip -->
+    <div class="stats-row" style="margin-bottom:0">
+      <div class="stat-chip">
+        <div class="s-val" id="prof-level">0</div>
+        <div class="s-lbl">Level</div>
+      </div>
+      <div class="stat-chip" style="flex:2">
+        <div class="s-val" style="font-size:13px" id="prof-title">Uninitiated</div>
+        <div class="s-lbl">Title</div>
+      </div>
+      <div class="stat-chip">
+        <div class="s-val" id="prof-total-xp">0</div>
+        <div class="s-lbl">Total XP</div>
+      </div>
+      <div class="stat-chip">
+        <div class="s-val" id="prof-sessions">0</div>
+        <div class="s-lbl">Workouts</div>
+      </div>
+    </div>
+    <div style="height:12px"></div>
+
+    <!-- Edit form -->
+    <div class="card">
+      <div class="card-title">Edit profile</div>
+
+      <div class="form-group">
+        <label class="form-label" for="prof-name">Name</label>
+        <input class="form-input" id="prof-name" type="text" maxlength="40">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="prof-sex">Sex</label>
+          <select class="form-select" id="prof-sex">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="prof-dob">Date of birth</label>
+          <input class="form-input" id="prof-dob" type="date">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="prof-bw">Bodyweight (kg)</label>
+          <input class="form-input" id="prof-bw" type="number" min="20" max="400" step="0.5">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="prof-height">Height (cm)</label>
+          <input class="form-input" id="prof-height" type="number" min="100" max="250" step="1">
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="save-profile-btn">Save changes</button>
+    </div>
+
+    <!-- Data management -->
+    <div class="card">
+      <div class="card-title">Data</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-secondary" id="export-btn">Export backup (JSON)</button>
+        <button class="btn btn-secondary" id="import-btn">Import backup</button>
+        <input type="file" id="import-input" accept=".json" class="hidden">
+        <button class="btn btn-secondary btn-danger" id="reset-btn" style="background:none;border-color:var(--red);color:var(--red)">Reset all data</button>
+      </div>
+    </div>
+
+  </section>
+
+</div><!-- /#app -->
+
+
+<!-- ══════════════════════════════════════════
+     BOTTOM NAV
+══════════════════════════════════════════ -->
+<nav id="nav-bar" class="hidden">
+
+  <button class="nav-btn active" data-screen="home">
+    <svg viewBox="0 0 24 24"><path stroke="currentColor" d="M3 12L12 3l9 9M5 10v10a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V10"/></svg>
+    Home
+  </button>
+
+  <button class="nav-btn" data-screen="workout">
+    <svg viewBox="0 0 24 24"><path stroke="currentColor" d="M6 4v16M18 4v16M6 12h12M3 8h3M18 8h3M3 16h3M18 16h3"/></svg>
+    Workout
+  </button>
+
+  <button class="nav-btn" data-screen="progress">
+    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="currentColor"/></svg>
+    Progress
+  </button>
+
+  <button class="nav-btn" data-screen="standards">
+    <svg viewBox="0 0 24 24"><path stroke="currentColor" d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    Standards
+  </button>
+
+  <button class="nav-btn" data-screen="profile">
+    <svg viewBox="0 0 24 24"><path stroke="currentColor" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg>
+    Profile
+  </button>
+
+</nav>
+
+<script>
+  // =====================================================================
+// Strengthify Web — Data Layer (localStorage)
+// =====================================================================
+
+const KEYS = {
+  PROFILE:  'sf_profile',
+  SESSIONS: 'sf_sessions',
+  PBS:      'sf_pbs',
+};
+
+// ── Default / helpers ─────────────────────────────────────────────
+
+function uuid() {
+  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>
+    (c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));
+}
+
+function today() {
+  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+// ── Profile ───────────────────────────────────────────────────────
+
+function getProfile() {
+  const raw = localStorage.getItem(KEYS.PROFILE);
+  return raw ? JSON.parse(raw) : null;
+}
+
+function saveProfile(profile) {
+  localStorage.setItem(KEYS.PROFILE, JSON.stringify(profile));
+}
+
+function createProfile(name, sex, dob, bodyweightKg, heightCm) {
+  const profile = {
+    id: uuid(),
+    name,
+    sex,            // 'male' | 'female'
+    dob,            // YYYY-MM-DD
+    bodyweightKg: parseFloat(bodyweightKg),
+    heightCm: parseFloat(heightCm),
+    totalXP: 0,
+    level: 0,
+  };
+  saveProfile(profile);
+  return profile;
+}
+
+// ── Sessions ──────────────────────────────────────────────────────
+
+function getSessions() {
+  const raw = localStorage.getItem(KEYS.SESSIONS);
+  return raw ? JSON.parse(raw) : [];
+}
+
+function saveSession(session) {
+  const sessions = getSessions();
+  sessions.unshift(session); // newest first
+  localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions));
+}
+
+// ── Personal Bests ────────────────────────────────────────────────
+
+function getPBs() {
+  const raw = localStorage.getItem(KEYS.PBS);
+  return raw ? JSON.parse(raw) : {};
+}
+
+function savePBs(pbs) {
+  localStorage.setItem(KEYS.PBS, JSON.stringify(pbs));
+}
+
+// ── Age calculation ───────────────────────────────────────────────
+
+function calcAge(dob) {
+  const birth = new Date(dob);
+  const now   = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  const m = now.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+  return age;
+}
+
+// =====================================================================
+// Strength Standards — derived from Strength Level / ExRx real data
+// Each entry: [percentile, 1RM_ratio_to_bodyweight]
+// Pull-up / Chin-up: weight field = total load (bodyweight + added weight)
+// =====================================================================
+const STRENGTH_STANDARDS = {
+  'Back Squat': {
+    male:   [[0,0.25],[5,0.50],[20,0.80],[40,1.10],[60,1.50],[80,1.90],[95,2.40],[100,3.00]],
+    female: [[0,0.20],[5,0.35],[20,0.55],[40,0.75],[60,1.00],[80,1.30],[95,1.65],[100,2.10]],
+  },
+  'Deadlift': {
+    male:   [[0,0.40],[5,0.65],[20,1.00],[40,1.35],[60,1.75],[80,2.20],[95,2.75],[100,3.40]],
+    female: [[0,0.25],[5,0.45],[20,0.70],[40,0.95],[60,1.25],[80,1.60],[95,2.00],[100,2.50]],
+  },
+  'Bench Press': {
+    male:   [[0,0.20],[5,0.40],[20,0.65],[40,0.90],[60,1.15],[80,1.45],[95,1.90],[100,2.40]],
+    female: [[0,0.15],[5,0.25],[20,0.40],[40,0.55],[60,0.75],[80,0.95],[95,1.25],[100,1.55]],
+  },
+  'Overhead Press': {
+    male:   [[0,0.12],[5,0.25],[20,0.40],[40,0.58],[60,0.75],[80,1.00],[95,1.30],[100,1.60]],
+    female: [[0,0.08],[5,0.15],[20,0.27],[40,0.38],[60,0.50],[80,0.65],[95,0.85],[100,1.05]],
+  },
+  'Barbell Row': {
+    male:   [[0,0.20],[5,0.35],[20,0.60],[40,0.80],[60,1.00],[80,1.25],[95,1.60],[100,2.00]],
+    female: [[0,0.12],[5,0.22],[20,0.38],[40,0.52],[60,0.68],[80,0.88],[95,1.15],[100,1.40]],
+  },
+  'Pull-up / Chin-up': {
+    // ratio of total load (BW + added) to bodyweight; 1.0 = bodyweight-only 1-rep max
+    male:   [[0,0.50],[5,0.75],[20,0.90],[40,1.00],[60,1.15],[80,1.35],[95,1.65],[100,2.20]],
+    female: [[0,0.30],[5,0.55],[20,0.72],[40,0.85],[60,1.00],[80,1.15],[95,1.40],[100,1.80]],
+  },
+  'Incline Bench Press': {
+    male:   [[0,0.15],[5,0.30],[20,0.50],[40,0.72],[60,0.95],[80,1.20],[95,1.55],[100,1.90]],
+    female: [[0,0.10],[5,0.20],[20,0.33],[40,0.47],[60,0.63],[80,0.80],[95,1.05],[100,1.30]],
+  },
+  'Romanian Deadlift': {
+    male:   [[0,0.30],[5,0.50],[20,0.80],[40,1.10],[60,1.40],[80,1.75],[95,2.20],[100,2.70]],
+    female: [[0,0.20],[5,0.35],[20,0.55],[40,0.78],[60,1.00],[80,1.28],[95,1.60],[100,2.00]],
+  },
+  'Dumbbell Press': {
+    // Per-dumbbell weight ratio to bodyweight (dumbbell bench press)
+    male:   [[0,0.09],[5,0.16],[20,0.27],[40,0.38],[60,0.50],[80,0.63],[95,0.80],[100,1.00]],
+    female: [[0,0.06],[5,0.10],[20,0.18],[40,0.26],[60,0.34],[80,0.44],[95,0.56],[100,0.70]],
+  },
+  'Dumbbell Curl': {
+    // Per-dumbbell weight ratio to bodyweight
+    male:   [[0,0.05],[5,0.09],[20,0.16],[40,0.23],[60,0.30],[80,0.38],[95,0.49],[100,0.62]],
+    female: [[0,0.03],[5,0.05],[20,0.09],[40,0.13],[60,0.18],[80,0.24],[95,0.31],[100,0.40]],
+  },
+};
+
+function ageFactor(age) {
+  if (age < 18)  return 0.80;
+  if (age <= 24) return 0.92;
+  if (age <= 35) return 1.00;
+  if (age <= 45) return 0.95;
+  if (age <= 55) return 0.88;
+  if (age <= 65) return 0.80;
+  return 0.72;
+}
+
+// Linear interpolation between (percentile, ratio) breakpoints
+function interpRatio(bp, targetPct) {
+  if (targetPct <= bp[0][0]) return bp[0][1];
+  if (targetPct >= bp[bp.length-1][0]) return bp[bp.length-1][1];
+  for (let i = 1; i < bp.length; i++) {
+    if (targetPct <= bp[i][0]) {
+      const [p0, r0] = bp[i-1], [p1, r1] = bp[i];
+      return r0 + (targetPct - p0) / (p1 - p0) * (r1 - r0);
+    }
+  }
+  return bp[bp.length-1][1];
+}
+
+// Returns 0-100 percentile for a given lift / estimated 1RM / profile
+function getPercentile(lift, oneRM, profile) {
+  const std = STRENGTH_STANDARDS[lift];
+  if (!std || !oneRM || oneRM <= 0) return 0;
+  const age  = calcAge(profile.dob);
+  // Normalise to peak-age so older athletes compare fairly
+  const norm = (oneRM / ageFactor(age)) / profile.bodyweightKg;
+  const bp   = profile.sex === 'female' ? std.female : std.male;
+  if (norm <= bp[0][1])           return bp[0][0];
+  if (norm >= bp[bp.length-1][1]) return 100;
+  for (let i = 1; i < bp.length; i++) {
+    if (norm <= bp[i][1]) {
+      const [p0, r0] = bp[i-1], [p1, r1] = bp[i];
+      return Math.round(p0 + (norm - r0) / (r1 - r0) * (p1 - p0));
+    }
+  }
+  return 100;
+}
+
+// Returns the 50th-percentile reference weight for the progress bar
+function getBenchmark(lift, profile) {
+  const std = STRENGTH_STANDARDS[lift];
+  if (!std) return null;
+  const bp  = profile.sex === 'female' ? std.female : std.male;
+  const age = calcAge(profile.dob);
+  return interpRatio(bp, 50) * ageFactor(age) * profile.bodyweightKg;
+}
+
+function tierFromPercentile(pct) {
+  if (pct >= 95) return 'World Class';
+  if (pct >= 80) return 'Elite';
+  if (pct >= 60) return 'Advanced';
+  if (pct >= 40) return 'Intermediate';
+  if (pct >= 20) return 'Novice';
+  if (pct >= 5)  return 'Beginner';
+  return 'Untrained';
+}
+
+function tierCssClass(tier) {
+  const map = {
+    'Untrained':    'tier-untrained',
+    'Beginner':     'tier-beginner',
+    'Novice':       'tier-novice',
+    'Intermediate': 'tier-intermediate',
+    'Advanced':     'tier-advanced',
+    'Elite':        'tier-elite',
+    'World Class':  'tier-world-class',
+  };
+  return map[tier] || 'tier-untrained';
+}
+
+function tierBarClass(tier) {
+  const map = {
+    'Untrained':    'fill-red',
+    'Beginner':     'fill-orange',
+    'Novice':       'fill-amber',
+    'Intermediate': 'fill-green',
+    'Advanced':     'fill-blue',
+    'Elite':        'fill-purple',
+    'World Class':  'fill-gold',
+  };
+  return map[tier] || 'fill-red';
+}
+
+function ordinal(n) {
+  const s = ['th','st','nd','rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+// =====================================================================
+// XP & Level system
+// =====================================================================
+const XP = {
+  BASE_PER_SET:  10,
+  PERSONAL_BEST: 50,
+  TIER_BONUS:    { Untrained:0, Beginner:5, Novice:10, Intermediate:25, Advanced:50, Elite:75, 'World Class':100 },
+};
+
+// Exponential XP curve — each level requires significantly more XP than the last.
+// Total XP to reach level n = floor(100 * n^2.3)
+// Approx sessions to level: Lv5≈30, Lv10≈140, Lv20≈680, Lv30≈1700
+function xpForLevel(level) {
+  if (level <= 0) return 0;
+  return Math.floor(100 * Math.pow(level, 2.3));
+}
+
+// Level title ranges: [minLevel, maxLevel, title]
+const LEVEL_TITLES = [
+  [0,  0,  'Uninitiated'],
+  [1,  2,  'Iron Novice'],
+  [3,  5,  'Steel Apprentice'],
+  [6,  9,  'Bronze Athlete'],
+  [10, 14, 'Silver Contender'],
+  [15, 19, 'Gold Warrior'],
+  [20, 24, 'Platinum Champion'],
+  [25, 29, 'Diamond Elite'],
+  [30, 39, 'Titanium Master'],
+  [40, 49, 'Obsidian Legend'],
+  [50, Infinity, 'Immortal'],
+];
+
+function levelTitle(level) {
+  for (const [min, max, title] of LEVEL_TITLES) {
+    if (level >= min && level <= max) return title;
+  }
+  return 'Immortal';
+}
+
+function epley1RM(weight, reps) {
+  if (reps === 1) return weight;
+  return weight * (1 + reps / 30);
+}
+
+// Ensure pb entry is always the full object shape
+function ensurePB(pbs, lift) {
+  if (!pbs[lift] || typeof pbs[lift] !== 'object') {
+    // Migrate old flat-number format
+    const old = (typeof pbs[lift] === 'number') ? pbs[lift] : 0;
+    pbs[lift] = { orm: old, oneRepKg: 0, maxReps: 0, maxRepsKg: 0, maxWeightKg: 0 };
+  }
+  // Migrate existing records missing the new field
+  if (!('maxWeightKg' in pbs[lift])) pbs[lift].maxWeightKg = pbs[lift].oneRepKg || 0;
+  return pbs[lift];
+}
+
+function calculateSessionXP(sets, profile) {
+  const pbs = getPBs();
+  let xp = 0;
+  const newPBs = []; // { lift, type: 'orm'|'oneRep'|'reps', value, weight? }
+
+  // Per-lift session bests
+  const sessionORM      = {}; // best Epley 1RM this session
+  const sessionOneRep   = {}; // best actual weight when reps === 1
+  const sessionMaxReps  = {}; // { reps, weightKg } for highest rep set
+  const sessionMaxWeight = {}; // highest weight used in any set
+
+  for (const s of sets) {
+    xp += XP.BASE_PER_SET;
+    const orm = epley1RM(s.weightKg, s.reps);
+
+    if (!sessionORM[s.lift] || orm > sessionORM[s.lift])
+      sessionORM[s.lift] = orm;
+
+    if (s.reps === 1 && (!sessionOneRep[s.lift] || s.weightKg > sessionOneRep[s.lift]))
+      sessionOneRep[s.lift] = s.weightKg;
+
+    if (!sessionMaxReps[s.lift] || s.reps > sessionMaxReps[s.lift].reps ||
+        (s.reps === sessionMaxReps[s.lift].reps && s.weightKg > sessionMaxReps[s.lift].weightKg))
+      sessionMaxReps[s.lift] = { reps: s.reps, weightKg: s.weightKg };
+
+    if (!sessionMaxWeight[s.lift] || s.weightKg > sessionMaxWeight[s.lift])
+      sessionMaxWeight[s.lift] = s.weightKg;
+  }
+
+  // Check PRs per lift
+  for (const lift of Object.keys(sessionORM)) {
+    const pb = ensurePB(pbs, lift);
+
+    // Estimated 1RM PR
+    if (sessionORM[lift] > pb.orm) {
+      xp += XP.PERSONAL_BEST;
+      newPBs.push({ lift, type: 'orm', value: sessionORM[lift] });
+      pb.orm = sessionORM[lift];
+    }
+
+    // Actual 1-rep PR
+    if (sessionOneRep[lift] && sessionOneRep[lift] > pb.oneRepKg) {
+      if (!newPBs.find(p => p.lift === lift && p.type === 'orm')) xp += XP.PERSONAL_BEST;
+      newPBs.push({ lift, type: 'oneRep', value: sessionOneRep[lift] });
+      pb.oneRepKg = sessionOneRep[lift];
+    }
+
+    // Rep PR
+    const mr = sessionMaxReps[lift];
+    if (mr && (mr.reps > pb.maxReps ||
+        (mr.reps === pb.maxReps && mr.weightKg > pb.maxRepsKg))) {
+      newPBs.push({ lift, type: 'reps', value: mr.reps, weight: mr.weightKg });
+      pb.maxReps   = mr.reps;
+      pb.maxRepsKg = mr.weightKg;
+    }
+
+    // Highest weight PR (any rep count)
+    const mw = sessionMaxWeight[lift];
+    if (mw && mw > pb.maxWeightKg) {
+      pb.maxWeightKg = mw;
+    }
+  }
+
+  // Benchmark tier bonus — use best lift in session
+  const primaryLift = sets[0]?.lift;
+  if (primaryLift) {
+    const pb         = ensurePB(pbs, primaryLift);
+    const percentile = getPercentile(primaryLift, pb.orm, profile);
+    const tier       = tierFromPercentile(percentile);
+    xp += XP.TIER_BONUS[tier] || 0;
+  }
+
+  savePBs(pbs);
+  return { xp, newPBs, pbs };
+}
+
+function applyXP(profile, xpEarned) {
+  profile.totalXP += xpEarned;
+  let leveledUp = false;
+  while (profile.totalXP >= xpForLevel(profile.level + 1)) {
+    profile.level += 1;
+    leveledUp = true;
+  }
+  return leveledUp;
+}
+
+// ── XP progress to next level ─────────────────────────────────────
+
+function xpProgress(profile) {
+  const currentLevelXP = xpForLevel(profile.level);
+  const nextLevelXP    = xpForLevel(profile.level + 1);
+  const progressXP     = profile.totalXP - currentLevelXP;
+  const neededXP       = nextLevelXP - currentLevelXP;
+  return {
+    pct: Math.min(progressXP / neededXP, 1),
+    current: progressXP,
+    needed: neededXP,
+  };
+}
+
+// ── Export for sharing ────────────────────────────────────────────
+
+function exportData() {
+  return JSON.stringify({
+    profile:  getProfile(),
+    sessions: getSessions(),
+    pbs:      getPBs(),
+    exportedAt: new Date().toISOString(),
+  }, null, 2);
+}
+
+function importData(jsonStr) {
+  const data = JSON.parse(jsonStr);
+  if (data.profile)  saveProfile(data.profile);
+  if (data.sessions) localStorage.setItem(KEYS.SESSIONS, JSON.stringify(data.sessions));
+  if (data.pbs)      savePBs(data.pbs);
+}
+
+// ── Lift registry ────────────────────────────────────────────
+// To add a new exercise:
+//   1. Add the name string to LIFTS below.
+//   2. Add a matching entry to STRENGTH_STANDARDS above (male + female arrays).
+//      If no standards data exists yet, simply omit it — the UI will show
+//      "No data" gracefully for percentiles while still tracking PBs.
+// Existing localStorage data (PBs, sessions) is never touched by these changes.
+
+const LIFTS = [
+  'Back Squat',
+  'Deadlift',
+  'Bench Press',
+  'Overhead Press',
+  'Barbell Row',
+  'Pull-up / Chin-up',
+  'Incline Bench Press',
+  'Romanian Deadlift',
+  'Dumbbell Press',
+  'Dumbbell Curl',
+  'Push-up',
+];
+
+</script>
+<script>
+  // =====================================================================
+// Strengthify Web — Chart helper (vanilla canvas, no dependencies)
+// =====================================================================
+
+/**
+ * Draw a simple line/dot chart on a canvas element.
+ *
+ * @param {HTMLCanvasElement} canvas
+ * @param {Array<{x:string, y:number}>} points  - x = date label, y = value
+ * @param {object} opts
+ */
+function drawLineChart(canvas, points, opts = {}) {
+  const dpr  = window.devicePixelRatio || 1;
+  const rect  = canvas.getBoundingClientRect();
+  const W     = rect.width  || canvas.offsetWidth  || 300;
+  const H     = opts.height || 180;
+
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.height = H + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const PAD = { top: 12, right: 16, bottom: 32, left: 48 };
+  const cW   = W - PAD.left - PAD.right;
+  const cH   = H - PAD.top  - PAD.bottom;
+
+  // Colors from CSS vars (resolved)
+  const accent = opts.color   || '#7c6af7';
+  const grid   = opts.grid    || 'rgba(255,255,255,0.06)';
+  const text   = opts.text    || '#8888aa';
+
+  // Clear
+  ctx.clearRect(0, 0, W, H);
+
+  if (!points || points.length === 0) {
+    ctx.fillStyle = text;
+    ctx.font = '13px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('No data yet', W / 2, H / 2);
+    return;
+  }
+
+  const values = points.map(p => p.y);
+  const minY   = Math.min(...values);
+  const maxY   = Math.max(...values);
+  const rangeY = maxY - minY || 1;
+
+  function toX(i) { return PAD.left + (i / (points.length - 1 || 1)) * cW; }
+  function toY(v) { return PAD.top  + (1 - (v - minY) / rangeY) * cH;     }
+
+  // Grid lines
+  const gridLines = 4;
+  ctx.strokeStyle = grid;
+  ctx.lineWidth   = 1;
+  for (let i = 0; i <= gridLines; i++) {
+    const y = PAD.top + (i / gridLines) * cH;
+    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y); ctx.stroke();
+
+    const val = maxY - (i / gridLines) * rangeY;
+    ctx.fillStyle = text;
+    ctx.font = '11px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(val.toFixed(1), PAD.left - 6, y + 4);
+  }
+
+  // Gradient fill under line
+  if (points.length > 1) {
+    const grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + cH);
+    grad.addColorStop(0, accent + '55');
+    grad.addColorStop(1, accent + '00');
+    ctx.beginPath();
+    ctx.moveTo(toX(0), toY(points[0].y));
+    for (let i = 1; i < points.length; i++) ctx.lineTo(toX(i), toY(points[i].y));
+    ctx.lineTo(toX(points.length - 1), PAD.top + cH);
+    ctx.lineTo(toX(0), PAD.top + cH);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+  }
+
+  // Line
+  ctx.beginPath();
+  ctx.strokeStyle = accent;
+  ctx.lineWidth   = 2.5;
+  ctx.lineJoin    = 'round';
+  ctx.lineCap     = 'round';
+  points.forEach((p, i) => {
+    if (i === 0) ctx.moveTo(toX(i), toY(p.y));
+    else ctx.lineTo(toX(i), toY(p.y));
+  });
+  ctx.stroke();
+
+  // Dots
+  points.forEach((p, i) => {
+    ctx.beginPath();
+    ctx.arc(toX(i), toY(p.y), 4, 0, Math.PI * 2);
+    ctx.fillStyle = accent;
+    ctx.fill();
+    ctx.strokeStyle = '#0f0f12';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+
+  // X-axis labels (show first, last, and middle-ish)
+  const labelIndices = new Set([0, points.length - 1]);
+  if (points.length > 3) labelIndices.add(Math.floor(points.length / 2));
+  ctx.fillStyle = text;
+  ctx.font = '10px Inter, system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  labelIndices.forEach(i => {
+    const label = points[i].x.slice(5); // MM-DD
+    ctx.fillText(label, toX(i), H - 6);
+  });
+}
+
+</script>
+<script>
+  // =====================================================================
+// Strengthify Web — UI / Application logic
+// =====================================================================
+
+// ── Screen registry ───────────────────────────────────────────────
+
+const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding'];
+let currentScreen = null;
+
+function showScreen(id) {
+  SCREENS.forEach(s => {
+    const el = document.getElementById(s + '-screen');
+    if (el) el.classList.toggle('hidden', s !== id);
+  });
+  document.getElementById('nav-bar').classList.toggle('hidden', id === 'onboarding');
+  // Update nav active state
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.screen === id);
+  });
+  currentScreen = id;
+}
+
+// ── Toast notifications ───────────────────────────────────────────
+
+function toast(msg, type = 'success') {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+// ── Onboarding ────────────────────────────────────────────────────
+
+function initOnboarding() {
+  const form = document.getElementById('onboarding-form');
+  form?.addEventListener('submit', e => {
+    e.preventDefault();
+    const name   = document.getElementById('ob-name').value.trim();
+    const sex    = document.getElementById('ob-sex').value;
+    const dob    = document.getElementById('ob-dob').value;
+    const bw     = parseFloat(document.getElementById('ob-bw').value);
+    const height = parseFloat(document.getElementById('ob-height').value);
+
+    if (!name || !sex || !dob || isNaN(bw) || bw <= 0 || isNaN(height) || height <= 0) {
+      toast('Please fill in all fields.', 'error'); return;
+    }
+
+    createProfile(name, sex, dob, bw, height);
+    toast(`Welcome, ${name}!`);
+    renderHome();
+    showScreen('home');
+  });
+}
+
+// ── Home screen ───────────────────────────────────────────────────
+
+function renderHome() {
+  const profile  = getProfile();
+  if (!profile) return;
+  const pbs      = getPBs();
+  const sessions = getSessions();
+  const progress = xpProgress(profile);
+
+  // Level badge
+  document.getElementById('home-level').textContent      = profile.level;
+  document.getElementById('home-level-title').textContent = levelTitle(profile.level);
+  document.getElementById('home-name').textContent        = profile.name;
+  document.getElementById('home-sessions').textContent    = sessions.length;
+  document.getElementById('xp-bar-fill').style.width      = (progress.pct * 100).toFixed(1) + '%';
+  const nextTitle = levelTitle(profile.level + 1);
+  const nextLabel = nextTitle !== levelTitle(profile.level) ? ` → ${nextTitle}` : '';
+  document.getElementById('xp-nums').textContent          = `${progress.current} / ${progress.needed} XP${nextLabel}`;
+
+  // Recent sessions
+  const list = document.getElementById('recent-sessions');
+  list.innerHTML = '';
+  if (sessions.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24"><path stroke="currentColor" d="M12 3v18M3 12h18"/></svg>
+        <p>No workouts yet — start your first one!</p>
+      </div>`;
+  } else {
+    sessions.slice(0, 3).forEach(s => {
+      const liftNames = [...new Set(s.sets.map(x => x.lift))].join(', ');
+      const div = document.createElement('div');
+      div.className = 'session-item';
+      div.innerHTML = `
+        <div class="si-left">
+          <div class="si-date">${formatDate(s.date)}</div>
+          <div class="si-lifts">${liftNames}</div>
+        </div>
+        <div class="si-right">
+          <div class="si-xp">+${s.xpEarned} XP</div>
+          <div class="si-sets">${s.sets.length} sets</div>
+        </div>`;
+      list.appendChild(div);
+    });
+  }
+
+  // Benchmark cards
+  const grid = document.getElementById('benchmark-grid');
+  grid.innerHTML = '';
+  LIFTS.forEach(lift => {
+    const pb          = pbs[lift];
+    const actual1RM   = (pb && typeof pb === 'object') ? (pb.oneRepKg || 0) : 0;
+    const percentile  = actual1RM > 0 ? getPercentile(lift, actual1RM, profile) : 0;
+    const tier        = tierFromPercentile(percentile);
+    const barClass    = tierBarClass(tier);
+    const div = document.createElement('div');
+    div.className = 'bench-card';
+    div.innerHTML = `
+      <div class="bc-lift" title="${lift}">${lift}</div>
+      <span class="bc-tier ${tierCssClass(tier)}">${actual1RM > 0 ? tier : '—'}</span>
+      <div class="bc-bar-track"><div class="bc-bar-fill ${barClass}" style="width:${percentile}%"></div></div>
+      <div class="bc-pct">${actual1RM > 0 ? ordinal(percentile) + ' percentile' : 'No 1RM yet'}</div>`;
+    grid.appendChild(div);
+  });
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+// ── Workout selection ─────────────────────────────────────────────
+
+let selectedLifts = [];
+
+function initWorkoutScreen() {
+  selectedLifts = [];
+  const grid = document.getElementById('lift-selector-grid');
+  grid.innerHTML = '';
+  LIFTS.forEach(lift => {
+    const btn = document.createElement('div');
+    btn.className = 'lift-toggle';
+    btn.textContent = lift;
+    btn.addEventListener('click', () => {
+      const idx = selectedLifts.indexOf(lift);
+      if (idx >= 0) {
+        selectedLifts.splice(idx, 1);
+        btn.classList.remove('selected');
+      } else if (selectedLifts.length < 4) {
+        selectedLifts.push(lift);
+        btn.classList.add('selected');
+      } else {
+        toast('Max 4 lifts per session.', 'error');
+      }
+    });
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('start-logging-btn').onclick = () => {
+    if (selectedLifts.length === 0) { toast('Select at least one lift.', 'error'); return; }
+    renderLoggingScreen();
+    showScreen('logging');
+  };
+}
+
+// ── Logging screen ────────────────────────────────────────────────
+
+let sessionSets = {}; // lift -> [{ weightKg, reps }]
+
+function renderLoggingScreen() {
+  sessionSets = {};
+  const container = document.getElementById('logging-lifts');
+  container.innerHTML = '';
+
+  const sessions = getSessions();
+
+  selectedLifts.forEach(lift => {
+    sessionSets[lift] = [];
+
+    // Find last session that had this lift
+    let prevSets = null;
+    for (const s of sessions) {
+      const match = s.sets.filter(x => x.lift === lift);
+      if (match.length > 0) { prevSets = match; break; }
+    }
+
+    const section = document.createElement('div');
+    section.className = 'logging-lift';
+    section.id = 'logging-lift-' + lift.replace(/[^a-z]/gi, '_');
+
+    const liftNote = lift === 'Pull-up / Chin-up'
+      ? ' (enter total load: bodyweight + added weight)'
+      : lift === 'Push-up'
+      ? ' (enter 0 for bodyweight, or added weight e.g. weighted vest)'
+      : (lift === 'Dumbbell Press' || lift === 'Dumbbell Curl')
+      ? ' (weight per dumbbell)'
+      : '';
+    const prevHint = prevSets
+      ? `Previous: ${prevSets[0].weightKg}kg × ${prevSets[0].reps}${liftNote}`
+      : `No previous data${liftNote}`;
+
+    section.innerHTML = `
+      <h3>${lift}</h3>
+      <p class="prev-hint">${prevHint}</p>
+      <div class="set-row-header"><span>Weight (kg)</span><span>Reps</span><span></span></div>
+      <div class="set-rows"></div>
+      <button class="btn btn-ghost btn-sm add-set-btn" data-lift="${lift}">+ Add Set</button>
+    `;
+    container.appendChild(section);
+
+    // Add one blank row to start
+    addSetRow(lift, prevSets ? prevSets[0] : null);
+
+    section.querySelector('.add-set-btn').addEventListener('click', () => addSetRow(lift, null));
+  });
+}
+
+function addSetRow(lift, suggest) {
+  const section  = document.getElementById('logging-lift-' + lift.replace(/[^a-z]/gi, '_'));
+  const rowsDiv  = section.querySelector('.set-rows');
+  const setIndex = rowsDiv.children.length;
+
+  sessionSets[lift].push({ weightKg: 0, reps: 0 });
+
+  const row = document.createElement('div');
+  row.className = 'set-row';
+  row.innerHTML = `
+    <input type="number" min="0" step="0.5" placeholder="${suggest ? suggest.weightKg : '0'}" class="weight-input" data-lift="${lift}" data-idx="${setIndex}">
+    <input type="number" min="1" max="100" step="1" placeholder="${suggest ? suggest.reps : '0'}" class="reps-input" data-lift="${lift}" data-idx="${setIndex}">
+    <button class="del-set-btn" title="Remove set">✕</button>
+  `;
+
+  row.querySelector('.weight-input').addEventListener('input', e => {
+    const v = parseFloat(e.target.value);
+    sessionSets[lift][parseInt(e.target.dataset.idx)].weightKg = isNaN(v) ? 0 : v;
+  });
+  row.querySelector('.reps-input').addEventListener('input', e => {
+    const v = parseInt(e.target.value);
+    sessionSets[lift][parseInt(e.target.dataset.idx)].reps = isNaN(v) ? 0 : v;
+  });
+  row.querySelector('.del-set-btn').addEventListener('click', () => {
+    if (rowsDiv.children.length > 1) {
+      const idx = Array.from(rowsDiv.children).indexOf(row);
+      sessionSets[lift].splice(idx, 1);
+      row.remove();
+      // Re-index data attributes
+      rowsDiv.querySelectorAll('input').forEach(input => {
+        const curIdx = parseInt(input.dataset.idx);
+        if (curIdx > idx) input.dataset.idx = curIdx - 1;
+      });
+    }
+  });
+
+  rowsDiv.appendChild(row);
+}
+
+function finishWorkout() {
+  const profile = getProfile();
+  if (!profile) return;
+
+  // Flatten sets
+  const allSets = [];
+  for (const lift of selectedLifts) {
+    for (const s of sessionSets[lift]) {
+      if (s.reps > 0) {
+        allSets.push({ lift, weightKg: s.weightKg || 0, reps: s.reps });
+      }
+    }
+  }
+
+  if (allSets.length === 0) {
+    toast('Log at least one valid set.', 'error');
+    return;
+  }
+
+  // Calculate XP
+  const { xp, newPBs } = calculateSessionXP(allSets, profile);
+  const leveledUp = applyXP(profile, xp);
+  saveProfile(profile);
+
+  // Save session
+  const session = {
+    id: uuid(),
+    date: today(),
+    sets: allSets,
+    xpEarned: xp,
+  };
+  saveSession(session);
+
+  // Show results
+  renderResults(xp, newPBs, leveledUp, profile);
+  showScreen('results');
+}
+
+// ── Results screen ────────────────────────────────────────────────
+
+function renderResults(xp, newPBs, leveledUp, profile) {
+  document.getElementById('result-xp').textContent = '+' + xp;
+
+  // Level up banner
+  const banner = document.getElementById('level-up-banner');
+  if (leveledUp) {
+    banner.classList.remove('hidden');
+    banner.querySelector('.new-level').textContent  = profile.level;
+    banner.querySelector('.new-title').textContent  = levelTitle(profile.level);
+  } else {
+    banner.classList.add('hidden');
+  }
+
+  // PB list
+  const pbList = document.getElementById('pb-list');
+  pbList.innerHTML = '';
+  if (newPBs.length > 0) {
+    newPBs.forEach(pb => {
+      const div = document.createElement('div');
+      div.className = 'result-row';
+      let label, val;
+      if (pb.type === 'orm') {
+        label = `🏆 ${pb.lift}`;
+        val   = `${pb.value.toFixed(1)} kg est. 1RM`;
+      } else if (pb.type === 'oneRep') {
+        label = `🏆 ${pb.lift}`;
+        val   = `${pb.value} kg × 1 rep`;
+      } else {
+        label = `🔥 ${pb.lift}`;
+        val   = pb.weight > 0 ? `${pb.value} reps @ ${pb.weight} kg` : `${pb.value} reps (bodyweight)`;
+      }
+      div.innerHTML = `<span class="rr-label">${label}</span><span class="rr-val">${val}</span>`;
+      pbList.appendChild(div);
+    });
+  } else {
+    pbList.innerHTML = '<div class="result-row"><span class="rr-label" style="width:100%;text-align:center;color:var(--muted)">No new personal bests this session</span></div>';
+  }
+}
+
+// ── Progress screen ───────────────────────────────────────────────
+
+let progressLift = LIFTS[0];
+
+function renderProgress() {
+  // Guard: if a previously selected lift was removed from LIFTS, reset gracefully
+  if (!LIFTS.includes(progressLift)) progressLift = LIFTS[0];
+
+  // Build lift tab row
+  const tabRow = document.getElementById('progress-lift-tabs');
+  tabRow.innerHTML = '';
+  LIFTS.forEach(lift => {
+    const btn = document.createElement('button');
+    btn.className = 'lift-tab' + (lift === progressLift ? ' active' : '');
+    btn.textContent = lift;
+    btn.addEventListener('click', () => {
+      progressLift = lift;
+      renderProgress();
+    });
+    tabRow.appendChild(btn);
+  });
+
+  // Gather data points for chosen lift
+  const sessions = getSessions().slice().reverse(); // oldest first
+  const points = [];
+  sessions.forEach(s => {
+    const liftSets = s.sets.filter(x => x.lift === progressLift);
+    if (liftSets.length > 0) {
+      const bestORM = Math.max(...liftSets.map(x => epley1RM(x.weightKg, x.reps)));
+      points.push({ x: s.date, y: parseFloat(bestORM.toFixed(2)) });
+    }
+  });
+
+  const canvas = document.getElementById('progress-chart');
+  drawLineChart(canvas, points, { height: 200 });
+
+  // Benchmark info
+  const profile = getProfile();
+  const pbs = getPBs();
+  const benchmark = getBenchmark(progressLift, profile);
+  const rawPB     = pbs[progressLift];
+  const pb        = (rawPB && typeof rawPB === 'object') ? rawPB : { orm: rawPB || 0, oneRepKg: 0, maxReps: 0, maxRepsKg: 0 };
+  const orm       = pb.orm || 0;
+  const actual1RM = pb.oneRepKg || 0;
+  const percentile = actual1RM > 0 ? getPercentile(progressLift, actual1RM, profile) : 0;
+  const tier      = tierFromPercentile(percentile);
+
+  const oneRepStr = actual1RM > 0 ? `${actual1RM} kg` : '—';
+  const repPRStr  = pb.maxReps > 0
+    ? (pb.maxRepsKg > 0 ? `${pb.maxReps} reps @ ${pb.maxRepsKg} kg` : `${pb.maxReps} reps (bodyweight)`)
+    : '—';
+
+  document.getElementById('progress-tier').innerHTML = `
+    <div class="result-row"><span class="rr-label">Best est. 1RM</span><span class="rr-val">${orm > 0 ? orm.toFixed(1) + ' kg' : '—'}</span></div>
+    <div class="result-row"><span class="rr-label">Best actual 1-rep</span><span class="rr-val">${oneRepStr}</span></div>
+    <div class="result-row"><span class="rr-label">Best rep set</span><span class="rr-val">${repPRStr}</span></div>
+    <div class="result-row"><span class="rr-label">50th pct reference</span><span class="rr-val">${benchmark ? benchmark.toFixed(1) + ' kg' : '—'}</span></div>
+    <div class="result-row"><span class="rr-label">Percentile</span><span class="rr-val">${actual1RM > 0 ? ordinal(percentile) : '— (no 1RM)'}</span></div>
+    <div class="result-row"><span class="rr-label">Tier</span><span class="rr-val">${actual1RM > 0 ? `<span class="bc-tier ${tierCssClass(tier)}">${tier}</span>` : '— (no 1RM)'}</span></div>
+  `;
+}
+
+// ── Standards screen ─────────────────────────────────────────────
+
+function renderStandards() {
+  const profile = getProfile();
+  if (!profile) return;
+  const age = calcAge(profile.dob);
+  const af  = ageFactor(age);
+  const bw  = profile.bodyweightKg;
+  const sex = profile.sex;
+
+  const tiers = [
+    { pct: 5,  label: 'Beginner' },
+    { pct: 20, label: 'Novice' },
+    { pct: 40, label: 'Intermediate' },
+    { pct: 60, label: 'Advanced' },
+    { pct: 80, label: 'Elite' },
+    { pct: 95, label: 'World Class' },
+  ];
+
+  const pbs = getPBs();
+
+  const container = document.getElementById('standards-content');
+  container.innerHTML = '';
+
+  LIFTS.forEach(lift => {
+    const std = STRENGTH_STANDARDS[lift];
+    if (!std) return;
+    const bp  = sex === 'female' ? std.female : std.male;
+
+    const rawPB      = pbs[lift];
+    const myActual1RM = (rawPB && typeof rawPB === 'object') ? (rawPB.oneRepKg || 0) : 0;
+    const myPct      = myActual1RM > 0 ? getPercentile(lift, myActual1RM, profile) : null;
+    const myTier     = myPct !== null ? tierFromPercentile(myPct) : null;
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.marginBottom = '12px';
+
+    const myRow = myActual1RM > 0
+      ? `<div class="std-my-row">
+           <span class="bc-tier ${tierCssClass(myTier)}">${myTier}</span>
+           <span style="margin-left:8px;font-size:13px;color:var(--muted)">${myActual1RM.toFixed(1)} kg actual 1RM &mdash; ${ordinal(myPct)} percentile</span>
+         </div>`
+      : `<div style="font-size:12px;color:var(--muted);margin-bottom:10px">No 1-rep max recorded yet</div>`;
+
+    const rows = tiers.map(t => {
+      const ratio = interpRatio(bp, t.pct);
+      const kg    = (ratio * af * bw).toFixed(1);
+      const active = myTier === t.label;
+      return `<div class="std-row${active ? ' std-row-me' : ''}">
+        <span class="bc-tier ${tierCssClass(t.label)}" style="min-width:108px">${t.label}</span>
+        <span class="std-pct">${ordinal(t.pct)}+</span>
+        <span class="std-kg">&ge;${kg} kg</span>
+      </div>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="card-title">${lift}</div>
+      ${myRow}
+      <div class="std-table">${rows}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// ── Profile screen ────────────────────────────────────────────────
+
+function renderProfile() {
+  const profile = getProfile();
+  if (!profile) return;
+
+  document.getElementById('prof-name').value     = profile.name;
+  document.getElementById('prof-bw').value        = profile.bodyweightKg;
+  document.getElementById('prof-height').value    = profile.heightCm || '';
+  document.getElementById('prof-sex').value       = profile.sex;
+  document.getElementById('prof-dob').value       = profile.dob;
+  document.getElementById('prof-total-xp').textContent = profile.totalXP;
+  document.getElementById('prof-level').textContent    = profile.level;
+  document.getElementById('prof-title').textContent    = levelTitle(profile.level);
+  document.getElementById('prof-sessions').textContent = getSessions().length;
+}
+
+function saveProfileForm() {
+  const profile = getProfile();
+  const name   = document.getElementById('prof-name').value.trim();
+  const bw     = parseFloat(document.getElementById('prof-bw').value);
+  const height = parseFloat(document.getElementById('prof-height').value);
+  const sex    = document.getElementById('prof-sex').value;
+  const dob    = document.getElementById('prof-dob').value;
+  if (!name || isNaN(bw) || bw <= 0 || isNaN(height) || height <= 0 || !sex || !dob) {
+    toast('Please fill in all fields.', 'error'); return;
+  }
+  profile.name = name;
+  profile.bodyweightKg = bw;
+  profile.heightCm = height;
+  profile.sex = sex;
+  profile.dob = dob;
+  saveProfile(profile);
+  toast('Profile saved!');
+  renderHome();
+}
+
+// ── Data import / export ──────────────────────────────────────────
+
+function handleExport() {
+  const data = exportData();
+  const blob = new Blob([data], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = 'strengthify-backup.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function handleImport(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      importData(e.target.result);
+      toast('Data imported successfully!');
+      renderHome();
+      renderProfile();
+    } catch (err) {
+      toast('Import failed: invalid file.', 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── App init ──────────────────────────────────────────────────────
+
+function init() {
+  // Nav buttons
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const screen = btn.dataset.screen;
+      if (screen === 'workout')   { initWorkoutScreen(); }
+      if (screen === 'progress')   { renderProgress(); }
+      if (screen === 'standards')  { renderStandards(); }
+      if (screen === 'profile')    { renderProfile(); }
+      showScreen(screen);
+    });
+  });
+
+  // Back buttons
+  document.querySelectorAll('.back-btn').forEach(btn => {
+    btn.addEventListener('click', () => showScreen(btn.dataset.to));
+  });
+
+  // Finish workout
+  document.getElementById('finish-workout-btn')?.addEventListener('click', finishWorkout);
+
+  // Results done
+  document.getElementById('results-done-btn')?.addEventListener('click', () => {
+    renderHome();
+    showScreen('home');
+  });
+
+  // Profile save
+  document.getElementById('save-profile-btn')?.addEventListener('click', saveProfileForm);
+
+  // Export / import
+  document.getElementById('export-btn')?.addEventListener('click', handleExport);
+  document.getElementById('import-btn')?.addEventListener('click', () => {
+    document.getElementById('import-input').click();
+  });
+  document.getElementById('import-input')?.addEventListener('change', e => {
+    if (e.target.files[0]) handleImport(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  // Reset
+  document.getElementById('reset-btn')?.addEventListener('click', () => {
+    if (confirm('Delete ALL data? This cannot be undone.')) {
+      localStorage.clear();
+      location.reload();
+    }
+  });
+
+  // Onboarding
+  initOnboarding();
+
+  // Route to first screen
+  const profile = getProfile();
+  if (!profile) {
+    showScreen('onboarding');
+  } else {
+    renderHome();
+    showScreen('home');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+</script>
+</body>
+</html>
