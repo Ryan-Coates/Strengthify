@@ -40,8 +40,6 @@ function createProfile(name, sex, dob, bodyweightKg, heightCm) {
     heightCm: parseFloat(heightCm),
     totalXP: 0,
     level: 0,
-    currentStreak: 0,
-    lastWorkoutDate: null,
   };
   saveProfile(profile);
   return profile;
@@ -120,6 +118,16 @@ const STRENGTH_STANDARDS = {
   'Romanian Deadlift': {
     male:   [[0,0.30],[5,0.50],[20,0.80],[40,1.10],[60,1.40],[80,1.75],[95,2.20],[100,2.70]],
     female: [[0,0.20],[5,0.35],[20,0.55],[40,0.78],[60,1.00],[80,1.28],[95,1.60],[100,2.00]],
+  },
+  'Dumbbell Press': {
+    // Per-dumbbell weight ratio to bodyweight (dumbbell bench press)
+    male:   [[0,0.09],[5,0.16],[20,0.27],[40,0.38],[60,0.50],[80,0.63],[95,0.80],[100,1.00]],
+    female: [[0,0.06],[5,0.10],[20,0.18],[40,0.26],[60,0.34],[80,0.44],[95,0.56],[100,0.70]],
+  },
+  'Dumbbell Curl': {
+    // Per-dumbbell weight ratio to bodyweight
+    male:   [[0,0.05],[5,0.09],[20,0.16],[40,0.23],[60,0.30],[80,0.38],[95,0.49],[100,0.62]],
+    female: [[0,0.03],[5,0.05],[20,0.09],[40,0.13],[60,0.18],[80,0.24],[95,0.31],[100,0.40]],
   },
 };
 
@@ -220,20 +228,44 @@ function ordinal(n) {
 // XP & Level system
 // =====================================================================
 const XP = {
-  BASE_PER_SET:    10,
-  PERSONAL_BEST:   50,
-  TIER_BONUS:      { Untrained:0, Beginner:5, Novice:10, Intermediate:25, Advanced:50, Elite:75, 'World Class':100 },
-  STREAK_RATE:     0.05,
-  MAX_MULTIPLIER:  2.0,
+  BASE_PER_SET:  10,
+  PERSONAL_BEST: 50,
+  TIER_BONUS:    { Untrained:0, Beginner:5, Novice:10, Intermediate:25, Advanced:50, Elite:75, 'World Class':100 },
 };
+
+// Exponential XP curve — each level requires significantly more XP than the last.
+// Total XP to reach level n = floor(100 * n^2.3)
+// Approx sessions to level: Lv5≈30, Lv10≈140, Lv20≈680, Lv30≈1700
+function xpForLevel(level) {
+  if (level <= 0) return 0;
+  return Math.floor(100 * Math.pow(level, 2.3));
+}
+
+// Level title ranges: [minLevel, maxLevel, title]
+const LEVEL_TITLES = [
+  [0,  0,  'Uninitiated'],
+  [1,  2,  'Iron Novice'],
+  [3,  5,  'Steel Apprentice'],
+  [6,  9,  'Bronze Athlete'],
+  [10, 14, 'Silver Contender'],
+  [15, 19, 'Gold Warrior'],
+  [20, 24, 'Platinum Champion'],
+  [25, 29, 'Diamond Elite'],
+  [30, 39, 'Titanium Master'],
+  [40, 49, 'Obsidian Legend'],
+  [50, Infinity, 'Immortal'],
+];
+
+function levelTitle(level) {
+  for (const [min, max, title] of LEVEL_TITLES) {
+    if (level >= min && level <= max) return title;
+  }
+  return 'Immortal';
+}
 
 function epley1RM(weight, reps) {
   if (reps === 1) return weight;
   return weight * (1 + reps / 30);
-}
-
-function xpForLevel(level) {
-  return 100 * (level * level);
 }
 
 // Ensure pb entry is always the full object shape
@@ -241,8 +273,10 @@ function ensurePB(pbs, lift) {
   if (!pbs[lift] || typeof pbs[lift] !== 'object') {
     // Migrate old flat-number format
     const old = (typeof pbs[lift] === 'number') ? pbs[lift] : 0;
-    pbs[lift] = { orm: old, oneRepKg: 0, maxReps: 0, maxRepsKg: 0 };
+    pbs[lift] = { orm: old, oneRepKg: 0, maxReps: 0, maxRepsKg: 0, maxWeightKg: 0 };
   }
+  // Migrate existing records missing the new field
+  if (!('maxWeightKg' in pbs[lift])) pbs[lift].maxWeightKg = pbs[lift].oneRepKg || 0;
   return pbs[lift];
 }
 
@@ -252,9 +286,10 @@ function calculateSessionXP(sets, profile) {
   const newPBs = []; // { lift, type: 'orm'|'oneRep'|'reps', value, weight? }
 
   // Per-lift session bests
-  const sessionORM     = {}; // best Epley 1RM this session
-  const sessionOneRep  = {}; // best actual weight when reps === 1
-  const sessionMaxReps = {}; // { reps, weightKg } for highest rep set
+  const sessionORM      = {}; // best Epley 1RM this session
+  const sessionOneRep   = {}; // best actual weight when reps === 1
+  const sessionMaxReps  = {}; // { reps, weightKg } for highest rep set
+  const sessionMaxWeight = {}; // highest weight used in any set
 
   for (const s of sets) {
     xp += XP.BASE_PER_SET;
@@ -269,6 +304,9 @@ function calculateSessionXP(sets, profile) {
     if (!sessionMaxReps[s.lift] || s.reps > sessionMaxReps[s.lift].reps ||
         (s.reps === sessionMaxReps[s.lift].reps && s.weightKg > sessionMaxReps[s.lift].weightKg))
       sessionMaxReps[s.lift] = { reps: s.reps, weightKg: s.weightKg };
+
+    if (!sessionMaxWeight[s.lift] || s.weightKg > sessionMaxWeight[s.lift])
+      sessionMaxWeight[s.lift] = s.weightKg;
   }
 
   // Check PRs per lift
@@ -297,6 +335,12 @@ function calculateSessionXP(sets, profile) {
       pb.maxReps   = mr.reps;
       pb.maxRepsKg = mr.weightKg;
     }
+
+    // Highest weight PR (any rep count)
+    const mw = sessionMaxWeight[lift];
+    if (mw && mw > pb.maxWeightKg) {
+      pb.maxWeightKg = mw;
+    }
   }
 
   // Benchmark tier bonus — use best lift in session
@@ -307,11 +351,6 @@ function calculateSessionXP(sets, profile) {
     const tier       = tierFromPercentile(percentile);
     xp += XP.TIER_BONUS[tier] || 0;
   }
-
-  // Streak multiplier
-  const streak = profile.currentStreak || 0;
-  const mult = Math.min(1.0 + streak * XP.STREAK_RATE, XP.MAX_MULTIPLIER);
-  xp = Math.round(xp * mult);
 
   savePBs(pbs);
   return { xp, newPBs, pbs };
@@ -325,23 +364,6 @@ function applyXP(profile, xpEarned) {
     leveledUp = true;
   }
   return leveledUp;
-}
-
-function updateStreak(profile) {
-  const t = today();
-  if (profile.lastWorkoutDate === t) return; // already logged
-  if (profile.lastWorkoutDate === subtractDays(t, 1)) {
-    profile.currentStreak = (profile.currentStreak || 0) + 1;
-  } else {
-    profile.currentStreak = 1;
-  }
-  profile.lastWorkoutDate = t;
-}
-
-function subtractDays(dateStr, days) {
-  const d = new Date(dateStr);
-  d.setDate(d.getDate() - days);
-  return d.toISOString().slice(0, 10);
 }
 
 // ── XP progress to next level ─────────────────────────────────────
@@ -376,7 +398,13 @@ function importData(jsonStr) {
   if (data.pbs)      savePBs(data.pbs);
 }
 
-// ── Lifted names ──────────────────────────────────────────────────
+// ── Lift registry ────────────────────────────────────────────
+// To add a new exercise:
+//   1. Add the name string to LIFTS below.
+//   2. Add a matching entry to STRENGTH_STANDARDS above (male + female arrays).
+//      If no standards data exists yet, simply omit it — the UI will show
+//      "No data" gracefully for percentiles while still tracking PBs.
+// Existing localStorage data (PBs, sessions) is never touched by these changes.
 
 const LIFTS = [
   'Back Squat',
@@ -387,4 +415,7 @@ const LIFTS = [
   'Pull-up / Chin-up',
   'Incline Bench Press',
   'Romanian Deadlift',
+  'Dumbbell Press',
+  'Dumbbell Curl',
+  'Push-up',
 ];

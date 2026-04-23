@@ -64,12 +64,14 @@ function renderHome() {
   const progress = xpProgress(profile);
 
   // Level badge
-  document.getElementById('home-level').textContent    = profile.level;
-  document.getElementById('home-name').textContent     = profile.name;
-  document.getElementById('home-streak').textContent   = profile.currentStreak || 0;
-  document.getElementById('home-sessions').textContent = sessions.length;
-  document.getElementById('xp-bar-fill').style.width   = (progress.pct * 100).toFixed(1) + '%';
-  document.getElementById('xp-nums').textContent       = `${progress.current} / ${progress.needed} XP`;
+  document.getElementById('home-level').textContent      = profile.level;
+  document.getElementById('home-level-title').textContent = levelTitle(profile.level);
+  document.getElementById('home-name').textContent        = profile.name;
+  document.getElementById('home-sessions').textContent    = sessions.length;
+  document.getElementById('xp-bar-fill').style.width      = (progress.pct * 100).toFixed(1) + '%';
+  const nextTitle = levelTitle(profile.level + 1);
+  const nextLabel = nextTitle !== levelTitle(profile.level) ? ` → ${nextTitle}` : '';
+  document.getElementById('xp-nums').textContent          = `${progress.current} / ${progress.needed} XP${nextLabel}`;
 
   // Recent sessions
   const list = document.getElementById('recent-sessions');
@@ -102,18 +104,18 @@ function renderHome() {
   const grid = document.getElementById('benchmark-grid');
   grid.innerHTML = '';
   LIFTS.forEach(lift => {
-    const pb         = pbs[lift];
-    const orm        = (pb && typeof pb === 'object') ? pb.orm : (pb || 0);
-    const percentile = orm > 0 ? getPercentile(lift, orm, profile) : 0;
-    const tier       = tierFromPercentile(percentile);
-    const barClass   = tierBarClass(tier);
+    const pb          = pbs[lift];
+    const actual1RM   = (pb && typeof pb === 'object') ? (pb.oneRepKg || 0) : 0;
+    const percentile  = actual1RM > 0 ? getPercentile(lift, actual1RM, profile) : 0;
+    const tier        = tierFromPercentile(percentile);
+    const barClass    = tierBarClass(tier);
     const div = document.createElement('div');
     div.className = 'bench-card';
     div.innerHTML = `
       <div class="bc-lift" title="${lift}">${lift}</div>
-      <span class="bc-tier ${tierCssClass(tier)}">${tier}</span>
+      <span class="bc-tier ${tierCssClass(tier)}">${actual1RM > 0 ? tier : '—'}</span>
       <div class="bc-bar-track"><div class="bc-bar-fill ${barClass}" style="width:${percentile}%"></div></div>
-      <div class="bc-pct">${orm > 0 ? ordinal(percentile) + ' percentile' : 'No data'}</div>`;
+      <div class="bc-pct">${actual1RM > 0 ? ordinal(percentile) + ' percentile' : 'No 1RM yet'}</div>`;
     grid.appendChild(div);
   });
 }
@@ -183,7 +185,12 @@ function renderLoggingScreen() {
     section.id = 'logging-lift-' + lift.replace(/[^a-z]/gi, '_');
 
     const liftNote = lift === 'Pull-up / Chin-up'
-      ? ' (enter total load: bodyweight + added weight)' : '';
+      ? ' (enter total load: bodyweight + added weight)'
+      : lift === 'Push-up'
+      ? ' (enter 0 for bodyweight, or added weight e.g. weighted vest)'
+      : (lift === 'Dumbbell Press' || lift === 'Dumbbell Curl')
+      ? ' (weight per dumbbell)'
+      : '';
     const prevHint = prevSets
       ? `Previous: ${prevSets[0].weightKg}kg × ${prevSets[0].reps}${liftNote}`
       : `No previous data${liftNote}`;
@@ -251,8 +258,8 @@ function finishWorkout() {
   const allSets = [];
   for (const lift of selectedLifts) {
     for (const s of sessionSets[lift]) {
-      if (s.weightKg > 0 && s.reps > 0) {
-        allSets.push({ lift, weightKg: s.weightKg, reps: s.reps });
+      if (s.reps > 0) {
+        allSets.push({ lift, weightKg: s.weightKg || 0, reps: s.reps });
       }
     }
   }
@@ -263,7 +270,6 @@ function finishWorkout() {
   }
 
   // Calculate XP
-  updateStreak(profile);
   const { xp, newPBs } = calculateSessionXP(allSets, profile);
   const leveledUp = applyXP(profile, xp);
   saveProfile(profile);
@@ -291,7 +297,8 @@ function renderResults(xp, newPBs, leveledUp, profile) {
   const banner = document.getElementById('level-up-banner');
   if (leveledUp) {
     banner.classList.remove('hidden');
-    banner.querySelector('.new-level').textContent = profile.level;
+    banner.querySelector('.new-level').textContent  = profile.level;
+    banner.querySelector('.new-title').textContent  = levelTitle(profile.level);
   } else {
     banner.classList.add('hidden');
   }
@@ -312,7 +319,7 @@ function renderResults(xp, newPBs, leveledUp, profile) {
         val   = `${pb.value} kg × 1 rep`;
       } else {
         label = `🔥 ${pb.lift}`;
-        val   = `${pb.value} reps @ ${pb.weight} kg`;
+        val   = pb.weight > 0 ? `${pb.value} reps @ ${pb.weight} kg` : `${pb.value} reps (bodyweight)`;
       }
       div.innerHTML = `<span class="rr-label">${label}</span><span class="rr-val">${val}</span>`;
       pbList.appendChild(div);
@@ -320,9 +327,6 @@ function renderResults(xp, newPBs, leveledUp, profile) {
   } else {
     pbList.innerHTML = '<div class="result-row"><span class="rr-label" style="width:100%;text-align:center;color:var(--muted)">No new personal bests this session</span></div>';
   }
-
-  // Streak info
-  document.getElementById('result-streak').textContent = profile.currentStreak + ' day' + (profile.currentStreak !== 1 ? 's' : '');
 }
 
 // ── Progress screen ───────────────────────────────────────────────
@@ -330,6 +334,9 @@ function renderResults(xp, newPBs, leveledUp, profile) {
 let progressLift = LIFTS[0];
 
 function renderProgress() {
+  // Guard: if a previously selected lift was removed from LIFTS, reset gracefully
+  if (!LIFTS.includes(progressLift)) progressLift = LIFTS[0];
+
   // Build lift tab row
   const tabRow = document.getElementById('progress-lift-tabs');
   tabRow.innerHTML = '';
@@ -362,22 +369,25 @@ function renderProgress() {
   const profile = getProfile();
   const pbs = getPBs();
   const benchmark = getBenchmark(progressLift, profile);
-  const rawPB  = pbs[progressLift];
-  const pb     = (rawPB && typeof rawPB === 'object') ? rawPB : { orm: rawPB || 0, oneRepKg: 0, maxReps: 0, maxRepsKg: 0 };
-  const orm    = pb.orm || 0;
-  const percentile = orm > 0 ? getPercentile(progressLift, orm, profile) : 0;
-  const tier   = tierFromPercentile(percentile);
+  const rawPB     = pbs[progressLift];
+  const pb        = (rawPB && typeof rawPB === 'object') ? rawPB : { orm: rawPB || 0, oneRepKg: 0, maxReps: 0, maxRepsKg: 0 };
+  const orm       = pb.orm || 0;
+  const actual1RM = pb.oneRepKg || 0;
+  const percentile = actual1RM > 0 ? getPercentile(progressLift, actual1RM, profile) : 0;
+  const tier      = tierFromPercentile(percentile);
 
-  const oneRepStr = pb.oneRepKg > 0 ? `${pb.oneRepKg} kg`                       : '—';
-  const repPRStr  = pb.maxReps  > 0 ? `${pb.maxReps} reps @ ${pb.maxRepsKg} kg` : '—';
+  const oneRepStr = actual1RM > 0 ? `${actual1RM} kg` : '—';
+  const repPRStr  = pb.maxReps > 0
+    ? (pb.maxRepsKg > 0 ? `${pb.maxReps} reps @ ${pb.maxRepsKg} kg` : `${pb.maxReps} reps (bodyweight)`)
+    : '—';
 
   document.getElementById('progress-tier').innerHTML = `
     <div class="result-row"><span class="rr-label">Best est. 1RM</span><span class="rr-val">${orm > 0 ? orm.toFixed(1) + ' kg' : '—'}</span></div>
     <div class="result-row"><span class="rr-label">Best actual 1-rep</span><span class="rr-val">${oneRepStr}</span></div>
     <div class="result-row"><span class="rr-label">Best rep set</span><span class="rr-val">${repPRStr}</span></div>
     <div class="result-row"><span class="rr-label">50th pct reference</span><span class="rr-val">${benchmark ? benchmark.toFixed(1) + ' kg' : '—'}</span></div>
-    <div class="result-row"><span class="rr-label">Percentile</span><span class="rr-val">${orm > 0 ? ordinal(percentile) : '—'}</span></div>
-    <div class="result-row"><span class="rr-label">Tier</span><span class="rr-val"><span class="bc-tier ${tierCssClass(tier)}">${tier}</span></span></div>
+    <div class="result-row"><span class="rr-label">Percentile</span><span class="rr-val">${actual1RM > 0 ? ordinal(percentile) : '— (no 1RM)'}</span></div>
+    <div class="result-row"><span class="rr-label">Tier</span><span class="rr-val">${actual1RM > 0 ? `<span class="bc-tier ${tierCssClass(tier)}">${tier}</span>` : '— (no 1RM)'}</span></div>
   `;
 }
 
@@ -410,21 +420,21 @@ function renderStandards() {
     if (!std) return;
     const bp  = sex === 'female' ? std.female : std.male;
 
-    const rawPB = pbs[lift];
-    const myORM = (rawPB && typeof rawPB === 'object') ? rawPB.orm : (rawPB || 0);
-    const myPct = myORM > 0 ? getPercentile(lift, myORM, profile) : null;
-    const myTier = myPct !== null ? tierFromPercentile(myPct) : null;
+    const rawPB      = pbs[lift];
+    const myActual1RM = (rawPB && typeof rawPB === 'object') ? (rawPB.oneRepKg || 0) : 0;
+    const myPct      = myActual1RM > 0 ? getPercentile(lift, myActual1RM, profile) : null;
+    const myTier     = myPct !== null ? tierFromPercentile(myPct) : null;
 
     const card = document.createElement('div');
     card.className = 'card';
     card.style.marginBottom = '12px';
 
-    const myRow = myORM > 0
+    const myRow = myActual1RM > 0
       ? `<div class="std-my-row">
            <span class="bc-tier ${tierCssClass(myTier)}">${myTier}</span>
-           <span style="margin-left:8px;font-size:13px;color:var(--muted)">${myORM.toFixed(1)} kg &mdash; ${ordinal(myPct)} percentile</span>
+           <span style="margin-left:8px;font-size:13px;color:var(--muted)">${myActual1RM.toFixed(1)} kg actual 1RM &mdash; ${ordinal(myPct)} percentile</span>
          </div>`
-      : `<div style="font-size:12px;color:var(--muted);margin-bottom:10px">No data logged yet</div>`;
+      : `<div style="font-size:12px;color:var(--muted);margin-bottom:10px">No 1-rep max recorded yet</div>`;
 
     const rows = tiers.map(t => {
       const ratio = interpRatio(bp, t.pct);
@@ -452,15 +462,15 @@ function renderProfile() {
   const profile = getProfile();
   if (!profile) return;
 
-  document.getElementById('prof-name').value   = profile.name;
-  document.getElementById('prof-bw').value     = profile.bodyweightKg;
-  document.getElementById('prof-height').value = profile.heightCm || '';
-  document.getElementById('prof-sex').value    = profile.sex;
-  document.getElementById('prof-dob').value    = profile.dob;
-  document.getElementById('prof-total-xp').textContent   = profile.totalXP;
-  document.getElementById('prof-level').textContent      = profile.level;
-  document.getElementById('prof-streak').textContent     = profile.currentStreak || 0;
-  document.getElementById('prof-sessions').textContent   = getSessions().length;
+  document.getElementById('prof-name').value     = profile.name;
+  document.getElementById('prof-bw').value        = profile.bodyweightKg;
+  document.getElementById('prof-height').value    = profile.heightCm || '';
+  document.getElementById('prof-sex').value       = profile.sex;
+  document.getElementById('prof-dob').value       = profile.dob;
+  document.getElementById('prof-total-xp').textContent = profile.totalXP;
+  document.getElementById('prof-level').textContent    = profile.level;
+  document.getElementById('prof-title').textContent    = levelTitle(profile.level);
+  document.getElementById('prof-sessions').textContent = getSessions().length;
 }
 
 function saveProfileForm() {
