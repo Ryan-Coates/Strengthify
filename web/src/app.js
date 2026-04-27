@@ -113,7 +113,7 @@ function renderHome() {
       const maxReps = (pb && typeof pb === 'object') ? (pb.maxReps || 0) : 0;
       if (maxReps > 0) { percentile = getRepPercentile(lift, maxReps, profile); hasData = true; }
     } else {
-      const rankWeight = (pb && typeof pb === 'object') ? (pb.oneRepKg || pb.orm || 0) : 0;
+      const rankWeight  = (pb && typeof pb === 'object') ? (pb.oneRepKg || pb.maxWeightKg || 0) : 0;
       if (rankWeight > 0) { percentile = getPercentile(lift, rankWeight, profile); hasData = true; }
     }
     const tier     = tierFromPercentile(percentile);
@@ -409,7 +409,7 @@ function renderProgress() {
   } else {
     const benchmark  = getBenchmark(progressLift, profile);
     const orm        = pb.orm || 0;
-    const rankWeight = pb.oneRepKg || pb.orm || 0;
+    const rankWeight = pb.oneRepKg || pb.maxWeightKg || 0;
     const isTrue1RM  = pb.oneRepKg > 0;
     const percentile = rankWeight > 0 ? getPercentile(progressLift, rankWeight, profile) : 0;
     const tier       = tierFromPercentile(percentile);
@@ -497,7 +497,7 @@ function renderStandards() {
     if (!std) return;
     const bp  = sex === 'female' ? std.female : std.male;
 
-    const myRankWeight = (rawPB && typeof rawPB === 'object') ? (rawPB.oneRepKg || rawPB.orm || 0) : 0;
+    const myRankWeight = (rawPB && typeof rawPB === 'object') ? (rawPB.oneRepKg || rawPB.maxWeightKg || 0) : 0;
     const myIsTrue1RM  = (rawPB && typeof rawPB === 'object') && rawPB.oneRepKg > 0;
     const myPct       = myRankWeight > 0 ? getPercentile(lift, myRankWeight, profile) : null;
     const myTier      = myPct !== null ? tierFromPercentile(myPct) : null;

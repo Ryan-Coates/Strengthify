@@ -420,7 +420,7 @@ function calculateSessionXP(sets, profile) {
     const pb = ensurePB(pbs, primaryLift);
     const percentile = REP_BASED_LIFTS.has(primaryLift)
       ? getRepPercentile(primaryLift, pb.maxReps, profile)
-      : getPercentile(primaryLift, pb.orm, profile);
+      : getPercentile(primaryLift, pb.oneRepKg || pb.maxWeightKg, profile);
     const tier = tierFromPercentile(percentile);
     xp += XP.TIER_BONUS[tier] || 0;
   }
@@ -550,7 +550,7 @@ function recalculateAllPBsAndXP() {
       const pb = ensurePB(freshPBs, primaryLift);
       const percentile = REP_BASED_LIFTS.has(primaryLift)
         ? getRepPercentile(primaryLift, pb.maxReps, profile)
-        : getPercentile(primaryLift, pb.orm, profile);
+        : getPercentile(primaryLift, pb.oneRepKg || pb.maxWeightKg, profile);
       const tier = tierFromPercentile(percentile);
       xp += XP.TIER_BONUS[tier] || 0;
     }
