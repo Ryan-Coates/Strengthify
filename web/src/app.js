@@ -106,18 +106,25 @@ function renderHome() {
   const grid = document.getElementById('benchmark-grid');
   grid.innerHTML = '';
   LIFTS.forEach(lift => {
-    const pb          = pbs[lift];
-    const rankWeight  = (pb && typeof pb === 'object') ? (pb.oneRepKg || pb.orm || 0) : 0;
-    const percentile  = rankWeight > 0 ? getPercentile(lift, rankWeight, profile) : 0;
-    const tier        = tierFromPercentile(percentile);
-    const barClass    = tierBarClass(tier);
+    const pb = pbs[lift];
+    let percentile = 0;
+    let hasData = false;
+    if (REP_BASED_LIFTS.has(lift)) {
+      const maxReps = (pb && typeof pb === 'object') ? (pb.maxReps || 0) : 0;
+      if (maxReps > 0) { percentile = getRepPercentile(lift, maxReps, profile); hasData = true; }
+    } else {
+      const rankWeight = (pb && typeof pb === 'object') ? (pb.oneRepKg || pb.orm || 0) : 0;
+      if (rankWeight > 0) { percentile = getPercentile(lift, rankWeight, profile); hasData = true; }
+    }
+    const tier     = tierFromPercentile(percentile);
+    const barClass = tierBarClass(tier);
     const div = document.createElement('div');
     div.className = 'bench-card bench-card-link';
     div.innerHTML = `
       <div class="bc-lift" title="${lift}">${lift}</div>
-      <span class="bc-tier ${tierCssClass(tier)}">${rankWeight > 0 ? tier : '—'}</span>
+      <span class="bc-tier ${tierCssClass(tier)}">${hasData ? tier : '—'}</span>
       <div class="bc-bar-track"><div class="bc-bar-fill ${barClass}" style="width:${percentile}%"></div></div>
-      <div class="bc-pct">${rankWeight > 0 ? ordinal(percentile) + ' percentile' : 'No data yet'}</div>`;
+      <div class="bc-pct">${hasData ? ordinal(percentile) + ' percentile' : 'No data yet'}</div>`;
     div.addEventListener('click', () => {
       progressLift = lift;
       renderProgress();
@@ -341,6 +348,9 @@ function renderResults(xp, newPBs, leveledUp, profile) {
 let progressLift = LIFTS[0];
 
 function renderProgress() {
+  const profile = getProfile();
+  if (!profile) return;
+
   // Guard: if a previously selected lift was removed from LIFTS, reset gracefully
   if (!LIFTS.includes(progressLift)) progressLift = LIFTS[0];
 
@@ -358,46 +368,65 @@ function renderProgress() {
     tabRow.appendChild(btn);
   });
 
-  // Gather data points for chosen lift
+  const pbs = getPBs();
+  const rawPB = pbs[progressLift];
+  const pb = (rawPB && typeof rawPB === 'object') ? rawPB : { orm: rawPB || 0, oneRepKg: 0, maxReps: 0, maxRepsKg: 0, maxWeightKg: 0 };
   const sessions = getSessions().slice().reverse(); // oldest first
+  const isRepBased = REP_BASED_LIFTS.has(progressLift);
+
+  // Gather data points
   const points = [];
   sessions.forEach(s => {
     const liftSets = s.sets.filter(x => x.lift === progressLift);
     if (liftSets.length > 0) {
-      const bestORM = Math.max(...liftSets.map(x => epley1RM(effectiveWeight(progressLift, x.weightKg, profile), x.reps)));
-      points.push({ x: s.date, y: parseFloat(bestORM.toFixed(2)) });
+      if (isRepBased) {
+        const bestReps = Math.max(...liftSets.map(x => x.reps));
+        points.push({ x: s.date, y: bestReps });
+      } else {
+        const bestORM = Math.max(...liftSets.map(x => epley1RM(effectiveWeight(progressLift, x.weightKg, profile), x.reps)));
+        points.push({ x: s.date, y: parseFloat(bestORM.toFixed(2)) });
+      }
     }
   });
 
   const canvas = document.getElementById('progress-chart');
+  canvas.closest('.chart-container').querySelector('h3').textContent =
+    isRepBased ? 'Max reps over time' : 'Estimated 1RM over time';
   drawLineChart(canvas, points, { height: 200 });
 
-  // Benchmark info
-  const profile = getProfile();
-  const pbs = getPBs();
-  const benchmark = getBenchmark(progressLift, profile);
-  const rawPB     = pbs[progressLift];
-  const pb        = (rawPB && typeof rawPB === 'object') ? rawPB : { orm: rawPB || 0, oneRepKg: 0, maxReps: 0, maxRepsKg: 0, maxWeightKg: 0 };
-  const orm        = pb.orm || 0;
-  // For bodyweight lifts, use orm for ranking since maxWeightKg/oneRepKg store effective weight
-  const rankWeight = pb.oneRepKg || pb.orm || 0;
-  const isTrue1RM  = pb.oneRepKg > 0;
-  const percentile = rankWeight > 0 ? getPercentile(progressLift, rankWeight, profile) : 0;
-  const tier       = tierFromPercentile(percentile);
-
-  const weightLabel = isTrue1RM ? `${rankWeight} kg (1-rep)` : (rankWeight > 0 ? `${rankWeight} kg (best weight)` : '—');
-  const repPRStr  = pb.maxReps > 0
-    ? (pb.maxRepsKg > 0 ? `${pb.maxReps} reps @ ${pb.maxRepsKg} kg` : `${pb.maxReps} reps (bodyweight)`)
-    : '—';
-
-  document.getElementById('progress-tier').innerHTML = `
-    <div class="result-row"><span class="rr-label">Best est. 1RM</span><span class="rr-val">${orm > 0 ? orm.toFixed(1) + ' kg' : '—'}</span></div>
-    <div class="result-row"><span class="rr-label">Ranking weight</span><span class="rr-val">${weightLabel}</span></div>
-    <div class="result-row"><span class="rr-label">Best rep set</span><span class="rr-val">${repPRStr}</span></div>
-    <div class="result-row"><span class="rr-label">50th pct reference</span><span class="rr-val">${benchmark ? benchmark.toFixed(1) + ' kg' : '—'}</span></div>
-    <div class="result-row"><span class="rr-label">Percentile</span><span class="rr-val">${rankWeight > 0 ? ordinal(percentile) : '—'}</span></div>
-    <div class="result-row"><span class="rr-label">Tier</span><span class="rr-val">${rankWeight > 0 ? `<span class="bc-tier ${tierCssClass(tier)}">${tier}</span>` : '—'}</span></div>
-  `;
+  // Stats panel
+  let statsHTML = '';
+  if (isRepBased) {
+    const repBenchmark = getRepBenchmark(progressLift, profile);
+    const percentile   = pb.maxReps > 0 ? getRepPercentile(progressLift, pb.maxReps, profile) : 0;
+    const tier         = tierFromPercentile(percentile);
+    statsHTML = `
+      <div class="result-row"><span class="rr-label">Best set</span><span class="rr-val">${pb.maxReps > 0 ? pb.maxReps + ' reps' : '—'}</span></div>
+      <div class="result-row"><span class="rr-label">50th pct reference</span><span class="rr-val">${repBenchmark ? repBenchmark + ' reps' : '—'}</span></div>
+      <div class="result-row"><span class="rr-label">Percentile</span><span class="rr-val">${pb.maxReps > 0 ? ordinal(percentile) : '—'}</span></div>
+      <div class="result-row"><span class="rr-label">Tier</span><span class="rr-val">${pb.maxReps > 0 ? '<span class="bc-tier ' + tierCssClass(tier) + '">' + tier + '</span>' : '—'}</span></div>
+    `;
+  } else {
+    const benchmark  = getBenchmark(progressLift, profile);
+    const orm        = pb.orm || 0;
+    const rankWeight = pb.oneRepKg || pb.orm || 0;
+    const isTrue1RM  = pb.oneRepKg > 0;
+    const percentile = rankWeight > 0 ? getPercentile(progressLift, rankWeight, profile) : 0;
+    const tier       = tierFromPercentile(percentile);
+    const weightLabel = isTrue1RM ? `${rankWeight} kg (1-rep)` : (rankWeight > 0 ? `${rankWeight} kg (best weight)` : '—');
+    const repPRStr = pb.maxReps > 0
+      ? (pb.maxRepsKg > 0 ? `${pb.maxReps} reps @ ${pb.maxRepsKg} kg` : `${pb.maxReps} reps (bodyweight)`)
+      : '—';
+    statsHTML = `
+      <div class="result-row"><span class="rr-label">Best est. 1RM</span><span class="rr-val">${orm > 0 ? orm.toFixed(1) + ' kg' : '—'}</span></div>
+      <div class="result-row"><span class="rr-label">Ranking weight</span><span class="rr-val">${weightLabel}</span></div>
+      <div class="result-row"><span class="rr-label">Best rep set</span><span class="rr-val">${repPRStr}</span></div>
+      <div class="result-row"><span class="rr-label">50th pct reference</span><span class="rr-val">${benchmark ? benchmark.toFixed(1) + ' kg' : '—'}</span></div>
+      <div class="result-row"><span class="rr-label">Percentile</span><span class="rr-val">${rankWeight > 0 ? ordinal(percentile) : '—'}</span></div>
+      <div class="result-row"><span class="rr-label">Tier</span><span class="rr-val">${rankWeight > 0 ? '<span class="bc-tier ' + tierCssClass(tier) + '">' + tier + '</span>' : '—'}</span></div>
+    `;
+  }
+  document.getElementById('progress-tier').innerHTML = statsHTML;
 }
 
 // ── Standards screen ─────────────────────────────────────────────
@@ -425,11 +454,49 @@ function renderStandards() {
   container.innerHTML = '';
 
   LIFTS.forEach(lift => {
+    const rawPB = pbs[lift];
+
+    if (REP_BASED_LIFTS.has(lift)) {
+      const repStd = REP_STANDARDS[lift];
+      if (!repStd) return;
+      const myReps = (rawPB && typeof rawPB === 'object') ? (rawPB.maxReps || 0) : 0;
+      const myPct  = myReps > 0 ? getRepPercentile(lift, myReps, profile) : null;
+      const myTier = myPct !== null ? tierFromPercentile(myPct) : null;
+
+      const myRow = myReps > 0
+        ? `<div class="std-my-row">
+             <span class="bc-tier ${tierCssClass(myTier)}">${myTier}</span>
+             <span style="margin-left:8px;font-size:13px;color:var(--muted)">${myReps} reps &mdash; ${ordinal(myPct)} percentile</span>
+           </div>`
+        : `<div style="font-size:12px;color:var(--muted);margin-bottom:10px">No sets logged yet</div>`;
+
+      const rows = tiers.map(t => {
+        const refReps    = interpRatio(repStd[sex], t.pct);
+        const scaledReps = Math.round(refReps * Math.sqrt(repStd.refBW[sex] / bw) * af);
+        const active     = myTier === t.label;
+        return `<div class="std-row${active ? ' std-row-me' : ''}">
+          <span class="bc-tier ${tierCssClass(t.label)}" style="min-width:108px">${t.label}</span>
+          <span class="std-pct">${ordinal(t.pct)}+</span>
+          <span class="std-kg">&ge;${scaledReps} reps</span>
+        </div>`;
+      }).join('');
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.marginBottom = '12px';
+      card.innerHTML = `
+        <div class="card-title">${lift}</div>
+        ${myRow}
+        <div class="std-table">${rows}</div>
+      `;
+      container.appendChild(card);
+      return;
+    }
+
     const std = STRENGTH_STANDARDS[lift];
     if (!std) return;
     const bp  = sex === 'female' ? std.female : std.male;
 
-    const rawPB       = pbs[lift];
     const myRankWeight = (rawPB && typeof rawPB === 'object') ? (rawPB.oneRepKg || rawPB.orm || 0) : 0;
     const myIsTrue1RM  = (rawPB && typeof rawPB === 'object') && rawPB.oneRepKg > 0;
     const myPct       = myRankWeight > 0 ? getPercentile(lift, myRankWeight, profile) : null;

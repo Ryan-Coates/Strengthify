@@ -129,18 +129,27 @@ const STRENGTH_STANDARDS = {
     male:   [[0,0.05],[5,0.09],[20,0.16],[40,0.23],[60,0.30],[80,0.38],[95,0.49],[100,0.62]],
     female: [[0,0.03],[5,0.05],[20,0.09],[40,0.13],[60,0.18],[80,0.24],[95,0.31],[100,0.40]],
   },
-  'Push-up': {
-    // Epley 1RM (bodyweight is base load); ratio relative to bodyweight.
-    // Calibrated to strength-level.com push-up standards:
-    // male (108kg ref): 5%=5r(1.17) 20%=12r(1.40) 40%=25r(1.83) 60%=40r(2.33) 80%=56r(2.87) 95%=74r(3.47)
-    male:   [[0,1.00],[5,1.17],[20,1.40],[40,1.83],[60,2.33],[80,2.87],[95,3.47],[100,4.00]],
-    female: [[0,0.80],[5,0.97],[20,1.15],[40,1.47],[60,1.87],[80,2.30],[95,2.80],[100,3.30]],
-  },
 };
 
 // Lifts where the user enters *added* weight (0 = bodyweight only);
-// effective weight = enteredKg + bodyweightKg
+// kept for display purposes in session detail (shows "Bodyweight" instead of "0 kg").
 const BODYWEIGHT_LIFTS = new Set(['Push-up']);
+
+// Lifts ranked purely by rep count adjusted for bodyweight, NOT by estimated 1RM.
+const REP_BASED_LIFTS = new Set(['Push-up']);
+
+// Rep-based standards calibrated against strength-level.com bodyweight push-up data.
+// refReps are at a reference bodyweight (men: 80 kg, women: 60 kg).
+// Actual threshold for user = refReps × sqrt(refBW / userBW) × ageFactor(age).
+const REP_STANDARDS = {
+  'Push-up': {
+    refBW: { male: 80, female: 60 },
+    // [percentile, refReps at reference bodyweight]
+    // At 108 kg male (scale=0.860): 5%≈10, 20%≈21, 40%≈31, 60%≈45, 80%≈58, 95%≈76
+    male:   [[0,0],[5,12],[20,24],[40,36],[60,52],[80,68],[95,88],[100,110]],
+    female: [[0,0],[5,5], [20,12],[40,20],[60,30],[80,42],[95,58],[100,75]],
+  },
+};
 
 function ageFactor(age) {
   if (age < 18)  return 0.80;
@@ -191,6 +200,42 @@ function getBenchmark(lift, profile) {
   const bp  = profile.sex === 'female' ? std.female : std.male;
   const age = calcAge(profile.dob);
   return interpRatio(bp, 50) * ageFactor(age) * profile.bodyweightKg;
+}
+
+// Returns percentile for a rep-based lift (e.g. Push-up)
+function getRepPercentile(lift, reps, profile) {
+  const std = REP_STANDARDS[lift];
+  if (!std || !reps || reps <= 0) return 0;
+  const sex   = profile.sex === 'female' ? 'female' : 'male';
+  const refBW = std.refBW[sex];
+  const bp    = std[sex];
+  const age   = calcAge(profile.dob);
+  const af    = ageFactor(age);
+  // Normalize user's reps to reference bodyweight and peak age.
+  // Heavier athletes need fewer reps to reach the same percentile.
+  const normReps = reps * Math.sqrt(profile.bodyweightKg / refBW) / af;
+  if (normReps <= bp[0][1]) return bp[0][0];
+  if (normReps >= bp[bp.length-1][1]) return 100;
+  for (let i = 1; i < bp.length; i++) {
+    if (normReps <= bp[i][1]) {
+      const [p0, r0] = bp[i-1], [p1, r1] = bp[i];
+      return Math.round(p0 + (normReps - r0) / (r1 - r0) * (p1 - p0));
+    }
+  }
+  return 100;
+}
+
+// Returns 50th-percentile rep count scaled to user's bodyweight and age
+function getRepBenchmark(lift, profile) {
+  const std = REP_STANDARDS[lift];
+  if (!std) return null;
+  const sex   = profile.sex === 'female' ? 'female' : 'male';
+  const refBW = std.refBW[sex];
+  const bp    = std[sex];
+  const age   = calcAge(profile.dob);
+  const af    = ageFactor(age);
+  const refReps = interpRatio(bp, 50);
+  return Math.round(refReps * Math.sqrt(refBW / profile.bodyweightKg) * af);
 }
 
 function tierFromPercentile(pct) {
@@ -331,42 +376,52 @@ function calculateSessionXP(sets, profile) {
   for (const lift of Object.keys(sessionORM)) {
     const pb = ensurePB(pbs, lift);
 
-    // Estimated 1RM PR
-    if (sessionORM[lift] > pb.orm) {
-      xp += XP.PERSONAL_BEST;
-      newPBs.push({ lift, type: 'orm', value: sessionORM[lift] });
-      pb.orm = sessionORM[lift];
-    }
+    if (REP_BASED_LIFTS.has(lift)) {
+      // Rep-based lifts: only a new max rep count counts as a PR
+      const mr = sessionMaxReps[lift];
+      if (mr && mr.reps > pb.maxReps) {
+        xp += XP.PERSONAL_BEST;
+        newPBs.push({ lift, type: 'reps', value: mr.reps, weight: mr.weightKg });
+        pb.maxReps   = mr.reps;
+        pb.maxRepsKg = mr.weightKg;
+      }
+    } else {
+      // Weight-based lifts: orm, 1-rep, and rep PRs
+      if (sessionORM[lift] > pb.orm) {
+        xp += XP.PERSONAL_BEST;
+        newPBs.push({ lift, type: 'orm', value: sessionORM[lift] });
+        pb.orm = sessionORM[lift];
+      }
 
-    // Actual 1-rep PR
-    if (sessionOneRep[lift] && sessionOneRep[lift] > pb.oneRepKg) {
-      if (!newPBs.find(p => p.lift === lift && p.type === 'orm')) xp += XP.PERSONAL_BEST;
-      newPBs.push({ lift, type: 'oneRep', value: sessionOneRep[lift] });
-      pb.oneRepKg = sessionOneRep[lift];
-    }
+      if (sessionOneRep[lift] && sessionOneRep[lift] > pb.oneRepKg) {
+        if (!newPBs.find(p => p.lift === lift && p.type === 'orm')) xp += XP.PERSONAL_BEST;
+        newPBs.push({ lift, type: 'oneRep', value: sessionOneRep[lift] });
+        pb.oneRepKg = sessionOneRep[lift];
+      }
 
-    // Rep PR
-    const mr = sessionMaxReps[lift];
-    if (mr && (mr.reps > pb.maxReps ||
-        (mr.reps === pb.maxReps && mr.weightKg > pb.maxRepsKg))) {
-      newPBs.push({ lift, type: 'reps', value: mr.reps, weight: mr.weightKg });
-      pb.maxReps   = mr.reps;
-      pb.maxRepsKg = mr.weightKg;
-    }
+      const mr = sessionMaxReps[lift];
+      if (mr && (mr.reps > pb.maxReps ||
+          (mr.reps === pb.maxReps && mr.weightKg > pb.maxRepsKg))) {
+        newPBs.push({ lift, type: 'reps', value: mr.reps, weight: mr.weightKg });
+        pb.maxReps   = mr.reps;
+        pb.maxRepsKg = mr.weightKg;
+      }
 
-    // Highest weight PR (any rep count)
-    const mw = sessionMaxWeight[lift];
-    if (mw && mw > pb.maxWeightKg) {
-      pb.maxWeightKg = mw;
+      const mw = sessionMaxWeight[lift];
+      if (mw && mw > pb.maxWeightKg) {
+        pb.maxWeightKg = mw;
+      }
     }
   }
 
   // Benchmark tier bonus — use best lift in session
   const primaryLift = sets[0]?.lift;
   if (primaryLift) {
-    const pb         = ensurePB(pbs, primaryLift);
-    const percentile = getPercentile(primaryLift, pb.orm, profile);
-    const tier       = tierFromPercentile(percentile);
+    const pb = ensurePB(pbs, primaryLift);
+    const percentile = REP_BASED_LIFTS.has(primaryLift)
+      ? getRepPercentile(primaryLift, pb.maxReps, profile)
+      : getPercentile(primaryLift, pb.orm, profile);
+    const tier = tierFromPercentile(percentile);
     xp += XP.TIER_BONUS[tier] || 0;
   }
 
@@ -462,29 +517,40 @@ function recalculateAllPBsAndXP() {
     for (const lift of Object.keys(sessionORM)) {
       const pb = ensurePB(freshPBs, lift);
 
-      if (sessionORM[lift] > pb.orm) {
-        xp += XP.PERSONAL_BEST;
-        pb.orm = sessionORM[lift];
-      }
-      if (sessionOneRep[lift] && sessionOneRep[lift] > pb.oneRepKg) {
-        if (sessionORM[lift] <= (freshPBs[lift]?.orm || 0) || xp === XP.BASE_PER_SET * session.sets.length)
+      if (REP_BASED_LIFTS.has(lift)) {
+        const mr = sessionMaxReps[lift];
+        if (mr && mr.reps > pb.maxReps) {
           xp += XP.PERSONAL_BEST;
-        pb.oneRepKg = sessionOneRep[lift];
+          pb.maxReps   = mr.reps;
+          pb.maxRepsKg = mr.weightKg;
+        }
+      } else {
+        if (sessionORM[lift] > pb.orm) {
+          xp += XP.PERSONAL_BEST;
+          pb.orm = sessionORM[lift];
+        }
+        if (sessionOneRep[lift] && sessionOneRep[lift] > pb.oneRepKg) {
+          if (sessionORM[lift] <= (freshPBs[lift]?.orm || 0) || xp === XP.BASE_PER_SET * session.sets.length)
+            xp += XP.PERSONAL_BEST;
+          pb.oneRepKg = sessionOneRep[lift];
+        }
+        const mr = sessionMaxReps[lift];
+        if (mr && (mr.reps > pb.maxReps ||
+            (mr.reps === pb.maxReps && mr.weightKg > pb.maxRepsKg))) {
+          pb.maxReps   = mr.reps;
+          pb.maxRepsKg = mr.weightKg;
+        }
+        const mw = sessionMaxWeight[lift];
+        if (mw && mw > pb.maxWeightKg) pb.maxWeightKg = mw;
       }
-      const mr = sessionMaxReps[lift];
-      if (mr && (mr.reps > pb.maxReps ||
-          (mr.reps === pb.maxReps && mr.weightKg > pb.maxRepsKg))) {
-        pb.maxReps   = mr.reps;
-        pb.maxRepsKg = mr.weightKg;
-      }
-      const mw = sessionMaxWeight[lift];
-      if (mw && mw > pb.maxWeightKg) pb.maxWeightKg = mw;
     }
 
     const primaryLift = session.sets[0]?.lift;
     if (primaryLift) {
       const pb = ensurePB(freshPBs, primaryLift);
-      const percentile = getPercentile(primaryLift, pb.orm, profile);
+      const percentile = REP_BASED_LIFTS.has(primaryLift)
+        ? getRepPercentile(primaryLift, pb.maxReps, profile)
+        : getPercentile(primaryLift, pb.orm, profile);
       const tier = tierFromPercentile(percentile);
       xp += XP.TIER_BONUS[tier] || 0;
     }
