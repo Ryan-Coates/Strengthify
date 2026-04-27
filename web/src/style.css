@@ -341,6 +341,44 @@ canvas { display: block; width: 100% !important; }
 .bench-card-link { cursor: pointer; transition: border-color 0.15s, background 0.15s; }
 .bench-card-link:hover { border-color: var(--accent); background: rgba(124,106,247,0.06); }
 
+/* ── Share modal ─────────────────────────────────────────────────── */
+.share-modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.75);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(4px);
+}
+.share-modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 100%; max-width: 420px;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.share-modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.share-canvas-wrap {
+  padding: 14px 14px 8px;
+  background: var(--bg);
+  display: flex; justify-content: center;
+}
+.share-canvas-wrap canvas {
+  border-radius: 10px;
+  width: 100% !important;
+  height: auto !important;
+  display: block;
+}
+.share-actions {
+  display: flex; gap: 8px; padding: 12px 14px 14px;
+}
+.share-actions .btn { flex: 1; padding: 12px 8px; font-size: 13px; }
+
 /* ── Misc ────────────────────────────────────────────────────────── */
 .hidden { display: none !important; }
 hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px 12px; }

@@ -750,6 +750,264 @@ function deleteSession(sessionId) {
   showScreen('home');
 }
 
+// ── Share card ────────────────────────────────────────────────────
+
+const TIER_COLORS = {
+  'Untrained':    '#c04040',
+  'Beginner':     '#e07840',
+  'Novice':       '#f5a623',
+  'Intermediate': '#4caf7d',
+  'Advanced':     '#4a9fe0',
+  'Elite':        '#7c6af7',
+  'World Class':  '#ffd700',
+};
+
+function drawShareCard() {
+  const profile  = getProfile();
+  const pbs      = getPBs();
+  const sessions = getSessions();
+  if (!profile) return;
+
+  // Collect only lifts with data
+  const rows = [];
+  LIFTS.forEach(lift => {
+    const pb = pbs[lift];
+    if (!pb || typeof pb !== 'object') return;
+    if (REP_BASED_LIFTS.has(lift)) {
+      if (!pb.maxReps) return;
+      const pct  = getRepPercentile(lift, pb.maxReps, profile);
+      const tier = tierFromPercentile(pct);
+      rows.push({ lift, value: `${pb.maxReps} reps`, tier, pct });
+    } else {
+      const rw = pb.oneRepKg || pb.maxWeightKg || 0;
+      if (!rw) return;
+      const pct  = getPercentile(lift, rw, profile);
+      const tier = tierFromPercentile(pct);
+      rows.push({ lift, value: `${rw} kg`, tier, pct });
+    }
+  });
+
+  // Card dimensions
+  const W   = 600;
+  const PAD = 28;
+  const HEADER_H = 100;
+  const META_H   = 64;
+  const ROW_H    = 52;
+  const FOOTER_H = 50;
+  const H = HEADER_H + META_H + (rows.length || 1) * ROW_H + FOOTER_H + PAD;
+
+  const canvas = document.getElementById('share-canvas');
+  canvas.width  = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#0f0f12';
+  ctx.fillRect(0, 0, W, H);
+
+  // Accent gradient bar at top
+  const grad = ctx.createLinearGradient(0, 0, W, 0);
+  grad.addColorStop(0, '#7c6af7');
+  grad.addColorStop(1, '#5b4ecf');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, 5);
+
+  // ── Header (dumbbell icon + app name) ────────────────────────────
+  let y = 28;
+  // Dumbbell icon (simple canvas draw)
+  const drawDumbbell = (cx, cy, sz) => {
+    ctx.fillStyle = '#7c6af7';
+    // bar
+    ctx.beginPath(); ctx.roundRect(cx - sz * 0.7, cy - sz * 0.09, sz * 1.4, sz * 0.18, sz * 0.09); ctx.fill();
+    // left plate
+    ctx.beginPath(); ctx.roundRect(cx - sz * 0.9, cy - sz * 0.38, sz * 0.25, sz * 0.76, sz * 0.1); ctx.fill();
+    // left collar
+    ctx.beginPath(); ctx.roundRect(cx - sz * 0.7, cy - sz * 0.28, sz * 0.15, sz * 0.56, sz * 0.07); ctx.fill();
+    // right plate
+    ctx.beginPath(); ctx.roundRect(cx + sz * 0.65, cy - sz * 0.38, sz * 0.25, sz * 0.76, sz * 0.1); ctx.fill();
+    // right collar
+    ctx.beginPath(); ctx.roundRect(cx + sz * 0.55, cy - sz * 0.28, sz * 0.15, sz * 0.56, sz * 0.07); ctx.fill();
+  };
+  drawDumbbell(PAD + 22, y + 22, 26);
+
+  ctx.fillStyle = '#e8e8f0';
+  ctx.font = 'bold 26px system-ui, sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Strengthify', PAD + 58, y + 22);
+
+  ctx.fillStyle = '#8888aa';
+  ctx.font = '14px system-ui, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('Benchmark Report', W - PAD, y + 22);
+  ctx.textAlign = 'left';
+
+  // Divider
+  y = HEADER_H - 14;
+  ctx.strokeStyle = '#2e2e40';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(W - PAD, y); ctx.stroke();
+
+  // ── Meta (name + level) ───────────────────────────────────────────
+  y = HEADER_H + 2;
+  ctx.fillStyle = '#e8e8f0';
+  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(profile.name, PAD, y + 22);
+
+  ctx.fillStyle = '#7c6af7';
+  ctx.font = 'bold 14px system-ui, sans-serif';
+  const lvlTitle = levelTitle(profile.level);
+  ctx.fillText(`Lv${profile.level}  ${lvlTitle}`, PAD, y + 42);
+
+  ctx.fillStyle = '#8888aa';
+  ctx.font = '13px system-ui, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText(`${sessions.length} workouts`, W - PAD, y + 32);
+  ctx.textAlign = 'left';
+
+  // Divider
+  y = HEADER_H + META_H - 2;
+  ctx.strokeStyle = '#2e2e40';
+  ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(W - PAD, y); ctx.stroke();
+
+  // ── Lift rows ─────────────────────────────────────────────────────
+  if (rows.length === 0) {
+    y = HEADER_H + META_H + ROW_H / 2;
+    ctx.fillStyle = '#8888aa';
+    ctx.font = '15px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('No benchmarks logged yet', W / 2, y + ROW_H / 2);
+    ctx.textAlign = 'left';
+  } else {
+    rows.forEach((row, i) => {
+      const ry = HEADER_H + META_H + i * ROW_H;
+      const midY = ry + ROW_H / 2;
+
+      // Lift name
+      ctx.fillStyle = '#e8e8f0';
+      ctx.font = '14px system-ui, sans-serif';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(row.lift, PAD, midY);
+
+      // Value (weight / reps)
+      ctx.fillStyle = '#8888aa';
+      ctx.font = '13px system-ui, sans-serif';
+      ctx.fillText(row.value, PAD + 200, midY);
+
+      // Tier pill
+      const tierColor = TIER_COLORS[row.tier] || '#8888aa';
+      const pillText = row.tier.toUpperCase();
+      ctx.font = 'bold 10px system-ui, sans-serif';
+      const pillW = ctx.measureText(pillText).width + 20;
+      const pillX = W - PAD - pillW;
+      const pillY = midY - 11;
+      ctx.fillStyle = tierColor + '33'; // 20% opacity bg
+      ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, 22, 11); ctx.fill();
+      ctx.fillStyle = tierColor;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(pillText, pillX + pillW / 2, midY);
+      ctx.textAlign = 'left';
+
+      // Progress bar (behind tier pill, to the right of value)
+      const barX = PAD + 275;
+      const barW = W - PAD - pillW - 16 - barX;
+      const barH = 5;
+      const barY = midY - barH / 2;
+      ctx.fillStyle = '#22222e';
+      ctx.beginPath(); ctx.roundRect(barX, barY, barW, barH, barH / 2); ctx.fill();
+      ctx.fillStyle = tierColor;
+      ctx.beginPath(); ctx.roundRect(barX, barY, barW * (row.pct / 100), barH, barH / 2); ctx.fill();
+
+      // Row separator
+      if (i < rows.length - 1) {
+        ctx.strokeStyle = '#1e1e28';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(PAD, ry + ROW_H); ctx.lineTo(W - PAD, ry + ROW_H); ctx.stroke();
+      }
+    });
+  }
+
+  // ── Footer ────────────────────────────────────────────────────────
+  const footerY = H - FOOTER_H;
+  ctx.strokeStyle = '#2e2e40';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD, footerY + 12); ctx.lineTo(W - PAD, footerY + 12); ctx.stroke();
+  ctx.fillStyle = '#8888aa';
+  ctx.font = '12px system-ui, sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }), PAD, footerY + 32);
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#7c6af7';
+  ctx.font = 'bold 12px system-ui, sans-serif';
+  ctx.fillText('strengthify', W - PAD, footerY + 32);
+  ctx.textAlign = 'left';
+}
+
+function openShareModal() {
+  const modal = document.getElementById('share-modal');
+  modal.classList.remove('hidden');
+  // Show native share button if available
+  if (navigator.share) {
+    document.getElementById('share-native-btn').style.display = '';
+  }
+  // Draw after a tick so canvas is visible and has layout
+  requestAnimationFrame(() => drawShareCard());
+}
+
+function closeShareModal() {
+  document.getElementById('share-modal').classList.add('hidden');
+}
+
+function shareDownload() {
+  const canvas = document.getElementById('share-canvas');
+  const a = document.createElement('a');
+  a.download = 'strengthify-benchmarks.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+async function shareNative() {
+  const canvas = document.getElementById('share-canvas');
+  canvas.toBlob(async blob => {
+    try {
+      const file = new File([blob], 'strengthify-benchmarks.png', { type: 'image/png' });
+      await navigator.share({ files: [file], title: 'My Strengthify Benchmarks' });
+    } catch {
+      // User cancelled or share failed — silent
+    }
+  }, 'image/png');
+}
+
+function shareCopyText() {
+  const profile = getProfile();
+  const pbs     = getPBs();
+  if (!profile) return;
+  const lines = [
+    `💪 ${profile.name} — Lv${profile.level} ${levelTitle(profile.level)}`,
+    `Strengthify Benchmark Report`,
+    '',
+  ];
+  LIFTS.forEach(lift => {
+    const pb = pbs[lift];
+    if (!pb || typeof pb !== 'object') return;
+    if (REP_BASED_LIFTS.has(lift)) {
+      if (!pb.maxReps) return;
+      const tier = tierFromPercentile(getRepPercentile(lift, pb.maxReps, profile));
+      lines.push(`${lift}: ${pb.maxReps} reps — ${tier}`);
+    } else {
+      const rw = pb.oneRepKg || pb.maxWeightKg || 0;
+      if (!rw) return;
+      const tier = tierFromPercentile(getPercentile(lift, rw, profile));
+      lines.push(`${lift}: ${rw} kg — ${tier}`);
+    }
+  });
+  navigator.clipboard.writeText(lines.join('\n'))
+    .then(() => toast('Copied to clipboard!'))
+    .catch(() => toast('Copy failed', 'error'));
+}
+
 // ── App init ──────────────────────────────────────────────────────
 
 function init() {
@@ -811,6 +1069,16 @@ function init() {
   document.getElementById('se-cancel-btn')?.addEventListener('click', () => {
     if (detailSessionId) renderSessionDetail(detailSessionId);
   });
+
+  // Share modal
+  document.getElementById('share-benchmarks-btn')?.addEventListener('click', openShareModal);
+  document.getElementById('share-modal-close')?.addEventListener('click', closeShareModal);
+  document.getElementById('share-modal')?.addEventListener('click', e => {
+    if (e.target === document.getElementById('share-modal')) closeShareModal();
+  });
+  document.getElementById('share-download-btn')?.addEventListener('click', shareDownload);
+  document.getElementById('share-native-btn')?.addEventListener('click', shareNative);
+  document.getElementById('share-copy-btn')?.addEventListener('click', shareCopyText);
 
   // Onboarding
   initOnboarding();

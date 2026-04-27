@@ -114,7 +114,13 @@
     <div id="recent-sessions"></div>
 
     <!-- Benchmark overview -->
-    <div class="section-label">Benchmark progress</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px;margin:16px 0 8px">
+      <div class="section-label" style="margin:0;padding:0">Benchmark progress</div>
+      <button class="btn btn-ghost btn-sm" id="share-benchmarks-btn" style="padding:6px 12px;font-size:12px;display:flex;align-items:center;gap:5px">
+        <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share
+      </button>
+    </div>
     <div class="bench-grid" id="benchmark-grid"></div>
 
   </section>
@@ -346,6 +352,26 @@
   </section>
 
 </div><!-- /#app -->
+
+<!-- ══════════════════════════════════════════
+     SHARE MODAL
+══════════════════════════════════════════ -->
+<div id="share-modal" class="share-modal-overlay hidden">
+  <div class="share-modal-box">
+    <div class="share-modal-header">
+      <span style="font-size:15px;font-weight:700">Share benchmarks</span>
+      <button id="share-modal-close" class="btn btn-ghost btn-sm" style="padding:4px 10px">✕</button>
+    </div>
+    <div class="share-canvas-wrap">
+      <canvas id="share-canvas"></canvas>
+    </div>
+    <div class="share-actions">
+      <button class="btn btn-primary" id="share-download-btn">Download PNG</button>
+      <button class="btn btn-secondary" id="share-native-btn" style="display:none">Share…</button>
+      <button class="btn btn-secondary" id="share-copy-btn">Copy text</button>
+    </div>
+  </div>
+</div>
 
 
 <!-- ══════════════════════════════════════════
