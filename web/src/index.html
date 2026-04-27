@@ -203,6 +203,47 @@
 
 
   <!-- ══════════════════════════════════════════════════
+       SESSION DETAIL / EDIT
+  ══════════════════════════════════════════════════ -->
+  <section id="session-detail-screen" class="hidden">
+    <div class="page-header">
+      <div>
+        <h1 id="sd-title">Workout</h1>
+        <div id="sd-meta" style="font-size:13px;color:var(--muted);margin-top:2px"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm back-btn" data-to="home">← Back</button>
+    </div>
+
+    <div id="sd-sets-container"></div>
+
+    <div style="padding:0 16px 8px">
+      <button class="btn btn-primary" id="sd-edit-btn">Edit this workout</button>
+    </div>
+    <div style="padding:0 16px 16px">
+      <button class="btn btn-secondary btn-danger" id="sd-delete-btn" style="background:none;border-color:var(--red);color:var(--red)">Delete workout</button>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       SESSION EDIT
+  ══════════════════════════════════════════════════ -->
+  <section id="session-edit-screen" class="hidden">
+    <div class="page-header">
+      <div>
+        <h1>Edit Workout</h1>
+        <div id="se-meta" style="font-size:13px;color:var(--muted);margin-top:2px"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="se-cancel-btn">Cancel</button>
+    </div>
+
+    <div id="se-lifts-container"></div>
+
+    <div style="padding:0 16px 16px">
+      <button class="btn btn-primary" id="se-save-btn">Save &amp; Recalculate XP</button>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
        STANDARDS
   ══════════════════════════════════════════════════ -->
   <section id="standards-screen" class="hidden">

@@ -4,7 +4,7 @@
 
 // ── Screen registry ───────────────────────────────────────────────
 
-const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding'];
+const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'session-detail', 'session-edit'];
 let currentScreen = null;
 
 function showScreen(id) {
@@ -83,10 +83,10 @@ function renderHome() {
         <p>No workouts yet — start your first one!</p>
       </div>`;
   } else {
-    sessions.slice(0, 3).forEach(s => {
+    sessions.slice(0, 5).forEach(s => {
       const liftNames = [...new Set(s.sets.map(x => x.lift))].join(', ');
       const div = document.createElement('div');
-      div.className = 'session-item';
+      div.className = 'session-item session-item-link';
       div.innerHTML = `
         <div class="si-left">
           <div class="si-date">${formatDate(s.date)}</div>
@@ -95,27 +95,34 @@ function renderHome() {
         <div class="si-right">
           <div class="si-xp">+${s.xpEarned} XP</div>
           <div class="si-sets">${s.sets.length} sets</div>
+          <div class="si-arrow">›</div>
         </div>`;
+      div.addEventListener('click', () => renderSessionDetail(s.id));
       list.appendChild(div);
     });
   }
 
-  // Benchmark cards
+  // Benchmark cards — clickable to open progress for that lift
   const grid = document.getElementById('benchmark-grid');
   grid.innerHTML = '';
   LIFTS.forEach(lift => {
     const pb          = pbs[lift];
-    const rankWeight  = (pb && typeof pb === 'object') ? (pb.oneRepKg || pb.maxWeightKg || 0) : 0;
+    const rankWeight  = (pb && typeof pb === 'object') ? (pb.oneRepKg || pb.orm || 0) : 0;
     const percentile  = rankWeight > 0 ? getPercentile(lift, rankWeight, profile) : 0;
     const tier        = tierFromPercentile(percentile);
     const barClass    = tierBarClass(tier);
     const div = document.createElement('div');
-    div.className = 'bench-card';
+    div.className = 'bench-card bench-card-link';
     div.innerHTML = `
       <div class="bc-lift" title="${lift}">${lift}</div>
       <span class="bc-tier ${tierCssClass(tier)}">${rankWeight > 0 ? tier : '—'}</span>
       <div class="bc-bar-track"><div class="bc-bar-fill ${barClass}" style="width:${percentile}%"></div></div>
       <div class="bc-pct">${rankWeight > 0 ? ordinal(percentile) + ' percentile' : 'No data yet'}</div>`;
+    div.addEventListener('click', () => {
+      progressLift = lift;
+      renderProgress();
+      showScreen('progress');
+    });
     grid.appendChild(div);
   });
 }
@@ -357,7 +364,7 @@ function renderProgress() {
   sessions.forEach(s => {
     const liftSets = s.sets.filter(x => x.lift === progressLift);
     if (liftSets.length > 0) {
-      const bestORM = Math.max(...liftSets.map(x => epley1RM(x.weightKg, x.reps)));
+      const bestORM = Math.max(...liftSets.map(x => epley1RM(effectiveWeight(progressLift, x.weightKg, profile), x.reps)));
       points.push({ x: s.date, y: parseFloat(bestORM.toFixed(2)) });
     }
   });
@@ -372,7 +379,8 @@ function renderProgress() {
   const rawPB     = pbs[progressLift];
   const pb        = (rawPB && typeof rawPB === 'object') ? rawPB : { orm: rawPB || 0, oneRepKg: 0, maxReps: 0, maxRepsKg: 0, maxWeightKg: 0 };
   const orm        = pb.orm || 0;
-  const rankWeight = pb.oneRepKg || pb.maxWeightKg || 0;
+  // For bodyweight lifts, use orm for ranking since maxWeightKg/oneRepKg store effective weight
+  const rankWeight = pb.oneRepKg || pb.orm || 0;
   const isTrue1RM  = pb.oneRepKg > 0;
   const percentile = rankWeight > 0 ? getPercentile(progressLift, rankWeight, profile) : 0;
   const tier       = tierFromPercentile(percentile);
@@ -422,7 +430,7 @@ function renderStandards() {
     const bp  = sex === 'female' ? std.female : std.male;
 
     const rawPB       = pbs[lift];
-    const myRankWeight = (rawPB && typeof rawPB === 'object') ? (rawPB.oneRepKg || rawPB.maxWeightKg || 0) : 0;
+    const myRankWeight = (rawPB && typeof rawPB === 'object') ? (rawPB.oneRepKg || rawPB.orm || 0) : 0;
     const myIsTrue1RM  = (rawPB && typeof rawPB === 'object') && rawPB.oneRepKg > 0;
     const myPct       = myRankWeight > 0 ? getPercentile(lift, myRankWeight, profile) : null;
     const myTier      = myPct !== null ? tierFromPercentile(myPct) : null;
@@ -523,6 +531,158 @@ function handleImport(file) {
   reader.readAsText(file);
 }
 
+// ── Session detail & edit ─────────────────────────────────────────
+
+let detailSessionId = null;
+
+function renderSessionDetail(sessionId) {
+  const sessions = getSessions();
+  const session  = sessions.find(s => s.id === sessionId);
+  if (!session) return;
+  detailSessionId = sessionId;
+
+  document.getElementById('sd-title').textContent = formatDate(session.date);
+  document.getElementById('sd-meta').textContent  = `${session.sets.length} sets · +${session.xpEarned} XP`;
+
+  // Group sets by lift
+  const byLift = {};
+  for (const set of session.sets) {
+    if (!byLift[set.lift]) byLift[set.lift] = [];
+    byLift[set.lift].push(set);
+  }
+
+  const container = document.getElementById('sd-sets-container');
+  container.innerHTML = '';
+  for (const [lift, sets] of Object.entries(byLift)) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.marginBottom = '12px';
+    const rows = sets.map((s, i) => {
+      const isBodyweight = BODYWEIGHT_LIFTS.has(lift);
+      const weightDisplay = isBodyweight && s.weightKg === 0
+        ? 'Bodyweight'
+        : `${s.weightKg} kg${isBodyweight ? ' + BW' : ''}`;
+      return `<div class="result-row">
+        <span class="rr-label">Set ${i + 1}</span>
+        <span class="rr-val">${weightDisplay} × ${s.reps}</span>
+      </div>`;
+    }).join('');
+    card.innerHTML = `<div class="card-title">${lift}</div>${rows}`;
+    container.appendChild(card);
+  }
+
+  showScreen('session-detail');
+}
+
+let editSessionId  = null;
+let editSessionSets = {};
+
+function renderSessionEdit(sessionId) {
+  const sessions = getSessions();
+  const session  = sessions.find(s => s.id === sessionId);
+  if (!session) return;
+  editSessionId   = sessionId;
+  editSessionSets = {};
+
+  document.getElementById('se-meta').textContent = formatDate(session.date);
+
+  // Group sets by lift
+  const byLift = {};
+  for (const set of session.sets) {
+    if (!byLift[set.lift]) byLift[set.lift] = [];
+    byLift[set.lift].push({ ...set });
+  }
+
+  const container = document.getElementById('se-lifts-container');
+  container.innerHTML = '';
+
+  for (const [lift, sets] of Object.entries(byLift)) {
+    editSessionSets[lift] = sets.map(s => ({ ...s }));
+    const isBodyweight = BODYWEIGHT_LIFTS.has(lift);
+    const liftNote = isBodyweight ? ' (added weight; 0 = bodyweight only)' : '';
+
+    const section = document.createElement('div');
+    section.className = 'logging-lift';
+    section.id = 'edit-lift-' + lift.replace(/[^a-z]/gi, '_');
+    section.innerHTML = `
+      <h3>${lift}</h3>
+      <p class="prev-hint" style="margin-bottom:8px">${liftNote}</p>
+      <div class="set-row-header"><span>Weight (kg)</span><span>Reps</span><span></span></div>
+      <div class="set-rows"></div>
+      <button class="btn btn-ghost btn-sm add-edit-set-btn" data-lift="${lift}">+ Add Set</button>
+    `;
+    container.appendChild(section);
+
+    const rowsDiv = section.querySelector('.set-rows');
+    sets.forEach((s, idx) => addEditSetRow(lift, s, idx, rowsDiv));
+
+    section.querySelector('.add-edit-set-btn').addEventListener('click', () => {
+      const newIdx = editSessionSets[lift].length;
+      editSessionSets[lift].push({ lift, weightKg: 0, reps: 0 });
+      addEditSetRow(lift, { lift, weightKg: 0, reps: 0 }, newIdx, rowsDiv);
+    });
+  }
+
+  showScreen('session-edit');
+}
+
+function addEditSetRow(lift, setData, idx, rowsDiv) {
+  const row = document.createElement('div');
+  row.className = 'set-row';
+  row.innerHTML = `
+    <input type="number" min="0" step="0.5" value="${setData.weightKg}" class="weight-input">
+    <input type="number" min="1" max="999" step="1" value="${setData.reps}" class="reps-input">
+    <button class="del-set-btn" title="Remove set">✕</button>
+  `;
+  row.querySelector('.weight-input').addEventListener('input', e => {
+    const v = parseFloat(e.target.value);
+    editSessionSets[lift][Array.from(rowsDiv.children).indexOf(row)].weightKg = isNaN(v) ? 0 : v;
+  });
+  row.querySelector('.reps-input').addEventListener('input', e => {
+    const v = parseInt(e.target.value);
+    editSessionSets[lift][Array.from(rowsDiv.children).indexOf(row)].reps = isNaN(v) ? 0 : v;
+  });
+  row.querySelector('.del-set-btn').addEventListener('click', () => {
+    const rowIdx = Array.from(rowsDiv.children).indexOf(row);
+    editSessionSets[lift].splice(rowIdx, 1);
+    row.remove();
+  });
+  rowsDiv.appendChild(row);
+}
+
+function saveEditSession() {
+  if (!editSessionId) return;
+
+  // Flatten sets, filter invalid
+  const allSets = [];
+  for (const [lift, sets] of Object.entries(editSessionSets)) {
+    for (const s of sets) {
+      if (s.reps > 0) allSets.push({ lift, weightKg: s.weightKg || 0, reps: s.reps });
+    }
+  }
+  if (allSets.length === 0) { toast('At least one valid set is required.', 'error'); return; }
+
+  // Update the session sets
+  updateSession(editSessionId, allSets);
+
+  // Recalculate everything from scratch
+  const { profile } = recalculateAllPBsAndXP();
+  toast('Workout saved! XP recalculated.');
+
+  renderHome();
+  renderSessionDetail(editSessionId);
+}
+
+function deleteSession(sessionId) {
+  if (!confirm('Delete this workout? XP will be recalculated.')) return;
+  const sessions = getSessions().filter(s => s.id !== sessionId);
+  localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions));
+  recalculateAllPBsAndXP();
+  toast('Workout deleted.');
+  renderHome();
+  showScreen('home');
+}
+
 // ── App init ──────────────────────────────────────────────────────
 
 function init() {
@@ -571,6 +731,18 @@ function init() {
       localStorage.clear();
       location.reload();
     }
+  });
+
+  // Session detail / edit buttons
+  document.getElementById('sd-edit-btn')?.addEventListener('click', () => {
+    if (detailSessionId) renderSessionEdit(detailSessionId);
+  });
+  document.getElementById('sd-delete-btn')?.addEventListener('click', () => {
+    if (detailSessionId) deleteSession(detailSessionId);
+  });
+  document.getElementById('se-save-btn')?.addEventListener('click', saveEditSession);
+  document.getElementById('se-cancel-btn')?.addEventListener('click', () => {
+    if (detailSessionId) renderSessionDetail(detailSessionId);
   });
 
   // Onboarding

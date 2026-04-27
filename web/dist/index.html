@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<!-- Built: 2026-04-23 13:19:49 -->
+<!-- Built: 2026-04-27 09:43:26 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -342,6 +342,15 @@ canvas { display: block; width: 100% !important; }
 .empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.4; }
 .empty-state p { font-size: 14px; }
 
+/* ── Clickable session items ─────────────────────────────────────── */
+.session-item-link { cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.session-item-link:hover { border-color: var(--accent); background: rgba(124,106,247,0.06); }
+.session-item .si-arrow { font-size: 20px; color: var(--accent); margin-top: 2px; }
+
+/* ── Clickable benchmark cards ───────────────────────────────────── */
+.bench-card-link { cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.bench-card-link:hover { border-color: var(--accent); background: rgba(124,106,247,0.06); }
+
 /* ── Misc ────────────────────────────────────────────────────────── */
 .hidden { display: none !important; }
 hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px 12px; }
@@ -539,6 +548,47 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
 
   </section>
 
+
+  <!-- ══════════════════════════════════════════════════
+       SESSION DETAIL / EDIT
+  ══════════════════════════════════════════════════ -->
+  <section id="session-detail-screen" class="hidden">
+    <div class="page-header">
+      <div>
+        <h1 id="sd-title">Workout</h1>
+        <div id="sd-meta" style="font-size:13px;color:var(--muted);margin-top:2px"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm back-btn" data-to="home">← Back</button>
+    </div>
+
+    <div id="sd-sets-container"></div>
+
+    <div style="padding:0 16px 8px">
+      <button class="btn btn-primary" id="sd-edit-btn">Edit this workout</button>
+    </div>
+    <div style="padding:0 16px 16px">
+      <button class="btn btn-secondary btn-danger" id="sd-delete-btn" style="background:none;border-color:var(--red);color:var(--red)">Delete workout</button>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       SESSION EDIT
+  ══════════════════════════════════════════════════ -->
+  <section id="session-edit-screen" class="hidden">
+    <div class="page-header">
+      <div>
+        <h1>Edit Workout</h1>
+        <div id="se-meta" style="font-size:13px;color:var(--muted);margin-top:2px"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="se-cancel-btn">Cancel</button>
+    </div>
+
+    <div id="se-lifts-container"></div>
+
+    <div style="padding:0 16px 16px">
+      <button class="btn btn-primary" id="se-save-btn">Save &amp; Recalculate XP</button>
+    </div>
+  </section>
 
   <!-- ══════════════════════════════════════════════════
        STANDARDS
@@ -808,7 +858,18 @@ const STRENGTH_STANDARDS = {
     male:   [[0,0.05],[5,0.09],[20,0.16],[40,0.23],[60,0.30],[80,0.38],[95,0.49],[100,0.62]],
     female: [[0,0.03],[5,0.05],[20,0.09],[40,0.13],[60,0.18],[80,0.24],[95,0.31],[100,0.40]],
   },
+  'Push-up': {
+    // Epley 1RM (bodyweight is base load); ratio relative to bodyweight.
+    // Calibrated to strength-level.com push-up standards:
+    // male (108kg ref): 5%=5r(1.17) 20%=12r(1.40) 40%=25r(1.83) 60%=40r(2.33) 80%=56r(2.87) 95%=74r(3.47)
+    male:   [[0,1.00],[5,1.17],[20,1.40],[40,1.83],[60,2.33],[80,2.87],[95,3.47],[100,4.00]],
+    female: [[0,0.80],[5,0.97],[20,1.15],[40,1.47],[60,1.87],[80,2.30],[95,2.80],[100,3.30]],
+  },
 };
+
+// Lifts where the user enters *added* weight (0 = bodyweight only);
+// effective weight = enteredKg + bodyweightKg
+const BODYWEIGHT_LIFTS = new Set(['Push-up']);
 
 function ageFactor(age) {
   if (age < 18)  return 0.80;
@@ -947,6 +1008,12 @@ function epley1RM(weight, reps) {
   return weight * (1 + reps / 30);
 }
 
+// Effective weight including bodyweight for calisthenics lifts
+function effectiveWeight(lift, weightKg, profile) {
+  if (BODYWEIGHT_LIFTS.has(lift)) return weightKg + (profile ? profile.bodyweightKg : 0);
+  return weightKg;
+}
+
 // Ensure pb entry is always the full object shape
 function ensurePB(pbs, lift) {
   if (!pbs[lift] || typeof pbs[lift] !== 'object') {
@@ -972,20 +1039,21 @@ function calculateSessionXP(sets, profile) {
 
   for (const s of sets) {
     xp += XP.BASE_PER_SET;
-    const orm = epley1RM(s.weightKg, s.reps);
+    const effW = effectiveWeight(s.lift, s.weightKg, profile);
+    const orm = epley1RM(effW, s.reps);
 
     if (!sessionORM[s.lift] || orm > sessionORM[s.lift])
       sessionORM[s.lift] = orm;
 
-    if (s.reps === 1 && (!sessionOneRep[s.lift] || s.weightKg > sessionOneRep[s.lift]))
-      sessionOneRep[s.lift] = s.weightKg;
+    if (s.reps === 1 && (!sessionOneRep[s.lift] || effW > sessionOneRep[s.lift]))
+      sessionOneRep[s.lift] = effW;
 
     if (!sessionMaxReps[s.lift] || s.reps > sessionMaxReps[s.lift].reps ||
-        (s.reps === sessionMaxReps[s.lift].reps && s.weightKg > sessionMaxReps[s.lift].weightKg))
-      sessionMaxReps[s.lift] = { reps: s.reps, weightKg: s.weightKg };
+        (s.reps === sessionMaxReps[s.lift].reps && effW > sessionMaxReps[s.lift].weightKg))
+      sessionMaxReps[s.lift] = { reps: s.reps, weightKg: effW };
 
-    if (!sessionMaxWeight[s.lift] || s.weightKg > sessionMaxWeight[s.lift])
-      sessionMaxWeight[s.lift] = s.weightKg;
+    if (!sessionMaxWeight[s.lift] || effW > sessionMaxWeight[s.lift])
+      sessionMaxWeight[s.lift] = effW;
   }
 
   // Check PRs per lift
@@ -1075,6 +1143,91 @@ function importData(jsonStr) {
   if (data.profile)  saveProfile(data.profile);
   if (data.sessions) localStorage.setItem(KEYS.SESSIONS, JSON.stringify(data.sessions));
   if (data.pbs)      savePBs(data.pbs);
+}
+
+// ── Session update (for editing) ──────────────────────────────────
+
+function updateSession(sessionId, newSets) {
+  const sessions = getSessions();
+  const idx = sessions.findIndex(s => s.id === sessionId);
+  if (idx === -1) return null;
+  sessions[idx].sets = newSets;
+  localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions));
+  return sessions[idx];
+}
+
+// Rebuild all PBs and XP from scratch by replaying all sessions in order (oldest first)
+function recalculateAllPBsAndXP() {
+  const profile  = getProfile();
+  if (!profile) return;
+  const sessions = getSessions().slice().reverse(); // oldest first
+
+  // Reset PBs and profile XP
+  const freshPBs = {};
+  profile.totalXP = 0;
+  profile.level   = 0;
+
+  for (const session of sessions) {
+    // Build per-lift session bests for this session
+    const sessionORM       = {};
+    const sessionOneRep    = {};
+    const sessionMaxReps   = {};
+    const sessionMaxWeight = {};
+
+    let xp = 0;
+    for (const s of session.sets) {
+      xp += XP.BASE_PER_SET;
+      const effW = effectiveWeight(s.lift, s.weightKg, profile);
+      const orm  = epley1RM(effW, s.reps);
+
+      if (!sessionORM[s.lift] || orm > sessionORM[s.lift]) sessionORM[s.lift] = orm;
+      if (s.reps === 1 && (!sessionOneRep[s.lift] || effW > sessionOneRep[s.lift])) sessionOneRep[s.lift] = effW;
+      if (!sessionMaxReps[s.lift] || s.reps > sessionMaxReps[s.lift].reps ||
+          (s.reps === sessionMaxReps[s.lift].reps && effW > sessionMaxReps[s.lift].weightKg))
+        sessionMaxReps[s.lift] = { reps: s.reps, weightKg: effW };
+      if (!sessionMaxWeight[s.lift] || effW > sessionMaxWeight[s.lift]) sessionMaxWeight[s.lift] = effW;
+    }
+
+    for (const lift of Object.keys(sessionORM)) {
+      const pb = ensurePB(freshPBs, lift);
+
+      if (sessionORM[lift] > pb.orm) {
+        xp += XP.PERSONAL_BEST;
+        pb.orm = sessionORM[lift];
+      }
+      if (sessionOneRep[lift] && sessionOneRep[lift] > pb.oneRepKg) {
+        if (sessionORM[lift] <= (freshPBs[lift]?.orm || 0) || xp === XP.BASE_PER_SET * session.sets.length)
+          xp += XP.PERSONAL_BEST;
+        pb.oneRepKg = sessionOneRep[lift];
+      }
+      const mr = sessionMaxReps[lift];
+      if (mr && (mr.reps > pb.maxReps ||
+          (mr.reps === pb.maxReps && mr.weightKg > pb.maxRepsKg))) {
+        pb.maxReps   = mr.reps;
+        pb.maxRepsKg = mr.weightKg;
+      }
+      const mw = sessionMaxWeight[lift];
+      if (mw && mw > pb.maxWeightKg) pb.maxWeightKg = mw;
+    }
+
+    const primaryLift = session.sets[0]?.lift;
+    if (primaryLift) {
+      const pb = ensurePB(freshPBs, primaryLift);
+      const percentile = getPercentile(primaryLift, pb.orm, profile);
+      const tier = tierFromPercentile(percentile);
+      xp += XP.TIER_BONUS[tier] || 0;
+    }
+
+    session.xpEarned = xp;
+    profile.totalXP += xp;
+    while (profile.totalXP >= xpForLevel(profile.level + 1)) profile.level++;
+  }
+
+  // Persist updated data (sessions back in newest-first order)
+  localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions.reverse()));
+  savePBs(freshPBs);
+  saveProfile(profile);
+  return { profile, pbs: freshPBs };
 }
 
 // ── Lift registry ────────────────────────────────────────────
@@ -1226,7 +1379,7 @@ function drawLineChart(canvas, points, opts = {}) {
 
 // ── Screen registry ───────────────────────────────────────────────
 
-const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding'];
+const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'session-detail', 'session-edit'];
 let currentScreen = null;
 
 function showScreen(id) {
@@ -1305,10 +1458,10 @@ function renderHome() {
         <p>No workouts yet — start your first one!</p>
       </div>`;
   } else {
-    sessions.slice(0, 3).forEach(s => {
+    sessions.slice(0, 5).forEach(s => {
       const liftNames = [...new Set(s.sets.map(x => x.lift))].join(', ');
       const div = document.createElement('div');
-      div.className = 'session-item';
+      div.className = 'session-item session-item-link';
       div.innerHTML = `
         <div class="si-left">
           <div class="si-date">${formatDate(s.date)}</div>
@@ -1317,27 +1470,34 @@ function renderHome() {
         <div class="si-right">
           <div class="si-xp">+${s.xpEarned} XP</div>
           <div class="si-sets">${s.sets.length} sets</div>
+          <div class="si-arrow">›</div>
         </div>`;
+      div.addEventListener('click', () => renderSessionDetail(s.id));
       list.appendChild(div);
     });
   }
 
-  // Benchmark cards
+  // Benchmark cards — clickable to open progress for that lift
   const grid = document.getElementById('benchmark-grid');
   grid.innerHTML = '';
   LIFTS.forEach(lift => {
     const pb          = pbs[lift];
-    const rankWeight  = (pb && typeof pb === 'object') ? (pb.oneRepKg || pb.maxWeightKg || 0) : 0;
+    const rankWeight  = (pb && typeof pb === 'object') ? (pb.oneRepKg || pb.orm || 0) : 0;
     const percentile  = rankWeight > 0 ? getPercentile(lift, rankWeight, profile) : 0;
     const tier        = tierFromPercentile(percentile);
     const barClass    = tierBarClass(tier);
     const div = document.createElement('div');
-    div.className = 'bench-card';
+    div.className = 'bench-card bench-card-link';
     div.innerHTML = `
       <div class="bc-lift" title="${lift}">${lift}</div>
       <span class="bc-tier ${tierCssClass(tier)}">${rankWeight > 0 ? tier : '—'}</span>
       <div class="bc-bar-track"><div class="bc-bar-fill ${barClass}" style="width:${percentile}%"></div></div>
       <div class="bc-pct">${rankWeight > 0 ? ordinal(percentile) + ' percentile' : 'No data yet'}</div>`;
+    div.addEventListener('click', () => {
+      progressLift = lift;
+      renderProgress();
+      showScreen('progress');
+    });
     grid.appendChild(div);
   });
 }
@@ -1579,7 +1739,7 @@ function renderProgress() {
   sessions.forEach(s => {
     const liftSets = s.sets.filter(x => x.lift === progressLift);
     if (liftSets.length > 0) {
-      const bestORM = Math.max(...liftSets.map(x => epley1RM(x.weightKg, x.reps)));
+      const bestORM = Math.max(...liftSets.map(x => epley1RM(effectiveWeight(progressLift, x.weightKg, profile), x.reps)));
       points.push({ x: s.date, y: parseFloat(bestORM.toFixed(2)) });
     }
   });
@@ -1594,7 +1754,8 @@ function renderProgress() {
   const rawPB     = pbs[progressLift];
   const pb        = (rawPB && typeof rawPB === 'object') ? rawPB : { orm: rawPB || 0, oneRepKg: 0, maxReps: 0, maxRepsKg: 0, maxWeightKg: 0 };
   const orm        = pb.orm || 0;
-  const rankWeight = pb.oneRepKg || pb.maxWeightKg || 0;
+  // For bodyweight lifts, use orm for ranking since maxWeightKg/oneRepKg store effective weight
+  const rankWeight = pb.oneRepKg || pb.orm || 0;
   const isTrue1RM  = pb.oneRepKg > 0;
   const percentile = rankWeight > 0 ? getPercentile(progressLift, rankWeight, profile) : 0;
   const tier       = tierFromPercentile(percentile);
@@ -1644,7 +1805,7 @@ function renderStandards() {
     const bp  = sex === 'female' ? std.female : std.male;
 
     const rawPB       = pbs[lift];
-    const myRankWeight = (rawPB && typeof rawPB === 'object') ? (rawPB.oneRepKg || rawPB.maxWeightKg || 0) : 0;
+    const myRankWeight = (rawPB && typeof rawPB === 'object') ? (rawPB.oneRepKg || rawPB.orm || 0) : 0;
     const myIsTrue1RM  = (rawPB && typeof rawPB === 'object') && rawPB.oneRepKg > 0;
     const myPct       = myRankWeight > 0 ? getPercentile(lift, myRankWeight, profile) : null;
     const myTier      = myPct !== null ? tierFromPercentile(myPct) : null;
@@ -1745,6 +1906,158 @@ function handleImport(file) {
   reader.readAsText(file);
 }
 
+// ── Session detail & edit ─────────────────────────────────────────
+
+let detailSessionId = null;
+
+function renderSessionDetail(sessionId) {
+  const sessions = getSessions();
+  const session  = sessions.find(s => s.id === sessionId);
+  if (!session) return;
+  detailSessionId = sessionId;
+
+  document.getElementById('sd-title').textContent = formatDate(session.date);
+  document.getElementById('sd-meta').textContent  = `${session.sets.length} sets · +${session.xpEarned} XP`;
+
+  // Group sets by lift
+  const byLift = {};
+  for (const set of session.sets) {
+    if (!byLift[set.lift]) byLift[set.lift] = [];
+    byLift[set.lift].push(set);
+  }
+
+  const container = document.getElementById('sd-sets-container');
+  container.innerHTML = '';
+  for (const [lift, sets] of Object.entries(byLift)) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.marginBottom = '12px';
+    const rows = sets.map((s, i) => {
+      const isBodyweight = BODYWEIGHT_LIFTS.has(lift);
+      const weightDisplay = isBodyweight && s.weightKg === 0
+        ? 'Bodyweight'
+        : `${s.weightKg} kg${isBodyweight ? ' + BW' : ''}`;
+      return `<div class="result-row">
+        <span class="rr-label">Set ${i + 1}</span>
+        <span class="rr-val">${weightDisplay} × ${s.reps}</span>
+      </div>`;
+    }).join('');
+    card.innerHTML = `<div class="card-title">${lift}</div>${rows}`;
+    container.appendChild(card);
+  }
+
+  showScreen('session-detail');
+}
+
+let editSessionId  = null;
+let editSessionSets = {};
+
+function renderSessionEdit(sessionId) {
+  const sessions = getSessions();
+  const session  = sessions.find(s => s.id === sessionId);
+  if (!session) return;
+  editSessionId   = sessionId;
+  editSessionSets = {};
+
+  document.getElementById('se-meta').textContent = formatDate(session.date);
+
+  // Group sets by lift
+  const byLift = {};
+  for (const set of session.sets) {
+    if (!byLift[set.lift]) byLift[set.lift] = [];
+    byLift[set.lift].push({ ...set });
+  }
+
+  const container = document.getElementById('se-lifts-container');
+  container.innerHTML = '';
+
+  for (const [lift, sets] of Object.entries(byLift)) {
+    editSessionSets[lift] = sets.map(s => ({ ...s }));
+    const isBodyweight = BODYWEIGHT_LIFTS.has(lift);
+    const liftNote = isBodyweight ? ' (added weight; 0 = bodyweight only)' : '';
+
+    const section = document.createElement('div');
+    section.className = 'logging-lift';
+    section.id = 'edit-lift-' + lift.replace(/[^a-z]/gi, '_');
+    section.innerHTML = `
+      <h3>${lift}</h3>
+      <p class="prev-hint" style="margin-bottom:8px">${liftNote}</p>
+      <div class="set-row-header"><span>Weight (kg)</span><span>Reps</span><span></span></div>
+      <div class="set-rows"></div>
+      <button class="btn btn-ghost btn-sm add-edit-set-btn" data-lift="${lift}">+ Add Set</button>
+    `;
+    container.appendChild(section);
+
+    const rowsDiv = section.querySelector('.set-rows');
+    sets.forEach((s, idx) => addEditSetRow(lift, s, idx, rowsDiv));
+
+    section.querySelector('.add-edit-set-btn').addEventListener('click', () => {
+      const newIdx = editSessionSets[lift].length;
+      editSessionSets[lift].push({ lift, weightKg: 0, reps: 0 });
+      addEditSetRow(lift, { lift, weightKg: 0, reps: 0 }, newIdx, rowsDiv);
+    });
+  }
+
+  showScreen('session-edit');
+}
+
+function addEditSetRow(lift, setData, idx, rowsDiv) {
+  const row = document.createElement('div');
+  row.className = 'set-row';
+  row.innerHTML = `
+    <input type="number" min="0" step="0.5" value="${setData.weightKg}" class="weight-input">
+    <input type="number" min="1" max="999" step="1" value="${setData.reps}" class="reps-input">
+    <button class="del-set-btn" title="Remove set">✕</button>
+  `;
+  row.querySelector('.weight-input').addEventListener('input', e => {
+    const v = parseFloat(e.target.value);
+    editSessionSets[lift][Array.from(rowsDiv.children).indexOf(row)].weightKg = isNaN(v) ? 0 : v;
+  });
+  row.querySelector('.reps-input').addEventListener('input', e => {
+    const v = parseInt(e.target.value);
+    editSessionSets[lift][Array.from(rowsDiv.children).indexOf(row)].reps = isNaN(v) ? 0 : v;
+  });
+  row.querySelector('.del-set-btn').addEventListener('click', () => {
+    const rowIdx = Array.from(rowsDiv.children).indexOf(row);
+    editSessionSets[lift].splice(rowIdx, 1);
+    row.remove();
+  });
+  rowsDiv.appendChild(row);
+}
+
+function saveEditSession() {
+  if (!editSessionId) return;
+
+  // Flatten sets, filter invalid
+  const allSets = [];
+  for (const [lift, sets] of Object.entries(editSessionSets)) {
+    for (const s of sets) {
+      if (s.reps > 0) allSets.push({ lift, weightKg: s.weightKg || 0, reps: s.reps });
+    }
+  }
+  if (allSets.length === 0) { toast('At least one valid set is required.', 'error'); return; }
+
+  // Update the session sets
+  updateSession(editSessionId, allSets);
+
+  // Recalculate everything from scratch
+  const { profile } = recalculateAllPBsAndXP();
+  toast('Workout saved! XP recalculated.');
+
+  renderHome();
+  renderSessionDetail(editSessionId);
+}
+
+function deleteSession(sessionId) {
+  if (!confirm('Delete this workout? XP will be recalculated.')) return;
+  const sessions = getSessions().filter(s => s.id !== sessionId);
+  localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions));
+  recalculateAllPBsAndXP();
+  toast('Workout deleted.');
+  renderHome();
+  showScreen('home');
+}
+
 // ── App init ──────────────────────────────────────────────────────
 
 function init() {
@@ -1793,6 +2106,18 @@ function init() {
       localStorage.clear();
       location.reload();
     }
+  });
+
+  // Session detail / edit buttons
+  document.getElementById('sd-edit-btn')?.addEventListener('click', () => {
+    if (detailSessionId) renderSessionEdit(detailSessionId);
+  });
+  document.getElementById('sd-delete-btn')?.addEventListener('click', () => {
+    if (detailSessionId) deleteSession(detailSessionId);
+  });
+  document.getElementById('se-save-btn')?.addEventListener('click', saveEditSession);
+  document.getElementById('se-cancel-btn')?.addEventListener('click', () => {
+    if (detailSessionId) renderSessionDetail(detailSessionId);
   });
 
   // Onboarding

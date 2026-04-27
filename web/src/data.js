@@ -129,7 +129,18 @@ const STRENGTH_STANDARDS = {
     male:   [[0,0.05],[5,0.09],[20,0.16],[40,0.23],[60,0.30],[80,0.38],[95,0.49],[100,0.62]],
     female: [[0,0.03],[5,0.05],[20,0.09],[40,0.13],[60,0.18],[80,0.24],[95,0.31],[100,0.40]],
   },
+  'Push-up': {
+    // Epley 1RM (bodyweight is base load); ratio relative to bodyweight.
+    // Calibrated to strength-level.com push-up standards:
+    // male (108kg ref): 5%=5r(1.17) 20%=12r(1.40) 40%=25r(1.83) 60%=40r(2.33) 80%=56r(2.87) 95%=74r(3.47)
+    male:   [[0,1.00],[5,1.17],[20,1.40],[40,1.83],[60,2.33],[80,2.87],[95,3.47],[100,4.00]],
+    female: [[0,0.80],[5,0.97],[20,1.15],[40,1.47],[60,1.87],[80,2.30],[95,2.80],[100,3.30]],
+  },
 };
+
+// Lifts where the user enters *added* weight (0 = bodyweight only);
+// effective weight = enteredKg + bodyweightKg
+const BODYWEIGHT_LIFTS = new Set(['Push-up']);
 
 function ageFactor(age) {
   if (age < 18)  return 0.80;
@@ -268,6 +279,12 @@ function epley1RM(weight, reps) {
   return weight * (1 + reps / 30);
 }
 
+// Effective weight including bodyweight for calisthenics lifts
+function effectiveWeight(lift, weightKg, profile) {
+  if (BODYWEIGHT_LIFTS.has(lift)) return weightKg + (profile ? profile.bodyweightKg : 0);
+  return weightKg;
+}
+
 // Ensure pb entry is always the full object shape
 function ensurePB(pbs, lift) {
   if (!pbs[lift] || typeof pbs[lift] !== 'object') {
@@ -293,20 +310,21 @@ function calculateSessionXP(sets, profile) {
 
   for (const s of sets) {
     xp += XP.BASE_PER_SET;
-    const orm = epley1RM(s.weightKg, s.reps);
+    const effW = effectiveWeight(s.lift, s.weightKg, profile);
+    const orm = epley1RM(effW, s.reps);
 
     if (!sessionORM[s.lift] || orm > sessionORM[s.lift])
       sessionORM[s.lift] = orm;
 
-    if (s.reps === 1 && (!sessionOneRep[s.lift] || s.weightKg > sessionOneRep[s.lift]))
-      sessionOneRep[s.lift] = s.weightKg;
+    if (s.reps === 1 && (!sessionOneRep[s.lift] || effW > sessionOneRep[s.lift]))
+      sessionOneRep[s.lift] = effW;
 
     if (!sessionMaxReps[s.lift] || s.reps > sessionMaxReps[s.lift].reps ||
-        (s.reps === sessionMaxReps[s.lift].reps && s.weightKg > sessionMaxReps[s.lift].weightKg))
-      sessionMaxReps[s.lift] = { reps: s.reps, weightKg: s.weightKg };
+        (s.reps === sessionMaxReps[s.lift].reps && effW > sessionMaxReps[s.lift].weightKg))
+      sessionMaxReps[s.lift] = { reps: s.reps, weightKg: effW };
 
-    if (!sessionMaxWeight[s.lift] || s.weightKg > sessionMaxWeight[s.lift])
-      sessionMaxWeight[s.lift] = s.weightKg;
+    if (!sessionMaxWeight[s.lift] || effW > sessionMaxWeight[s.lift])
+      sessionMaxWeight[s.lift] = effW;
   }
 
   // Check PRs per lift
@@ -396,6 +414,91 @@ function importData(jsonStr) {
   if (data.profile)  saveProfile(data.profile);
   if (data.sessions) localStorage.setItem(KEYS.SESSIONS, JSON.stringify(data.sessions));
   if (data.pbs)      savePBs(data.pbs);
+}
+
+// ── Session update (for editing) ──────────────────────────────────
+
+function updateSession(sessionId, newSets) {
+  const sessions = getSessions();
+  const idx = sessions.findIndex(s => s.id === sessionId);
+  if (idx === -1) return null;
+  sessions[idx].sets = newSets;
+  localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions));
+  return sessions[idx];
+}
+
+// Rebuild all PBs and XP from scratch by replaying all sessions in order (oldest first)
+function recalculateAllPBsAndXP() {
+  const profile  = getProfile();
+  if (!profile) return;
+  const sessions = getSessions().slice().reverse(); // oldest first
+
+  // Reset PBs and profile XP
+  const freshPBs = {};
+  profile.totalXP = 0;
+  profile.level   = 0;
+
+  for (const session of sessions) {
+    // Build per-lift session bests for this session
+    const sessionORM       = {};
+    const sessionOneRep    = {};
+    const sessionMaxReps   = {};
+    const sessionMaxWeight = {};
+
+    let xp = 0;
+    for (const s of session.sets) {
+      xp += XP.BASE_PER_SET;
+      const effW = effectiveWeight(s.lift, s.weightKg, profile);
+      const orm  = epley1RM(effW, s.reps);
+
+      if (!sessionORM[s.lift] || orm > sessionORM[s.lift]) sessionORM[s.lift] = orm;
+      if (s.reps === 1 && (!sessionOneRep[s.lift] || effW > sessionOneRep[s.lift])) sessionOneRep[s.lift] = effW;
+      if (!sessionMaxReps[s.lift] || s.reps > sessionMaxReps[s.lift].reps ||
+          (s.reps === sessionMaxReps[s.lift].reps && effW > sessionMaxReps[s.lift].weightKg))
+        sessionMaxReps[s.lift] = { reps: s.reps, weightKg: effW };
+      if (!sessionMaxWeight[s.lift] || effW > sessionMaxWeight[s.lift]) sessionMaxWeight[s.lift] = effW;
+    }
+
+    for (const lift of Object.keys(sessionORM)) {
+      const pb = ensurePB(freshPBs, lift);
+
+      if (sessionORM[lift] > pb.orm) {
+        xp += XP.PERSONAL_BEST;
+        pb.orm = sessionORM[lift];
+      }
+      if (sessionOneRep[lift] && sessionOneRep[lift] > pb.oneRepKg) {
+        if (sessionORM[lift] <= (freshPBs[lift]?.orm || 0) || xp === XP.BASE_PER_SET * session.sets.length)
+          xp += XP.PERSONAL_BEST;
+        pb.oneRepKg = sessionOneRep[lift];
+      }
+      const mr = sessionMaxReps[lift];
+      if (mr && (mr.reps > pb.maxReps ||
+          (mr.reps === pb.maxReps && mr.weightKg > pb.maxRepsKg))) {
+        pb.maxReps   = mr.reps;
+        pb.maxRepsKg = mr.weightKg;
+      }
+      const mw = sessionMaxWeight[lift];
+      if (mw && mw > pb.maxWeightKg) pb.maxWeightKg = mw;
+    }
+
+    const primaryLift = session.sets[0]?.lift;
+    if (primaryLift) {
+      const pb = ensurePB(freshPBs, primaryLift);
+      const percentile = getPercentile(primaryLift, pb.orm, profile);
+      const tier = tierFromPercentile(percentile);
+      xp += XP.TIER_BONUS[tier] || 0;
+    }
+
+    session.xpEarned = xp;
+    profile.totalXP += xp;
+    while (profile.totalXP >= xpForLevel(profile.level + 1)) profile.level++;
+  }
+
+  // Persist updated data (sessions back in newest-first order)
+  localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions.reverse()));
+  savePBs(freshPBs);
+  saveProfile(profile);
+  return { profile, pbs: freshPBs };
 }
 
 // ── Lift registry ────────────────────────────────────────────

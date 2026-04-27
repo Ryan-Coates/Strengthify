@@ -332,6 +332,15 @@ canvas { display: block; width: 100% !important; }
 .empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.4; }
 .empty-state p { font-size: 14px; }
 
+/* ── Clickable session items ─────────────────────────────────────── */
+.session-item-link { cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.session-item-link:hover { border-color: var(--accent); background: rgba(124,106,247,0.06); }
+.session-item .si-arrow { font-size: 20px; color: var(--accent); margin-top: 2px; }
+
+/* ── Clickable benchmark cards ───────────────────────────────────── */
+.bench-card-link { cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.bench-card-link:hover { border-color: var(--accent); background: rgba(124,106,247,0.06); }
+
 /* ── Misc ────────────────────────────────────────────────────────── */
 .hidden { display: none !important; }
 hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px 12px; }
