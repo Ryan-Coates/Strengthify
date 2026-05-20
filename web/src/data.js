@@ -6,6 +6,7 @@ const KEYS = {
   PROFILE:  'sf_profile',
   SESSIONS: 'sf_sessions',
   PBS:      'sf_pbs',
+  PBS_TS:   'sf_pbs_ts',
 };
 
 // ── Default / helpers ─────────────────────────────────────────────
@@ -27,7 +28,9 @@ function getProfile() {
 }
 
 function saveProfile(profile) {
+  profile._updatedAt = Date.now();
   localStorage.setItem(KEYS.PROFILE, JSON.stringify(profile));
+  if (typeof syncPushProfile === 'function') syncPushProfile(profile);
 }
 
 function createProfile(name, sex, dob, bodyweightKg, heightCm) {
@@ -56,6 +59,7 @@ function saveSession(session) {
   const sessions = getSessions();
   sessions.unshift(session); // newest first
   localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions));
+  if (typeof syncPushSession === 'function') syncPushSession(session);
 }
 
 // ── Personal Bests ────────────────────────────────────────────────
@@ -67,6 +71,8 @@ function getPBs() {
 
 function savePBs(pbs) {
   localStorage.setItem(KEYS.PBS, JSON.stringify(pbs));
+  localStorage.setItem(KEYS.PBS_TS, String(Date.now()));
+  if (typeof syncPushPBs === 'function') syncPushPBs(pbs);
 }
 
 // ── Age calculation ───────────────────────────────────────────────
@@ -467,7 +473,12 @@ function exportData() {
 function importData(jsonStr) {
   const data = JSON.parse(jsonStr);
   if (data.profile)  saveProfile(data.profile);
-  if (data.sessions) localStorage.setItem(KEYS.SESSIONS, JSON.stringify(data.sessions));
+  if (data.sessions) {
+    localStorage.setItem(KEYS.SESSIONS, JSON.stringify(data.sessions));
+    if (typeof syncPushSession === 'function') {
+      (data.sessions || []).forEach(s => syncPushSession(s));
+    }
+  }
   if (data.pbs)      savePBs(data.pbs);
 }
 
@@ -479,6 +490,7 @@ function updateSession(sessionId, newSets) {
   if (idx === -1) return null;
   sessions[idx].sets = newSets;
   localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions));
+  if (typeof syncPushSession === 'function') syncPushSession(sessions[idx]);
   return sessions[idx];
 }
 

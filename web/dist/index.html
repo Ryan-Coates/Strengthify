@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<!-- Built: 2026-04-27 13:11:20 -->
+<!-- Built: 2026-05-20 09:04:13 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -723,6 +723,47 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
       <button class="btn btn-primary" id="save-profile-btn">Save changes</button>
     </div>
 
+    <!-- Cloud Sync -->
+    <div class="card" id="sync-card">
+      <div class="card-title">Cloud Sync</div>
+
+      <!-- Not configured -->
+      <div id="sync-state-unconfigured">
+        <p style="font-size:13px;color:var(--muted);margin:0 0 4px">Sync is not yet configured.</p>
+        <p style="font-size:12px;color:var(--muted);margin:0">Add your Firebase config to <code style="font-size:11px">sync.js</code> to enable cross-device sync.</p>
+      </div>
+
+      <!-- Signed out -->
+      <div id="sync-state-signedout" class="hidden">
+        <p style="font-size:13px;color:var(--muted);margin:0 0 12px">Sign in with Google to sync your data across all your devices. Your local data is never deleted when you sign out.</p>
+        <button class="btn btn-secondary" id="sync-signin-btn" style="display:flex;align-items:center;justify-content:center;gap:8px">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Sign in with Google
+        </button>
+      </div>
+
+      <!-- Signed in -->
+      <div id="sync-state-signedin" class="hidden">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <img id="sync-avatar" src="" alt="" style="width:36px;height:36px;border-radius:50%;display:none">
+          <div style="flex:1;min-width:0">
+            <div id="sync-user-name" style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+            <div id="sync-user-email" style="font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+          </div>
+          <div id="sync-status-badge"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-secondary" id="sync-now-btn">Sync now</button>
+          <button class="btn btn-secondary" id="sync-signout-btn">Sign out</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Data management -->
     <div class="card">
       <div class="card-title">Data</div>
@@ -791,6 +832,10 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
 
 </nav>
 
+<!-- Firebase SDK (loaded only when cloud sync is configured) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
   // =====================================================================
 // Strengthify Web — Data Layer (localStorage)
@@ -800,6 +845,7 @@ const KEYS = {
   PROFILE:  'sf_profile',
   SESSIONS: 'sf_sessions',
   PBS:      'sf_pbs',
+  PBS_TS:   'sf_pbs_ts',
 };
 
 // ── Default / helpers ─────────────────────────────────────────────
@@ -821,7 +867,9 @@ function getProfile() {
 }
 
 function saveProfile(profile) {
+  profile._updatedAt = Date.now();
   localStorage.setItem(KEYS.PROFILE, JSON.stringify(profile));
+  if (typeof syncPushProfile === 'function') syncPushProfile(profile);
 }
 
 function createProfile(name, sex, dob, bodyweightKg, heightCm) {
@@ -850,6 +898,7 @@ function saveSession(session) {
   const sessions = getSessions();
   sessions.unshift(session); // newest first
   localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions));
+  if (typeof syncPushSession === 'function') syncPushSession(session);
 }
 
 // ── Personal Bests ────────────────────────────────────────────────
@@ -861,6 +910,8 @@ function getPBs() {
 
 function savePBs(pbs) {
   localStorage.setItem(KEYS.PBS, JSON.stringify(pbs));
+  localStorage.setItem(KEYS.PBS_TS, String(Date.now()));
+  if (typeof syncPushPBs === 'function') syncPushPBs(pbs);
 }
 
 // ── Age calculation ───────────────────────────────────────────────
@@ -1261,7 +1312,12 @@ function exportData() {
 function importData(jsonStr) {
   const data = JSON.parse(jsonStr);
   if (data.profile)  saveProfile(data.profile);
-  if (data.sessions) localStorage.setItem(KEYS.SESSIONS, JSON.stringify(data.sessions));
+  if (data.sessions) {
+    localStorage.setItem(KEYS.SESSIONS, JSON.stringify(data.sessions));
+    if (typeof syncPushSession === 'function') {
+      (data.sessions || []).forEach(s => syncPushSession(s));
+    }
+  }
   if (data.pbs)      savePBs(data.pbs);
 }
 
@@ -1273,6 +1329,7 @@ function updateSession(sessionId, newSets) {
   if (idx === -1) return null;
   sessions[idx].sets = newSets;
   localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions));
+  if (typeof syncPushSession === 'function') syncPushSession(sessions[idx]);
   return sessions[idx];
 }
 
@@ -1500,6 +1557,236 @@ function drawLineChart(canvas, points, opts = {}) {
     const label = points[i].x.slice(5); // MM-DD
     ctx.fillText(label, toX(i), H - 6);
   });
+}
+
+</script>
+<script>
+  // =====================================================================
+// Strengthify Web — Cloud Sync (Firebase + Google Sign-In)
+// =====================================================================
+// SETUP (one-time, ~5 minutes):
+//
+//   1. Go to https://console.firebase.google.com
+//   2. Create a project → Add a Web App → copy the firebaseConfig below
+//   3. Authentication → Sign-in providers → Google → Enable
+//   4. Firestore Database → Create database → Production mode
+//   5. Firestore Rules → Edit rules → paste:
+//
+//        rules_version = '2';
+//        service cloud.firestore {
+//          match /databases/{database}/documents {
+//            match /users/{uid}/{document=**} {
+//              allow read, write: if request.auth != null
+//                                 && request.auth.uid == uid;
+//            }
+//          }
+//        }
+//
+//   6. Authentication → Settings → Authorized domains → add your
+//      deployed domain (e.g. yourapp.netlify.app)
+//
+// Then paste your project config into FIREBASE_CONFIG below.
+// =====================================================================
+
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyBOYpoz9UuNTnB0W8xTleCXZI0nsx8An5o",
+  authDomain:        "stregthify.firebaseapp.com",
+  projectId:         "stregthify",
+  storageBucket:     "stregthify.firebasestorage.app",
+  messagingSenderId: "301168890462",
+  appId:             "1:301168890462:web:ca2c3e587bd8ffcea61acf",
+};
+
+// ── Internal state ────────────────────────────────────────────────
+
+const SYNC_READY = FIREBASE_CONFIG.apiKey !== "";
+
+let _syncDb   = null;
+let _syncAuth = null;
+let _syncUser = null;
+
+// ── Initialise ────────────────────────────────────────────────────
+
+function syncInit() {
+  if (!SYNC_READY) {
+    console.log('[Sync] Not configured — cloud sync disabled.');
+    return;
+  }
+  if (typeof firebase === 'undefined') {
+    console.error('[Sync] Firebase SDK not loaded — check CDN scripts in index.html.');
+    return;
+  }
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    _syncAuth = firebase.auth();
+    _syncDb   = firebase.firestore();
+    console.log('[Sync] Firebase initialised. Project:', FIREBASE_CONFIG.projectId);
+  } catch (e) {
+    console.error('[Sync] Firebase init failed:', e);
+  }
+}
+
+function syncIsConfigured() { return SYNC_READY; }
+function syncCurrentUser()  { return _syncUser; }
+function syncIsSignedIn()   { return !!_syncUser; }
+
+// ── Auth ──────────────────────────────────────────────────────────
+
+function syncOnAuthChange(callback) {
+  if (!_syncAuth) { callback(null); return; }
+  _syncAuth.onAuthStateChanged(user => {
+    _syncUser = user;
+    if (user) {
+      console.log('[Sync] Signed in:', user.email, '| uid:', user.uid);
+    } else {
+      console.log('[Sync] Signed out.');
+    }
+    callback(user);
+  });
+}
+
+async function syncSignIn() {
+  if (!_syncAuth) return;
+  console.log('[Sync] Opening Google sign-in popup…');
+  const provider = new firebase.auth.GoogleAuthProvider();
+  return _syncAuth.signInWithPopup(provider);
+}
+
+async function syncSignOut() {
+  if (!_syncAuth) return;
+  console.log('[Sync] Signing out…');
+  return _syncAuth.signOut();
+}
+
+// ── Firestore path helpers ────────────────────────────────────────
+
+function _userDoc()       { return _syncDb.collection('users').doc(_syncUser.uid); }
+function _sessionDoc(id)  { return _userDoc().collection('sessions').doc(id); }
+
+// ── Fire-and-forget push (called after every local write) ─────────
+
+function syncPushProfile(profile) {
+  if (!_syncDb || !_syncUser) return;
+  console.log('[Sync] Pushing profile…');
+  _userDoc()
+    .set({ profile, profileUpdatedAt: profile._updatedAt }, { merge: true })
+    .then(() => console.log('[Sync] Profile pushed OK.'))
+    .catch(e => console.error('[Sync] pushProfile failed:', e));
+}
+
+function syncPushPBs(pbs) {
+  if (!_syncDb || !_syncUser) return;
+  const ts = parseInt(localStorage.getItem(KEYS.PBS_TS) || '0', 10);
+  console.log('[Sync] Pushing PBs…');
+  _userDoc()
+    .set({ pbs, pbsUpdatedAt: ts }, { merge: true })
+    .then(() => console.log('[Sync] PBs pushed OK.'))
+    .catch(e => console.error('[Sync] pushPBs failed:', e));
+}
+
+function syncPushSession(session) {
+  if (!_syncDb || !_syncUser) return;
+  console.log('[Sync] Pushing session:', session.id, session.date);
+  _sessionDoc(session.id)
+    .set(session)
+    .then(() => console.log('[Sync] Session pushed OK:', session.id))
+    .catch(e => console.error('[Sync] pushSession failed:', e));
+}
+
+function syncDeleteSession(sessionId) {
+  if (!_syncDb || !_syncUser) return;
+  console.log('[Sync] Deleting session from cloud:', sessionId);
+  _sessionDoc(sessionId)
+    .delete()
+    .then(() => console.log('[Sync] Session deleted OK:', sessionId))
+    .catch(e => console.error('[Sync] deleteSession failed:', e));
+}
+
+// ── Merge on sign-in ──────────────────────────────────────────────
+// Pull cloud data, merge with local (last write wins for profile/PBs,
+// union merge for sessions), then push any local-only sessions up.
+
+async function syncMergeOnSignIn() {
+  if (!_syncDb || !_syncUser) return { newSessions: 0 };
+
+  console.group('[Sync] Merge on sign-in');
+  console.log('Pulling cloud data…');
+
+  // Pull cloud root doc + sessions subcollection in parallel
+  const [mainSnap, sessSnap] = await Promise.all([
+    _userDoc().get(),
+    _userDoc().collection('sessions').get(),
+  ]);
+
+  const cloud       = mainSnap.exists ? mainSnap.data() : {};
+  const cloudSess   = sessSnap.docs.map(d => d.data());
+  const cloudProf   = cloud.profile  || null;
+  const cloudPbs    = cloud.pbs      || null;
+  const cloudProfTs = cloud.profileUpdatedAt || 0;
+  const cloudPbsTs  = cloud.pbsUpdatedAt     || 0;
+
+  const localProf   = getProfile();
+  const localPbs    = getPBs();
+  const localSess   = getSessions();
+  const localIds    = new Set(localSess.map(s => s.id));
+  const cloudIds    = new Set(cloudSess.map(s => s.id));
+
+  console.log(`Cloud: ${cloudSess.length} sessions | Local: ${localSess.length} sessions`);
+
+  // ── Profile: last write wins ──────────────────────────────────
+  if (cloudProf && cloudProfTs > (localProf?._updatedAt || 0)) {
+    console.log('Profile: using cloud version (newer). ts:', cloudProfTs);
+    localStorage.setItem(KEYS.PROFILE, JSON.stringify(cloudProf));
+  } else if (localProf) {
+    console.log('Profile: using local version (newer or no cloud). Pushing up…');
+    _userDoc().set(
+      { profile: localProf, profileUpdatedAt: localProf._updatedAt || Date.now() },
+      { merge: true }
+    ).catch(e => console.error('[Sync] pushProfile (merge):', e));
+  }
+
+  // ── PBs: last write wins ──────────────────────────────────────
+  const localPbsTs = parseInt(localStorage.getItem(KEYS.PBS_TS) || '0', 10);
+  if (cloudPbs && cloudPbsTs > localPbsTs) {
+    console.log('PBs: using cloud version (newer). ts:', cloudPbsTs);
+    localStorage.setItem(KEYS.PBS, JSON.stringify(cloudPbs));
+    localStorage.setItem(KEYS.PBS_TS, String(cloudPbsTs));
+  } else if (Object.keys(localPbs).length > 0) {
+    console.log('PBs: using local version (newer or no cloud). Pushing up…');
+    _userDoc().set(
+      { pbs: localPbs, pbsUpdatedAt: localPbsTs || Date.now() },
+      { merge: true }
+    ).catch(e => console.error('[Sync] pushPBs (merge):', e));
+  }
+
+  // ── Sessions: union merge ─────────────────────────────────────
+  const newFromCloud = cloudSess.filter(s => !localIds.has(s.id));
+  const newFromLocal = localSess.filter(s => !cloudIds.has(s.id));
+
+  console.log(`Sessions: ${newFromCloud.length} new from cloud, ${newFromLocal.length} to push to cloud`);
+
+  if (newFromCloud.length > 0) {
+    const merged = [...localSess, ...newFromCloud];
+    merged.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
+    localStorage.setItem(KEYS.SESSIONS, JSON.stringify(merged));
+    console.log('Sessions merged into localStorage.');
+  }
+
+  // Push any local-only sessions to cloud (batched, max 400 per batch)
+  if (newFromLocal.length > 0) {
+    const batchSize = 400;
+    for (let i = 0; i < newFromLocal.length; i += batchSize) {
+      const batch = _syncDb.batch();
+      newFromLocal.slice(i, i + batchSize).forEach(s => batch.set(_sessionDoc(s.id), s));
+      batch.commit()
+        .then(() => console.log(`[Sync] Batch pushed ${Math.min(batchSize, newFromLocal.length - i)} sessions OK.`))
+        .catch(e => console.error('[Sync] Batch push failed:', e));
+    }
+  }
+
+  console.log('Merge complete.');
+  console.groupEnd();
+  return { newSessions: newFromCloud.length };
 }
 
 </script>
@@ -2054,6 +2341,8 @@ function renderProfile() {
   document.getElementById('prof-level').textContent    = profile.level;
   document.getElementById('prof-title').textContent    = levelTitle(profile.level);
   document.getElementById('prof-sessions').textContent = getSessions().length;
+
+  renderSyncCard(syncCurrentUser());
 }
 
 function saveProfileForm() {
@@ -2248,6 +2537,7 @@ function saveEditSession() {
 
 function deleteSession(sessionId) {
   if (!confirm('Delete this workout? XP will be recalculated.')) return;
+  syncDeleteSession(sessionId);
   const sessions = getSessions().filter(s => s.id !== sessionId);
   localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions));
   recalculateAllPBsAndXP();
@@ -2514,6 +2804,113 @@ function shareCopyText() {
     .catch(() => toast('Copy failed', 'error'));
 }
 
+// ── Cloud Sync UI ─────────────────────────────────────────────────
+
+function renderSyncCard(user) {
+  const elUnconfigured = document.getElementById('sync-state-unconfigured');
+  const elSignedOut    = document.getElementById('sync-state-signedout');
+  const elSignedIn     = document.getElementById('sync-state-signedin');
+  if (!elUnconfigured) return;
+
+  if (!syncIsConfigured()) {
+    elUnconfigured.classList.remove('hidden');
+    elSignedOut.classList.add('hidden');
+    elSignedIn.classList.add('hidden');
+    return;
+  }
+  if (!user) {
+    elUnconfigured.classList.add('hidden');
+    elSignedOut.classList.remove('hidden');
+    elSignedIn.classList.add('hidden');
+  } else {
+    elUnconfigured.classList.add('hidden');
+    elSignedOut.classList.add('hidden');
+    elSignedIn.classList.remove('hidden');
+    document.getElementById('sync-user-name').textContent  = user.displayName || '';
+    document.getElementById('sync-user-email').textContent = user.email || '';
+    const avatar = document.getElementById('sync-avatar');
+    if (user.photoURL) {
+      avatar.src = user.photoURL;
+      avatar.style.display = '';
+    } else {
+      avatar.style.display = 'none';
+    }
+  }
+}
+
+function setSyncStatus(status) {
+  const badge = document.getElementById('sync-status-badge');
+  if (!badge) return;
+  if (status === 'syncing') {
+    badge.innerHTML = '<span style="font-size:11px;color:var(--muted)">Syncing…</span>';
+  } else if (status === 'synced') {
+    badge.innerHTML = '<span style="font-size:11px;color:#4caf7d">● Synced</span>';
+  } else if (status === 'error') {
+    badge.innerHTML = '<span style="font-size:11px;color:var(--red)">● Error</span>';
+  }
+}
+
+function initSync() {
+  syncInit();
+
+  let isFirstAuth = true;
+
+  syncOnAuthChange(async user => {
+    renderSyncCard(user);
+    if (user) {
+      if (isFirstAuth) {
+        isFirstAuth = false;
+        setSyncStatus('syncing');
+        try {
+          const result = await syncMergeOnSignIn();
+          setSyncStatus('synced');
+          if (result.newSessions > 0) {
+            toast(`Synced ${result.newSessions} new workout${result.newSessions > 1 ? 's' : ''} from cloud.`);
+            renderHome();
+          }
+        } catch (e) {
+          console.error('[Sync] Merge on sign-in failed:', e);
+          setSyncStatus('error');
+        }
+      }
+    } else {
+      isFirstAuth = true;
+    }
+  });
+
+  document.getElementById('sync-signin-btn')?.addEventListener('click', async () => {
+    try {
+      await syncSignIn();
+    } catch (e) {
+      if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
+        toast('Sign-in failed. Check your Firebase config.', 'error');
+      }
+    }
+  });
+
+  document.getElementById('sync-signout-btn')?.addEventListener('click', async () => {
+    await syncSignOut();
+    toast('Signed out from sync. Local data kept.');
+  });
+
+  document.getElementById('sync-now-btn')?.addEventListener('click', async () => {
+    setSyncStatus('syncing');
+    try {
+      const result = await syncMergeOnSignIn();
+      setSyncStatus('synced');
+      if (result.newSessions > 0) {
+        toast(`Synced ${result.newSessions} new workout${result.newSessions > 1 ? 's' : ''}.`);
+        renderHome();
+      } else {
+        toast('Already up to date.');
+      }
+    } catch (e) {
+      setSyncStatus('error');
+      toast('Sync failed.', 'error');
+    }
+  });
+}
+
 // ── App init ──────────────────────────────────────────────────────
 
 function init() {
@@ -2588,6 +2985,9 @@ function init() {
 
   // Onboarding
   initOnboarding();
+
+  // Cloud sync
+  initSync();
 
   // Route to first screen
   const profile = getProfile();

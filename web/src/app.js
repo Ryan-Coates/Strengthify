@@ -548,6 +548,8 @@ function renderProfile() {
   document.getElementById('prof-level').textContent    = profile.level;
   document.getElementById('prof-title').textContent    = levelTitle(profile.level);
   document.getElementById('prof-sessions').textContent = getSessions().length;
+
+  renderSyncCard(syncCurrentUser());
 }
 
 function saveProfileForm() {
@@ -742,6 +744,7 @@ function saveEditSession() {
 
 function deleteSession(sessionId) {
   if (!confirm('Delete this workout? XP will be recalculated.')) return;
+  syncDeleteSession(sessionId);
   const sessions = getSessions().filter(s => s.id !== sessionId);
   localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions));
   recalculateAllPBsAndXP();
@@ -1008,6 +1011,113 @@ function shareCopyText() {
     .catch(() => toast('Copy failed', 'error'));
 }
 
+// ── Cloud Sync UI ─────────────────────────────────────────────────
+
+function renderSyncCard(user) {
+  const elUnconfigured = document.getElementById('sync-state-unconfigured');
+  const elSignedOut    = document.getElementById('sync-state-signedout');
+  const elSignedIn     = document.getElementById('sync-state-signedin');
+  if (!elUnconfigured) return;
+
+  if (!syncIsConfigured()) {
+    elUnconfigured.classList.remove('hidden');
+    elSignedOut.classList.add('hidden');
+    elSignedIn.classList.add('hidden');
+    return;
+  }
+  if (!user) {
+    elUnconfigured.classList.add('hidden');
+    elSignedOut.classList.remove('hidden');
+    elSignedIn.classList.add('hidden');
+  } else {
+    elUnconfigured.classList.add('hidden');
+    elSignedOut.classList.add('hidden');
+    elSignedIn.classList.remove('hidden');
+    document.getElementById('sync-user-name').textContent  = user.displayName || '';
+    document.getElementById('sync-user-email').textContent = user.email || '';
+    const avatar = document.getElementById('sync-avatar');
+    if (user.photoURL) {
+      avatar.src = user.photoURL;
+      avatar.style.display = '';
+    } else {
+      avatar.style.display = 'none';
+    }
+  }
+}
+
+function setSyncStatus(status) {
+  const badge = document.getElementById('sync-status-badge');
+  if (!badge) return;
+  if (status === 'syncing') {
+    badge.innerHTML = '<span style="font-size:11px;color:var(--muted)">Syncing…</span>';
+  } else if (status === 'synced') {
+    badge.innerHTML = '<span style="font-size:11px;color:#4caf7d">● Synced</span>';
+  } else if (status === 'error') {
+    badge.innerHTML = '<span style="font-size:11px;color:var(--red)">● Error</span>';
+  }
+}
+
+function initSync() {
+  syncInit();
+
+  let isFirstAuth = true;
+
+  syncOnAuthChange(async user => {
+    renderSyncCard(user);
+    if (user) {
+      if (isFirstAuth) {
+        isFirstAuth = false;
+        setSyncStatus('syncing');
+        try {
+          const result = await syncMergeOnSignIn();
+          setSyncStatus('synced');
+          if (result.newSessions > 0) {
+            toast(`Synced ${result.newSessions} new workout${result.newSessions > 1 ? 's' : ''} from cloud.`);
+            renderHome();
+          }
+        } catch (e) {
+          console.error('[Sync] Merge on sign-in failed:', e);
+          setSyncStatus('error');
+        }
+      }
+    } else {
+      isFirstAuth = true;
+    }
+  });
+
+  document.getElementById('sync-signin-btn')?.addEventListener('click', async () => {
+    try {
+      await syncSignIn();
+    } catch (e) {
+      if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
+        toast('Sign-in failed. Check your Firebase config.', 'error');
+      }
+    }
+  });
+
+  document.getElementById('sync-signout-btn')?.addEventListener('click', async () => {
+    await syncSignOut();
+    toast('Signed out from sync. Local data kept.');
+  });
+
+  document.getElementById('sync-now-btn')?.addEventListener('click', async () => {
+    setSyncStatus('syncing');
+    try {
+      const result = await syncMergeOnSignIn();
+      setSyncStatus('synced');
+      if (result.newSessions > 0) {
+        toast(`Synced ${result.newSessions} new workout${result.newSessions > 1 ? 's' : ''}.`);
+        renderHome();
+      } else {
+        toast('Already up to date.');
+      }
+    } catch (e) {
+      setSyncStatus('error');
+      toast('Sync failed.', 'error');
+    }
+  });
+}
+
 // ── App init ──────────────────────────────────────────────────────
 
 function init() {
@@ -1082,6 +1192,9 @@ function init() {
 
   // Onboarding
   initOnboarding();
+
+  // Cloud sync
+  initSync();
 
   // Route to first screen
   const profile = getProfile();

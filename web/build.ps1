@@ -26,6 +26,7 @@ $files = @{
     style    = Join-Path $SrcDir 'style.css'
     dataJs   = Join-Path $SrcDir 'data.js'
     chartJs  = Join-Path $SrcDir 'chart.js'
+    syncJs   = Join-Path $SrcDir 'sync.js'
     appJs    = Join-Path $SrcDir 'app.js'
 }
 
@@ -40,6 +41,7 @@ $template = Get-Content $files.template -Raw -Encoding UTF8
 $style    = Get-Content $files.style    -Raw -Encoding UTF8
 $dataJs   = Get-Content $files.dataJs   -Raw -Encoding UTF8
 $chartJs  = Get-Content $files.chartJs  -Raw -Encoding UTF8
+$syncJs   = Get-Content $files.syncJs   -Raw -Encoding UTF8
 $appJs    = Get-Content $files.appJs    -Raw -Encoding UTF8
 
 # ── Inject CSS ────────────────────────────────────────────────────────────────
@@ -49,6 +51,7 @@ $template = $template -replace '/\* __STYLE__ \*/', $style
 # ── Inject JS ─────────────────────────────────────────────────────────────────
 $template = $template -replace '/\* __DATA_JS__ \*/',  $dataJs
 $template = $template -replace '/\* __CHART_JS__ \*/', $chartJs
+$template = $template -replace '/\* __SYNC_JS__ \*/',  $syncJs
 $template = $template -replace '/\* __APP_JS__ \*/',   $appJs
 
 # ── Stamp build metadata ──────────────────────────────────────────────────────
