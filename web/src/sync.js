@@ -86,6 +86,7 @@ async function syncSignIn() {
   if (!_syncAuth) return;
   console.log('[Sync] Opening Google sign-in popup…');
   const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
   return _syncAuth.signInWithPopup(provider);
 }
 

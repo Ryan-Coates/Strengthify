@@ -4,7 +4,7 @@
 
 // ── Screen registry ───────────────────────────────────────────────
 
-const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'session-detail', 'session-edit'];
+const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit'];
 let currentScreen = null;
 
 function showScreen(id) {
@@ -12,7 +12,7 @@ function showScreen(id) {
     const el = document.getElementById(s + '-screen');
     if (el) el.classList.toggle('hidden', s !== id);
   });
-  document.getElementById('nav-bar').classList.toggle('hidden', id === 'onboarding');
+  document.getElementById('nav-bar').classList.toggle('hidden', id === 'onboarding' || id === 'signin');
   // Update nav active state
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.screen === id);
@@ -1068,23 +1068,45 @@ function initSync() {
       if (isFirstAuth) {
         isFirstAuth = false;
         setSyncStatus('syncing');
+        let newSessions = 0;
         try {
           const result = await syncMergeOnSignIn();
           setSyncStatus('synced');
-          if (result.newSessions > 0) {
-            toast(`Synced ${result.newSessions} new workout${result.newSessions > 1 ? 's' : ''} from cloud.`);
-            renderHome();
-          }
+          newSessions = result.newSessions;
         } catch (e) {
           console.error('[Sync] Merge on sign-in failed:', e);
           setSyncStatus('error');
         }
+        // Route after merge so a cloud profile is available before deciding
+        const profile = getProfile();
+        if (!profile) {
+          showScreen('onboarding');
+        } else {
+          renderHome();
+          showScreen('home');
+          if (newSessions > 0) {
+            toast(`Synced ${newSessions} new workout${newSessions > 1 ? 's' : ''} from cloud.`);
+          }
+        }
       }
     } else {
       isFirstAuth = true;
+      if (syncIsConfigured()) showScreen('signin');
     }
   });
 
+  // Welcome screen sign-in button
+  document.getElementById('welcome-signin-btn')?.addEventListener('click', async () => {
+    try {
+      await syncSignIn();
+    } catch (e) {
+      if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
+        toast('Sign-in failed. Check your Firebase config.', 'error');
+      }
+    }
+  });
+
+  // Profile screen sign-in button (same handler)
   document.getElementById('sync-signin-btn')?.addEventListener('click', async () => {
     try {
       await syncSignIn();
@@ -1113,6 +1135,10 @@ function initSync() {
       }
     } catch (e) {
       setSyncStatus('error');
+      toast('Sync failed.', 'error');
+    }
+  });
+}
       toast('Sync failed.', 'error');
     }
   });
@@ -1197,12 +1223,17 @@ function init() {
   initSync();
 
   // Route to first screen
-  const profile = getProfile();
-  if (!profile) {
-    showScreen('onboarding');
+  if (syncIsConfigured()) {
+    // Show signin gate — auth state callback will redirect once Firebase resolves
+    showScreen('signin');
   } else {
-    renderHome();
-    showScreen('home');
+    const profile = getProfile();
+    if (!profile) {
+      showScreen('onboarding');
+    } else {
+      renderHome();
+      showScreen('home');
+    }
   }
 }
 
