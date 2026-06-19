@@ -151,7 +151,12 @@ function formatWeightPair(kg) {
 
 function getLiftEstimatedMaxKg(pb) {
   if (!pb || typeof pb !== 'object') return 0;
-  return Math.max(pb.orm || 0, pb.oneRepKg || 0, pb.maxWeightKg || 0);
+  return pb.orm || 0;
+}
+
+function getLiftTrueMaxKg(pb) {
+  if (!pb || typeof pb !== 'object') return 0;
+  return Math.max(pb.oneRepKg || 0, pb.maxWeightKg || 0);
 }
 
 function renderThousandClubCard(pbs) {
@@ -162,17 +167,20 @@ function renderThousandClubCard(pbs) {
 
   const liftValues = THOUSAND_CLUB_LIFTS.map(lift => ({
     lift,
+    trueKg: getLiftTrueMaxKg(pbs[lift]),
     estKg: getLiftEstimatedMaxKg(pbs[lift]),
   }));
 
-  const totalKg = liftValues.reduce((sum, x) => sum + x.estKg, 0);
-  const totalLb = kgToLb(totalKg);
+  const totalTrueKg = liftValues.reduce((sum, x) => sum + x.trueKg, 0);
+  const totalEstKg = liftValues.reduce((sum, x) => sum + x.estKg, 0);
+  const totalLb = kgToLb(totalTrueKg);
+  const totalEstLb = kgToLb(totalEstKg);
   const pct = Math.min((totalLb / clubTargetLb) * 100, 100);
   const remainingLb = Math.max(0, clubTargetLb - totalLb);
   const remainingKg = remainingLb * KG_PER_LB;
 
-  document.getElementById('club-total-lb').textContent = `${Math.round(totalLb)} lb`;
-  document.getElementById('club-total-kg').textContent = `${totalKg.toFixed(1)} kg total`;
+  document.getElementById('club-total-lb').textContent = `${Math.round(totalLb)} lb (${totalTrueKg.toFixed(1)} kg)`;
+  document.getElementById('club-total-kg').textContent = `Estimated total: ${Math.round(totalEstLb)} lb (${totalEstKg.toFixed(1)} kg)`;
   document.getElementById('club-progress-fill').style.width = `${pct.toFixed(1)}%`;
   document.getElementById('club-progress-pct').textContent = `${pct.toFixed(1)}%`;
   document.getElementById('club-remaining').textContent =
@@ -194,7 +202,7 @@ function renderThousandClubCard(pbs) {
   liftValues.forEach(entry => {
     const el = document.getElementById(byLift[entry.lift]);
     if (!el) return;
-    el.textContent = entry.estKg > 0 ? formatWeightPair(entry.estKg) : 'No data yet';
+    el.textContent = entry.trueKg > 0 ? formatWeightPair(entry.trueKg) : 'No data yet';
   });
 }
 

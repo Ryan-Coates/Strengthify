@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<!-- Built: 2026-06-19 08:10:09 -->
+<!-- Built: 2026-06-19 08:54:34 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -615,7 +615,7 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
         <div class="club-kicker" id="club-kicker">1000 lb club progress</div>
         <div class="club-achievement hidden" id="club-achievement">1000 lb club achieved</div>
         <div class="club-total" id="club-total-lb">0 lb</div>
-        <div class="club-total-sub" id="club-total-kg">0 kg</div>
+        <div class="club-total-sub" id="club-total-kg">Estimated total: 0 lb (0.0 kg)</div>
         <div class="club-bar-track"><div class="club-bar-fill" id="club-progress-fill" style="width:0%"></div></div>
         <div class="club-meta-row">
           <span id="club-progress-pct">0%</span>
@@ -623,15 +623,15 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
         </div>
         <div class="club-lifts">
           <div class="club-lift-row">
-            <span>Back Squat est. max</span>
+            <span>Back Squat true max</span>
             <span id="club-squat">0 lb (0 kg)</span>
           </div>
           <div class="club-lift-row">
-            <span>Bench Press est. max</span>
+            <span>Bench Press true max</span>
             <span id="club-bench">0 lb (0 kg)</span>
           </div>
           <div class="club-lift-row">
-            <span>Deadlift est. max</span>
+            <span>Deadlift true max</span>
             <span id="club-deadlift">0 lb (0 kg)</span>
           </div>
         </div>
@@ -2097,7 +2097,12 @@ function formatWeightPair(kg) {
 
 function getLiftEstimatedMaxKg(pb) {
   if (!pb || typeof pb !== 'object') return 0;
-  return Math.max(pb.orm || 0, pb.oneRepKg || 0, pb.maxWeightKg || 0);
+  return pb.orm || 0;
+}
+
+function getLiftTrueMaxKg(pb) {
+  if (!pb || typeof pb !== 'object') return 0;
+  return Math.max(pb.oneRepKg || 0, pb.maxWeightKg || 0);
 }
 
 function renderThousandClubCard(pbs) {
@@ -2108,17 +2113,20 @@ function renderThousandClubCard(pbs) {
 
   const liftValues = THOUSAND_CLUB_LIFTS.map(lift => ({
     lift,
+    trueKg: getLiftTrueMaxKg(pbs[lift]),
     estKg: getLiftEstimatedMaxKg(pbs[lift]),
   }));
 
-  const totalKg = liftValues.reduce((sum, x) => sum + x.estKg, 0);
-  const totalLb = kgToLb(totalKg);
+  const totalTrueKg = liftValues.reduce((sum, x) => sum + x.trueKg, 0);
+  const totalEstKg = liftValues.reduce((sum, x) => sum + x.estKg, 0);
+  const totalLb = kgToLb(totalTrueKg);
+  const totalEstLb = kgToLb(totalEstKg);
   const pct = Math.min((totalLb / clubTargetLb) * 100, 100);
   const remainingLb = Math.max(0, clubTargetLb - totalLb);
   const remainingKg = remainingLb * KG_PER_LB;
 
-  document.getElementById('club-total-lb').textContent = `${Math.round(totalLb)} lb`;
-  document.getElementById('club-total-kg').textContent = `${totalKg.toFixed(1)} kg total`;
+  document.getElementById('club-total-lb').textContent = `${Math.round(totalLb)} lb (${totalTrueKg.toFixed(1)} kg)`;
+  document.getElementById('club-total-kg').textContent = `Estimated total: ${Math.round(totalEstLb)} lb (${totalEstKg.toFixed(1)} kg)`;
   document.getElementById('club-progress-fill').style.width = `${pct.toFixed(1)}%`;
   document.getElementById('club-progress-pct').textContent = `${pct.toFixed(1)}%`;
   document.getElementById('club-remaining').textContent =
@@ -2140,7 +2148,7 @@ function renderThousandClubCard(pbs) {
   liftValues.forEach(entry => {
     const el = document.getElementById(byLift[entry.lift]);
     if (!el) return;
-    el.textContent = entry.estKg > 0 ? formatWeightPair(entry.estKg) : 'No data yet';
+    el.textContent = entry.trueKg > 0 ? formatWeightPair(entry.trueKg) : 'No data yet';
   });
 }
 
