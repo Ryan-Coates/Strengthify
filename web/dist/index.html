@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<!-- Built: 2026-05-20 09:38:22 -->
+<!-- Built: 2026-06-19 08:10:09 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -118,6 +118,95 @@ body {
 }
 .stat-chip .s-val { font-size: 22px; font-weight: 700; color: var(--accent); }
 .stat-chip .s-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ── 1000 lb club hero ──────────────────────────────────────────── */
+.club-wrap { padding: 0 16px 12px; }
+.club-card {
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(124,106,247,0.25) 0%, rgba(124,106,247,0) 55%),
+    linear-gradient(150deg, #1f1b33 0%, #191b27 55%, #162026 100%);
+  border: 1px solid rgba(124,106,247,0.4);
+  border-radius: 16px;
+  padding: 18px 16px 16px;
+  box-shadow: 0 16px 30px rgba(0,0,0,0.35);
+}
+.club-kicker {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #b8b0ff;
+  font-weight: 700;
+}
+.club-achievement {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #132016;
+  background: linear-gradient(135deg, #ffd86b, #8ee3bf);
+  padding: 5px 10px;
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  animation: clubPop 0.3s ease;
+}
+.club-total {
+  margin-top: 6px;
+  font-size: 42px;
+  line-height: 0.95;
+  font-weight: 800;
+  color: #f7f6ff;
+}
+.club-total-sub {
+  margin-top: 4px;
+  font-size: 15px;
+  color: #c7c4df;
+  font-weight: 600;
+}
+.club-bar-track {
+  margin-top: 14px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(20,22,30,0.8);
+  border: 1px solid rgba(138,128,220,0.35);
+  overflow: hidden;
+}
+.club-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8f82ff, #61d5b5);
+  transition: width 0.45s ease;
+}
+.club-meta-row {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #cbc8df;
+  font-weight: 600;
+}
+.club-lifts {
+  margin-top: 12px;
+  border-top: 1px solid rgba(137,129,207,0.35);
+  padding-top: 10px;
+}
+.club-lift-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 13px;
+  color: #dfdcef;
+}
+.club-lift-row span:last-child {
+  color: #ffffff;
+  font-weight: 700;
+  text-align: right;
+}
 
 /* ── Buttons ─────────────────────────────────────────────────────── */
 .btn {
@@ -394,6 +483,15 @@ canvas { display: block; width: 100% !important; }
 .hidden { display: none !important; }
 hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px 12px; }
 
+@media (max-width: 420px) {
+  .club-total { font-size: 36px; }
+}
+
+@keyframes clubPop {
+  0% { transform: scale(0.96); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
   </style>
 </head>
 <body>
@@ -508,6 +606,35 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
       <div class="stat-chip">
         <div class="s-val" id="home-sessions">0</div>
         <div class="s-lbl">Workouts</div>
+      </div>
+    </div>
+
+    <!-- 1000 lb club progress -->
+    <div class="club-wrap">
+      <div class="club-card" id="club-card">
+        <div class="club-kicker" id="club-kicker">1000 lb club progress</div>
+        <div class="club-achievement hidden" id="club-achievement">1000 lb club achieved</div>
+        <div class="club-total" id="club-total-lb">0 lb</div>
+        <div class="club-total-sub" id="club-total-kg">0 kg</div>
+        <div class="club-bar-track"><div class="club-bar-fill" id="club-progress-fill" style="width:0%"></div></div>
+        <div class="club-meta-row">
+          <span id="club-progress-pct">0%</span>
+          <span id="club-remaining">Goal in progress</span>
+        </div>
+        <div class="club-lifts">
+          <div class="club-lift-row">
+            <span>Back Squat est. max</span>
+            <span id="club-squat">0 lb (0 kg)</span>
+          </div>
+          <div class="club-lift-row">
+            <span>Bench Press est. max</span>
+            <span id="club-bench">0 lb (0 kg)</span>
+          </div>
+          <div class="club-lift-row">
+            <span>Deadlift est. max</span>
+            <span id="club-deadlift">0 lb (0 kg)</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1825,6 +1952,10 @@ async function syncMergeOnSignIn() {
 
 const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit'];
 let currentScreen = null;
+const KG_PER_LB = 0.45359237;
+const LB_PER_KG = 1 / KG_PER_LB;
+
+const THOUSAND_CLUB_LIFTS = ['Back Squat', 'Bench Press', 'Deadlift'];
 
 function showScreen(id) {
   SCREENS.forEach(s => {
@@ -1892,6 +2023,8 @@ function renderHome() {
   const nextLabel = nextTitle !== levelTitle(profile.level) ? ` → ${nextTitle}` : '';
   document.getElementById('xp-nums').textContent          = `${progress.current} / ${progress.needed} XP${nextLabel}`;
 
+  renderThousandClubCard(pbs);
+
   // Recent sessions
   const list = document.getElementById('recent-sessions');
   list.innerHTML = '';
@@ -1950,6 +2083,64 @@ function renderHome() {
       showScreen('progress');
     });
     grid.appendChild(div);
+  });
+}
+
+function kgToLb(kg) {
+  return kg * LB_PER_KG;
+}
+
+function formatWeightPair(kg) {
+  const lb = kgToLb(kg);
+  return `${Math.round(lb)} lb (${kg.toFixed(1)} kg)`;
+}
+
+function getLiftEstimatedMaxKg(pb) {
+  if (!pb || typeof pb !== 'object') return 0;
+  return Math.max(pb.orm || 0, pb.oneRepKg || 0, pb.maxWeightKg || 0);
+}
+
+function renderThousandClubCard(pbs) {
+  const profile = getProfile();
+  const clubTargetLb = profile?.sex === 'female' ? 600 : 1000;
+  const kickerEl = document.getElementById('club-kicker');
+  if (kickerEl) kickerEl.textContent = `${clubTargetLb} lb club progress`;
+
+  const liftValues = THOUSAND_CLUB_LIFTS.map(lift => ({
+    lift,
+    estKg: getLiftEstimatedMaxKg(pbs[lift]),
+  }));
+
+  const totalKg = liftValues.reduce((sum, x) => sum + x.estKg, 0);
+  const totalLb = kgToLb(totalKg);
+  const pct = Math.min((totalLb / clubTargetLb) * 100, 100);
+  const remainingLb = Math.max(0, clubTargetLb - totalLb);
+  const remainingKg = remainingLb * KG_PER_LB;
+
+  document.getElementById('club-total-lb').textContent = `${Math.round(totalLb)} lb`;
+  document.getElementById('club-total-kg').textContent = `${totalKg.toFixed(1)} kg total`;
+  document.getElementById('club-progress-fill').style.width = `${pct.toFixed(1)}%`;
+  document.getElementById('club-progress-pct').textContent = `${pct.toFixed(1)}%`;
+  document.getElementById('club-remaining').textContent =
+    remainingLb > 0
+      ? `${Math.round(remainingLb)} lb (${remainingKg.toFixed(1)} kg) to go`
+      : 'Goal unlocked';
+
+  const achievementBadge = document.getElementById('club-achievement');
+  if (achievementBadge) {
+    achievementBadge.textContent = `${clubTargetLb} lb club achieved`;
+    achievementBadge.classList.toggle('hidden', totalLb < clubTargetLb);
+  }
+
+  const byLift = {
+    'Back Squat': 'club-squat',
+    'Bench Press': 'club-bench',
+    'Deadlift': 'club-deadlift',
+  };
+  liftValues.forEach(entry => {
+    const el = document.getElementById(byLift[entry.lift]);
+    if (!el) return;
+    el.textContent = entry.estKg > 0 ? formatWeightPair(entry.estKg) : 'No data yet';
   });
 }
 

@@ -6,6 +6,10 @@
 
 const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit'];
 let currentScreen = null;
+const KG_PER_LB = 0.45359237;
+const LB_PER_KG = 1 / KG_PER_LB;
+
+const THOUSAND_CLUB_LIFTS = ['Back Squat', 'Bench Press', 'Deadlift'];
 
 function showScreen(id) {
   SCREENS.forEach(s => {
@@ -73,6 +77,8 @@ function renderHome() {
   const nextLabel = nextTitle !== levelTitle(profile.level) ? ` → ${nextTitle}` : '';
   document.getElementById('xp-nums').textContent          = `${progress.current} / ${progress.needed} XP${nextLabel}`;
 
+  renderThousandClubCard(pbs);
+
   // Recent sessions
   const list = document.getElementById('recent-sessions');
   list.innerHTML = '';
@@ -131,6 +137,64 @@ function renderHome() {
       showScreen('progress');
     });
     grid.appendChild(div);
+  });
+}
+
+function kgToLb(kg) {
+  return kg * LB_PER_KG;
+}
+
+function formatWeightPair(kg) {
+  const lb = kgToLb(kg);
+  return `${Math.round(lb)} lb (${kg.toFixed(1)} kg)`;
+}
+
+function getLiftEstimatedMaxKg(pb) {
+  if (!pb || typeof pb !== 'object') return 0;
+  return Math.max(pb.orm || 0, pb.oneRepKg || 0, pb.maxWeightKg || 0);
+}
+
+function renderThousandClubCard(pbs) {
+  const profile = getProfile();
+  const clubTargetLb = profile?.sex === 'female' ? 600 : 1000;
+  const kickerEl = document.getElementById('club-kicker');
+  if (kickerEl) kickerEl.textContent = `${clubTargetLb} lb club progress`;
+
+  const liftValues = THOUSAND_CLUB_LIFTS.map(lift => ({
+    lift,
+    estKg: getLiftEstimatedMaxKg(pbs[lift]),
+  }));
+
+  const totalKg = liftValues.reduce((sum, x) => sum + x.estKg, 0);
+  const totalLb = kgToLb(totalKg);
+  const pct = Math.min((totalLb / clubTargetLb) * 100, 100);
+  const remainingLb = Math.max(0, clubTargetLb - totalLb);
+  const remainingKg = remainingLb * KG_PER_LB;
+
+  document.getElementById('club-total-lb').textContent = `${Math.round(totalLb)} lb`;
+  document.getElementById('club-total-kg').textContent = `${totalKg.toFixed(1)} kg total`;
+  document.getElementById('club-progress-fill').style.width = `${pct.toFixed(1)}%`;
+  document.getElementById('club-progress-pct').textContent = `${pct.toFixed(1)}%`;
+  document.getElementById('club-remaining').textContent =
+    remainingLb > 0
+      ? `${Math.round(remainingLb)} lb (${remainingKg.toFixed(1)} kg) to go`
+      : 'Goal unlocked';
+
+  const achievementBadge = document.getElementById('club-achievement');
+  if (achievementBadge) {
+    achievementBadge.textContent = `${clubTargetLb} lb club achieved`;
+    achievementBadge.classList.toggle('hidden', totalLb < clubTargetLb);
+  }
+
+  const byLift = {
+    'Back Squat': 'club-squat',
+    'Bench Press': 'club-bench',
+    'Deadlift': 'club-deadlift',
+  };
+  liftValues.forEach(entry => {
+    const el = document.getElementById(byLift[entry.lift]);
+    if (!el) return;
+    el.textContent = entry.estKg > 0 ? formatWeightPair(entry.estKg) : 'No data yet';
   });
 }
 

@@ -108,6 +108,95 @@ body {
 .stat-chip .s-val { font-size: 22px; font-weight: 700; color: var(--accent); }
 .stat-chip .s-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
+/* ── 1000 lb club hero ──────────────────────────────────────────── */
+.club-wrap { padding: 0 16px 12px; }
+.club-card {
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(124,106,247,0.25) 0%, rgba(124,106,247,0) 55%),
+    linear-gradient(150deg, #1f1b33 0%, #191b27 55%, #162026 100%);
+  border: 1px solid rgba(124,106,247,0.4);
+  border-radius: 16px;
+  padding: 18px 16px 16px;
+  box-shadow: 0 16px 30px rgba(0,0,0,0.35);
+}
+.club-kicker {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #b8b0ff;
+  font-weight: 700;
+}
+.club-achievement {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #132016;
+  background: linear-gradient(135deg, #ffd86b, #8ee3bf);
+  padding: 5px 10px;
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  animation: clubPop 0.3s ease;
+}
+.club-total {
+  margin-top: 6px;
+  font-size: 42px;
+  line-height: 0.95;
+  font-weight: 800;
+  color: #f7f6ff;
+}
+.club-total-sub {
+  margin-top: 4px;
+  font-size: 15px;
+  color: #c7c4df;
+  font-weight: 600;
+}
+.club-bar-track {
+  margin-top: 14px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(20,22,30,0.8);
+  border: 1px solid rgba(138,128,220,0.35);
+  overflow: hidden;
+}
+.club-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8f82ff, #61d5b5);
+  transition: width 0.45s ease;
+}
+.club-meta-row {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #cbc8df;
+  font-weight: 600;
+}
+.club-lifts {
+  margin-top: 12px;
+  border-top: 1px solid rgba(137,129,207,0.35);
+  padding-top: 10px;
+}
+.club-lift-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 13px;
+  color: #dfdcef;
+}
+.club-lift-row span:last-child {
+  color: #ffffff;
+  font-weight: 700;
+  text-align: right;
+}
+
 /* ── Buttons ─────────────────────────────────────────────────────── */
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
@@ -382,3 +471,12 @@ canvas { display: block; width: 100% !important; }
 /* ── Misc ────────────────────────────────────────────────────────── */
 .hidden { display: none !important; }
 hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px 12px; }
+
+@media (max-width: 420px) {
+  .club-total { font-size: 36px; }
+}
+
+@keyframes clubPop {
+  0% { transform: scale(0.96); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
