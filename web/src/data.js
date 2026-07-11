@@ -7,6 +7,7 @@ const KEYS = {
   SESSIONS: 'sf_sessions',
   PBS:      'sf_pbs',
   PBS_TS:   'sf_pbs_ts',
+  PLANS:    'sf_plans',
 };
 
 // ── Default / helpers ─────────────────────────────────────────────
@@ -134,6 +135,11 @@ const STRENGTH_STANDARDS = {
     // Per-dumbbell weight ratio to bodyweight
     male:   [[0,0.05],[5,0.09],[20,0.16],[40,0.23],[60,0.30],[80,0.38],[95,0.49],[100,0.62]],
     female: [[0,0.03],[5,0.05],[20,0.09],[40,0.13],[60,0.18],[80,0.24],[95,0.31],[100,0.40]],
+  },
+  'Front Squat': {
+    // ~80% of Back Squat 1RM; data derived from Strength Level front squat standards
+    male:   [[0,0.20],[5,0.40],[20,0.65],[40,0.90],[60,1.20],[80,1.50],[95,1.90],[100,2.40]],
+    female: [[0,0.15],[5,0.28],[20,0.45],[40,0.63],[60,0.82],[80,1.05],[95,1.35],[100,1.70]],
   },
 };
 
@@ -596,7 +602,196 @@ const LIFTS = [
   'Pull-up / Chin-up',
   'Incline Bench Press',
   'Romanian Deadlift',
+  'Front Squat',
   'Dumbbell Press',
   'Dumbbell Curl',
   'Push-up',
 ];
+
+// ── Training Plans ─────────────────────────────────────────────────
+
+function getPlans() {
+  const raw = localStorage.getItem(KEYS.PLANS);
+  return raw ? JSON.parse(raw) : [];
+}
+
+function savePlan(plan) {
+  const plans = getPlans();
+  const idx = plans.findIndex(p => p.id === plan.id);
+  if (idx >= 0) plans[idx] = plan;
+  else plans.push(plan);
+  localStorage.setItem(KEYS.PLANS, JSON.stringify(plans));
+}
+
+function deletePlan(planId) {
+  const plans = getPlans().filter(p => p.id !== planId);
+  localStorage.setItem(KEYS.PLANS, JSON.stringify(plans));
+}
+
+function getActivePlan() {
+  return getPlans().find(p => p.active) || null;
+}
+
+function markPlanDayComplete(planId, weekNum, dayNum, sessionId) {
+  const plans = getPlans();
+  const plan = plans.find(p => p.id === planId);
+  if (!plan) return;
+  const week = plan.weeks.find(w => w.weekNum === weekNum);
+  if (!week) return;
+  const day = week.days.find(d => d.dayNum === dayNum);
+  if (!day) return;
+  day.completedSessionId = sessionId;
+  localStorage.setItem(KEYS.PLANS, JSON.stringify(plans));
+}
+
+// Creates the pre-built 8-week GVT plan.
+// Weights are derived from the user's current PBs (estimated 1RM) so they
+// are personalised on load.  Falls back to sensible defaults when no PBs exist.
+function createGVTPlan() {
+  const pbs = getPBs();
+  const LIFTS_SET = new Set(LIFTS);
+
+  // Round to nearest 2.5 kg, minimum 2.5
+  function r25(v) { return Math.max(Math.round(v / 2.5) * 2.5, 2.5); }
+
+  // Best estimated 1RM for a lift (0 if no data)
+  function orm(lift) {
+    const pb = pbs[lift];
+    return (pb && typeof pb === 'object') ? (pb.orm || 0) : 0;
+  }
+
+  // Target weight = factor × 1RM, or fallback if no PB
+  function wt(lift, factor, fallback) {
+    const o = orm(lift);
+    return o > 0 ? r25(o * factor) : fallback;
+  }
+
+  function ex(name, sets, reps, targetWeightKg, note) {
+    return { name, sets, reps, targetWeightKg: targetWeightKg ?? null,
+             isBenchmark: LIFTS_SET.has(name), note: note || '' };
+  }
+
+  // ── Volume-week weights ──────────────────────────────────────────
+  const sqGVT  = wt('Back Squat',           0.60, 60);   // 10×10 @ 60% 1RM
+  const bpGVT  = wt('Bench Press',          0.60, 50);
+  const dlGVT  = wt('Deadlift',             0.60, 70);
+
+  // Secondary 8×5 @ 70% 1RM
+  const rdlSec = orm('Romanian Deadlift') > 0
+    ? wt('Romanian Deadlift', 0.70, 60)
+    : wt('Deadlift', 0.595, 60);        // 70% × 85% of DL if no RDL PB
+
+  const puSec = (() => {                // pull-up added weight secondary
+    const pb = pbs['Pull-up / Chin-up'];
+    if (pb && typeof pb === 'object' && pb.maxWeightKg > 0) return r25(pb.maxWeightKg * 0.70);
+    return 0;                           // bodyweight
+  })();
+
+  // Front Squat: use own PB if available, else ~80% of back squat at same %
+  const fsSec  = orm('Front Squat') > 0
+    ? wt('Front Squat', 0.70, 50)
+    : wt('Back Squat', 0.56, 50);       // 80% BS × 70% = 56% BS
+
+  // Accessories day — medium volume @ 65% 1RM (4×10)
+  const brAcc  = wt('Barbell Row',          0.65, 55);
+  const ibAcc  = wt('Incline Bench Press',  0.65, 45);
+
+  // ── Deload weights (60% of volume weights) ───────────────────────
+  const sqD  = r25(sqGVT  * 0.60);
+  const bpD  = r25(bpGVT  * 0.60);
+  const dlD  = r25(dlGVT  * 0.60);
+  const rdlD = r25(rdlSec * 0.60);
+  const fsD  = r25(fsSec  * 0.60);
+  const brD  = r25(brAcc  * 0.60);
+  const ibD  = r25(ibAcc  * 0.60);
+
+  // ── PR-week weights (85-90% 1RM) ────────────────────────────────
+  const sqPR  = wt('Back Squat',           0.85, r25(sqGVT  * 1.42));
+  const bpPR  = wt('Bench Press',          0.85, r25(bpGVT  * 1.42));
+  const dlPR  = wt('Deadlift',             0.90, r25(dlGVT  * 1.50));
+  const rdlPR = orm('Romanian Deadlift') > 0
+    ? wt('Romanian Deadlift', 0.85, r25(rdlSec * 1.21))
+    : r25(rdlSec * 1.21);
+  const puPR  = puSec > 0 ? r25(puSec * 1.15) : 10;
+  const fsPR  = orm('Front Squat') > 0
+    ? wt('Front Squat', 0.85, r25(fsSec * 1.21))
+    : r25(fsSec * 1.21);
+  const brPR  = wt('Barbell Row',          0.80, r25(brAcc  * 1.23));
+  const ibPR  = wt('Incline Bench Press',  0.80, r25(ibAcc  * 1.23));
+
+  // ── Day factories ─────────────────────────────────────────────────
+  function day(num, label, exList) {
+    return { dayNum: num, label, completedSessionId: null, exercises: exList };
+  }
+
+  function volumeDays() { return [
+    day(1, 'Squat', [
+      ex('Back Squat',        10, 10, sqGVT,  'GVT · 60 s rest'),
+      ex('Romanian Deadlift',  8,  5, rdlSec, '8×5 @ 70%'),
+    ]),
+    day(2, 'Bench', [
+      ex('Bench Press',       10, 10, bpGVT, 'GVT · 60 s rest'),
+      ex('Pull-up / Chin-up',  8,  5, puSec, '8×5 · BW or added weight'),
+    ]),
+    day(3, 'Deadlift', [
+      ex('Deadlift',    10, 10, dlGVT, 'GVT · 90 s rest'),
+      ex('Front Squat',  8,  5, fsSec, '8×5 @ 70%'),
+    ]),
+    day(4, 'Accessories', [
+      ex('Barbell Row',          4, 10, brAcc, 'medium volume · 65%'),
+      ex('Incline Bench Press',  4,  8, ibAcc, '65% 1RM'),
+    ]),
+  ]; }
+
+  function deloadDays() { return [
+    day(1, 'Squat (Deload)', [
+      ex('Back Squat',        5, 5, sqD,  'Deload · 60%'),
+      ex('Romanian Deadlift', 5, 5, rdlD, 'Deload'),
+    ]),
+    day(2, 'Bench (Deload)', [
+      ex('Bench Press',       5, 5, bpD, 'Deload · 60%'),
+      ex('Pull-up / Chin-up', 5, 5,  0,  'Deload · BW'),
+    ]),
+    day(3, 'Deadlift (Deload)', [
+      ex('Deadlift',    5, 5, dlD, 'Deload · 60%'),
+      ex('Front Squat', 5, 5, fsD, 'Deload'),
+    ]),
+    day(4, 'Accessories (Deload)', [
+      ex('Barbell Row',          3, 12, brD, 'Deload · light'),
+      ex('Incline Bench Press',  3,  8, ibD, 'Deload'),
+    ]),
+  ]; }
+
+  function prDays() { return [
+    day(1, 'Squat (PR)', [
+      ex('Back Squat',        5, 5, sqPR,  'PR week · 85%'),
+      ex('Romanian Deadlift', 5, 3, rdlPR, 'PR week · heavy'),
+    ]),
+    day(2, 'Bench (PR)', [
+      ex('Bench Press',       5, 5, bpPR, 'PR week · 85%'),
+      ex('Pull-up / Chin-up', 5, 5, puPR, 'PR week · added weight'),
+    ]),
+    day(3, 'Deadlift (PR)', [
+      ex('Deadlift',    5, 3, dlPR, 'PR week · 90% · work to max'),
+      ex('Front Squat', 3, 5, fsPR, 'PR week'),
+    ]),
+    day(4, 'Accessories (PR)', [
+      ex('Barbell Row',          4,  8, brPR, 'PR week · heavier'),
+      ex('Incline Bench Press',  4,  5, ibPR, 'PR week'),
+    ]),
+  ]; }
+
+  const weeks = [];
+  for (let w = 1; w <= 8; w++) {
+    const isDeload = w === 7;
+    const isPR     = w === 8;
+    weeks.push({
+      weekNum: w,
+      label: isDeload ? 'Week 7 — Deload' : isPR ? 'Week 8 — PR Week' : `Week ${w} — Volume`,
+      type:   isDeload ? 'deload' : isPR ? 'pr' : 'volume',
+      days:   isDeload ? deloadDays() : isPR ? prDays() : volumeDays(),
+    });
+  }
+
+  return { id: uuid(), name: '8-Week GVT', startDate: today(), active: true, weeks };
+}

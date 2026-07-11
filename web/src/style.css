@@ -468,9 +468,103 @@ canvas { display: block; width: 100% !important; }
 }
 .share-actions .btn { flex: 1; padding: 12px 8px; font-size: 13px; }
 
+/* ── Plan builder ────────────────────────────────────────────────── */
+.pb-day-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.pb-day-header input { flex: 1; }
+
+.pb-ex-header {
+  display: grid;
+  grid-template-columns: 3fr 1fr 1fr 1.2fr 0.4fr;
+  gap: 6px;
+  font-size: 11px; color: var(--muted);
+  padding: 0 2px; margin-bottom: 4px;
+}
+.pb-ex-row {
+  display: grid;
+  grid-template-columns: 3fr 1fr 1fr 1.2fr 0.4fr;
+  gap: 6px; align-items: center; margin-bottom: 6px;
+}
+.pb-ex-row input {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); border-radius: var(--radius-sm);
+  padding: 8px 10px; font-size: 13px; width: 100%;
+}
+.pb-ex-row input:focus { outline: none; border-color: var(--accent); }
+.pb-ex-row input::placeholder { color: var(--muted); }
+
 /* ── Misc ────────────────────────────────────────────────────────── */
 .hidden { display: none !important; }
 hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px 12px; }
+
+/* ── Plans screen ────────────────────────────────────────────────── */
+.plan-week-tabs {
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px; margin-bottom: 12px;
+}
+.plan-week-tab {
+  padding: 5px 12px; border-radius: 99px; font-size: 12px; font-weight: 700;
+  background: var(--surface); border: 1.5px solid var(--border);
+  color: var(--muted); cursor: pointer; transition: all 0.15s;
+}
+.plan-week-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.plan-week-tab.done   { border-color: var(--green); color: var(--green); }
+.plan-week-tab.active.done { background: var(--green); border-color: var(--green); }
+
+/* Plan day cards */
+.plan-day-card { margin-bottom: 10px; }
+.plan-day-card.plan-day-done { border-color: var(--green); }
+.plan-day-card.plan-day-next { border-color: var(--accent); background: rgba(124,106,247,0.05); }
+
+.plan-day-header {
+  display: flex; align-items: center; gap: 12px; cursor: pointer;
+}
+.plan-day-status-icon {
+  font-size: 16px; font-weight: 800; width: 22px; text-align: center; flex-shrink: 0;
+  color: var(--muted);
+}
+.plan-day-card.plan-day-done .plan-day-status-icon { color: var(--green); }
+.plan-day-card.plan-day-next .plan-day-status-icon { color: var(--accent); }
+.plan-day-info { flex: 1; min-width: 0; }
+.plan-day-name { font-size: 14px; font-weight: 700; }
+.plan-day-meta { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+.plan-status-badge {
+  font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 99px;
+  text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0;
+}
+.plan-status-badge.done { background: rgba(76,175,125,0.15); color: var(--green); }
+.plan-status-badge.next { background: rgba(124,106,247,0.15); color: var(--accent); }
+
+/* Plan exercise rows inside expanded day card */
+.plan-day-exercises {
+  margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.plan-exercise-row {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+}
+.plan-ex-name { font-size: 13px; font-weight: 600; flex: 1; min-width: 100px; }
+.plan-ex-acc  { color: var(--muted); font-weight: 500; }
+.plan-ex-prescription { font-size: 13px; color: var(--text); white-space: nowrap; }
+.plan-ex-note { font-size: 11px; color: var(--muted); }
+
+/* Home screen — plan next-workout card */
+.plan-next-card {
+  background:
+    radial-gradient(120% 160% at 0% 0%, rgba(124,106,247,0.2) 0%, rgba(124,106,247,0) 60%),
+    var(--surface);
+  border: 1px solid rgba(124,106,247,0.45);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.plan-next-kicker {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--accent); margin-bottom: 4px;
+}
+.plan-next-title { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+.plan-next-sub   { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.plan-next-btn   { height: 44px; font-size: 14px; }
 
 @media (max-width: 420px) {
   .club-total { font-size: 36px; }

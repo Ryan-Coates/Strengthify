@@ -39,6 +39,11 @@
         </svg>
         Sign in with Google
       </button>
+      <div style="text-align:center;margin-top:14px">
+        <button id="continue-local-btn" class="btn btn-ghost btn-sm" style="color:var(--muted);font-size:12px;font-weight:500">
+          Continue without sync (local only)
+        </button>
+      </div>
     </div>
   </section>
 
@@ -155,6 +160,16 @@
       </div>
     </div>
 
+    <!-- Plan next-workout card (shown when a plan is active) -->
+    <div id="home-plan-card" class="hidden" style="padding:0 16px 4px">
+      <div class="plan-next-card">
+        <div class="plan-next-kicker">Active plan</div>
+        <div class="plan-next-title" id="home-plan-name"></div>
+        <div class="plan-next-sub" id="home-plan-next"></div>
+        <button class="btn btn-primary plan-next-btn" id="home-plan-start-btn">Start next workout →</button>
+      </div>
+    </div>
+
     <!-- Start workout CTA -->
     <div style="padding:0 16px 4px">
       <button class="btn btn-primary nav-btn" data-screen="workout" style="height:52px">
@@ -242,6 +257,110 @@
 
 
   <!-- ══════════════════════════════════════════════════
+       PLANS
+  ══════════════════════════════════════════════════ -->
+  <section id="plans-screen" class="hidden">
+
+    <div class="page-header">
+      <h1>Training Plan</h1>
+      <button class="btn btn-ghost btn-sm" id="build-custom-plan-btn" style="font-size:12px">+ New plan</button>
+    </div>
+
+    <!-- No plan state -->
+    <div id="plan-empty-state">
+      <div class="empty-state" style="padding:48px 16px 24px">
+        <svg viewBox="0 0 24 24" style="width:48px;height:48px;margin-bottom:12px;opacity:0.4;stroke:currentColor;fill:none;stroke-width:1.8">
+          <path stroke="currentColor" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M12 12h3M12 16h3M9 12h.01M9 16h.01"/>
+        </svg>
+        <p style="font-size:15px;font-weight:600;margin-bottom:6px">No active training plan</p>
+        <p style="font-size:13px;margin-bottom:0">Load the pre-built 8-week GVT programme to begin structured training</p>
+      </div>
+      <div style="padding:0 16px 16px">
+        <button class="btn btn-primary" id="load-gvt-plan-btn">Load 8-Week GVT Plan</button>
+      </div>
+    </div>
+
+    <!-- Active plan view -->
+    <div id="plan-active-view" class="hidden">
+
+      <!-- Plan header card -->
+      <div class="card" style="margin-bottom:12px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+          <div>
+            <div id="plan-name" style="font-size:17px;font-weight:700;margin-bottom:2px"></div>
+            <div id="plan-started" style="font-size:12px;color:var(--muted)"></div>
+          </div>
+          <button id="delete-plan-btn" class="btn btn-ghost btn-sm" style="padding:5px 10px;font-size:12px;color:var(--muted);flex-shrink:0">Remove</button>
+        </div>
+        <div style="margin-top:12px">
+          <div style="height:6px;border-radius:99px;background:var(--surface2);overflow:hidden">
+            <div id="plan-progress-bar-fill" style="height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 0.4s;width:0%"></div>
+          </div>
+          <div id="plan-progress-text" style="font-size:12px;color:var(--muted);margin-top:4px"></div>
+        </div>
+      </div>
+
+      <!-- Week selector tabs -->
+      <div class="plan-week-tabs" id="plan-week-tabs"></div>
+
+      <!-- Current week label + days list -->
+      <div id="plan-days-list"></div>
+
+      <!-- Start next workout -->
+      <div style="padding:0 16px 8px">
+        <button class="btn btn-primary" id="start-next-plan-btn">Start next workout →</button>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       PLAN BUILDER
+  ══════════════════════════════════════════════════ -->
+  <section id="plan-builder-screen" class="hidden">
+
+    <div class="page-header">
+      <div>
+        <h1>Build Plan</h1>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Same days repeat each week</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="pb-cancel-btn">Cancel</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Plan details</div>
+      <div class="form-group" style="margin-bottom:10px">
+        <label class="form-label" for="pb-plan-name">Plan name</label>
+        <input class="form-input" id="pb-plan-name" type="text" placeholder="e.g. My 8-Week Programme" maxlength="60">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label" for="pb-weeks">Number of weeks</label>
+        <input class="form-input" id="pb-weeks" type="number" min="1" max="24" step="1" value="8">
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px;margin:4px 0 6px">
+      <div class="section-label" style="margin:0;padding:0">Training days</div>
+    </div>
+    <p style="padding:0 16px;font-size:12px;color:var(--muted);margin-bottom:12px">
+      Define the day types for the week. Benchmark lifts (e.g. Back Squat, Bench Press) link to your PBs automatically.
+    </p>
+
+    <div id="pb-days-container"></div>
+
+    <div style="padding:0 16px 8px">
+      <button class="btn btn-secondary" id="pb-add-day-btn">+ Add training day</button>
+    </div>
+    <div style="padding:4px 16px 16px">
+      <button class="btn btn-primary" id="pb-save-btn">Save plan</button>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
        PROGRESS
   ══════════════════════════════════════════════════ -->
   <section id="progress-screen" class="hidden">
@@ -306,8 +425,7 @@
 
   <!-- ══════════════════════════════════════════════════
        STANDARDS
-  ══════════════════════════════════════════════════ -->
-  <section id="standards-screen" class="hidden">
+  ══════════════════════════════════════════════════ -->  <section id="standards-screen" class="hidden">
 
     <div class="page-header">
       <h1>Standards</h1>
@@ -482,6 +600,11 @@
   <button class="nav-btn" data-screen="workout">
     <svg viewBox="0 0 24 24"><path stroke="currentColor" d="M6 4v16M18 4v16M6 12h12M3 8h3M18 8h3M3 16h3M18 16h3"/></svg>
     Workout
+  </button>
+
+  <button class="nav-btn" data-screen="plans">
+    <svg viewBox="0 0 24 24"><path stroke="currentColor" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M12 12h3M12 16h3M9 12h.01M9 16h.01"/></svg>
+    Plans
   </button>
 
   <button class="nav-btn" data-screen="progress">

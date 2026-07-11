@@ -4,7 +4,7 @@
 
 // ── Screen registry ───────────────────────────────────────────────
 
-const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit'];
+const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder'];
 let currentScreen = null;
 const KG_PER_LB = 0.45359237;
 const LB_PER_KG = 1 / KG_PER_LB;
@@ -16,7 +16,7 @@ function showScreen(id) {
     const el = document.getElementById(s + '-screen');
     if (el) el.classList.toggle('hidden', s !== id);
   });
-  document.getElementById('nav-bar').classList.toggle('hidden', id === 'onboarding' || id === 'signin');
+  document.getElementById('nav-bar').classList.toggle('hidden', id === 'onboarding' || id === 'signin' || id === 'plan-builder');
   // Update nav active state
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.screen === id);
@@ -78,6 +78,33 @@ function renderHome() {
   document.getElementById('xp-nums').textContent          = `${progress.current} / ${progress.needed} XP${nextLabel}`;
 
   renderThousandClubCard(pbs);
+
+  // Plan next-workout card
+  const plan = getActivePlan();
+  const homePlanCard = document.getElementById('home-plan-card');
+  if (plan) {
+    let nextWeekNum = null, nextDayNum = null;
+    outer:
+    for (const week of plan.weeks) {
+      for (const day of week.days) {
+        if (!day.completedSessionId) { nextWeekNum = week.weekNum; nextDayNum = day.dayNum; break outer; }
+      }
+    }
+    if (nextWeekNum !== null) {
+      const nw = plan.weeks.find(w => w.weekNum === nextWeekNum);
+      const nd = nw?.days.find(d => d.dayNum === nextDayNum);
+      document.getElementById('home-plan-name').textContent = plan.name;
+      document.getElementById('home-plan-next').textContent =
+        `Week ${nextWeekNum} · ${nd ? nd.label : 'Next session'}`;
+      document.getElementById('home-plan-start-btn').onclick =
+        () => startPlanWorkout(plan.id, nextWeekNum, nextDayNum);
+      homePlanCard.classList.remove('hidden');
+    } else {
+      homePlanCard.classList.add('hidden');
+    }
+  } else {
+    homePlanCard.classList.add('hidden');
+  }
 
   // Recent sessions
   const list = document.getElementById('recent-sessions');
@@ -249,12 +276,44 @@ function initWorkoutScreen() {
 
 let sessionSets = {}; // lift -> [{ weightKg, reps }]
 
+// ── Plan mode state ────────────────────────────────────────────────
+let activePlanMode    = false;
+let activePlanId      = null;
+let activePlanWeekNum = null;
+let activePlanDayNum  = null;
+let planAccessoryLifts = [];   // non-benchmark exercise names for current plan session
+let currentPlanViewWeek = null; // which week tab is selected on the plans screen
+
+// Plan builder state
+let planBuilderDays = [];
+
 function renderLoggingScreen() {
   sessionSets = {};
+  planAccessoryLifts = [];
   const container = document.getElementById('logging-lifts');
   container.innerHTML = '';
 
   const sessions = getSessions();
+
+  // Collect plan exercise data if launching from a plan day
+  const planBenchmarkMap = {}; // liftName -> exercise obj
+  let planAccessoryExs = [];
+  if (activePlanMode && activePlanId) {
+    const plans = getPlans();
+    const plan = plans.find(p => p.id === activePlanId);
+    const week = plan?.weeks.find(w => w.weekNum === activePlanWeekNum);
+    const day  = week?.days.find(d => d.dayNum  === activePlanDayNum);
+    if (day) {
+      day.exercises.forEach(ex => {
+        if (ex.isBenchmark) {
+          // Keep first occurrence if lift appears twice (shouldn't happen but guard it)
+          if (!planBenchmarkMap[ex.name]) planBenchmarkMap[ex.name] = ex;
+        } else {
+          planAccessoryExs.push(ex);
+        }
+      });
+    }
+  }
 
   selectedLifts.forEach(lift => {
     sessionSets[lift] = [];
@@ -265,6 +324,8 @@ function renderLoggingScreen() {
       const match = s.sets.filter(x => x.lift === lift);
       if (match.length > 0) { prevSets = match; break; }
     }
+
+    const planEx = planBenchmarkMap[lift] || null;
 
     const section = document.createElement('div');
     section.className = 'logging-lift';
@@ -277,38 +338,99 @@ function renderLoggingScreen() {
       : (lift === 'Dumbbell Press' || lift === 'Dumbbell Curl')
       ? ' (weight per dumbbell)'
       : '';
-    const prevHint = prevSets
-      ? `Previous: ${prevSets[0].weightKg}kg × ${prevSets[0].reps}${liftNote}`
-      : `No previous data${liftNote}`;
+
+    let hintText;
+    if (planEx) {
+      const wStr = planEx.targetWeightKg != null && planEx.targetWeightKg > 0
+        ? ` @ ${planEx.targetWeightKg} kg` : '';
+      const nStr = planEx.note ? ` — ${planEx.note}` : '';
+      hintText = `Plan: ${planEx.sets} × ${planEx.reps}${wStr}${nStr}${liftNote}`;
+    } else {
+      hintText = prevSets
+        ? `Previous: ${prevSets[0].weightKg}kg × ${prevSets[0].reps}${liftNote}`
+        : `No previous data${liftNote}`;
+    }
 
     section.innerHTML = `
       <h3>${lift}</h3>
-      <p class="prev-hint">${prevHint}</p>
+      <p class="prev-hint">${hintText}</p>
       <div class="set-row-header"><span>Weight (kg)</span><span>Reps</span><span></span></div>
       <div class="set-rows"></div>
       <button class="btn btn-ghost btn-sm add-set-btn" data-lift="${lift}">+ Add Set</button>
     `;
     container.appendChild(section);
 
-    // Add one blank row to start
-    addSetRow(lift, prevSets ? prevSets[0] : null);
+    if (planEx) {
+      // Pre-create all planned sets with target weight / reps pre-filled
+      for (let i = 0; i < planEx.sets; i++) {
+        addSetRow(lift, { weightKg: planEx.targetWeightKg || 0, reps: planEx.reps }, true);
+      }
+    } else {
+      addSetRow(lift, prevSets ? prevSets[0] : null);
+    }
 
     section.querySelector('.add-set-btn').addEventListener('click', () => addSetRow(lift, null));
   });
+
+  // Render accessory exercises for plan mode
+  if (planAccessoryExs.length > 0) {
+    const accHeader = document.createElement('div');
+    accHeader.className = 'section-label';
+    accHeader.style.cssText = 'margin-top:4px';
+    accHeader.textContent = 'Accessories';
+    container.appendChild(accHeader);
+
+    planAccessoryExs.forEach(ex => {
+      sessionSets[ex.name] = [];
+      planAccessoryLifts.push(ex.name);
+
+      const section = document.createElement('div');
+      section.className = 'logging-lift';
+      section.id = 'logging-lift-' + ex.name.replace(/[^a-z]/gi, '_');
+
+      const wStr = ex.targetWeightKg != null && ex.targetWeightKg > 0
+        ? ` @ ${ex.targetWeightKg} kg` : '';
+      const nStr = ex.note ? ` — ${ex.note}` : '';
+
+      section.innerHTML = `
+        <h3>${ex.name}</h3>
+        <p class="prev-hint">Plan: ${ex.sets} × ${ex.reps}${wStr}${nStr}</p>
+        <div class="set-row-header"><span>Weight (kg)</span><span>Reps</span><span></span></div>
+        <div class="set-rows"></div>
+        <button class="btn btn-ghost btn-sm add-set-btn" data-lift="${ex.name}">+ Add Set</button>
+      `;
+      container.appendChild(section);
+
+      for (let i = 0; i < ex.sets; i++) {
+        addSetRow(ex.name, { weightKg: ex.targetWeightKg || 0, reps: ex.reps }, true);
+      }
+
+      section.querySelector('.add-set-btn').addEventListener('click', () => addSetRow(ex.name, null));
+    });
+  }
 }
 
-function addSetRow(lift, suggest) {
+function addSetRow(lift, suggest, prefill = false) {
   const section  = document.getElementById('logging-lift-' + lift.replace(/[^a-z]/gi, '_'));
   const rowsDiv  = section.querySelector('.set-rows');
   const setIndex = rowsDiv.children.length;
 
-  sessionSets[lift].push({ weightKg: 0, reps: 0 });
+  const initWeight = prefill && suggest ? (suggest.weightKg || 0) : 0;
+  const initReps   = prefill && suggest ? (suggest.reps   || 0) : 0;
+  sessionSets[lift].push({ weightKg: initWeight, reps: initReps });
+
+  const weightAttr = prefill && suggest && suggest.weightKg != null
+    ? `value="${suggest.weightKg}"`
+    : `placeholder="${suggest ? suggest.weightKg : '0'}"`;
+  const repsAttr = prefill && suggest
+    ? `value="${suggest.reps}"`
+    : `placeholder="${suggest ? suggest.reps : '0'}"`;
 
   const row = document.createElement('div');
   row.className = 'set-row';
   row.innerHTML = `
-    <input type="number" min="0" step="0.5" placeholder="${suggest ? suggest.weightKg : '0'}" class="weight-input" data-lift="${lift}" data-idx="${setIndex}">
-    <input type="number" min="1" max="100" step="1" placeholder="${suggest ? suggest.reps : '0'}" class="reps-input" data-lift="${lift}" data-idx="${setIndex}">
+    <input type="number" min="0" step="0.5" ${weightAttr} class="weight-input" data-lift="${lift}" data-idx="${setIndex}">
+    <input type="number" min="1" max="100" step="1" ${repsAttr} class="reps-input" data-lift="${lift}" data-idx="${setIndex}">
     <button class="del-set-btn" title="Remove set">✕</button>
   `;
 
@@ -340,10 +462,11 @@ function finishWorkout() {
   const profile = getProfile();
   if (!profile) return;
 
-  // Flatten sets
+  // Flatten sets — benchmark lifts + plan accessories
+  const allLifts = [...selectedLifts, ...planAccessoryLifts];
   const allSets = [];
-  for (const lift of selectedLifts) {
-    for (const s of sessionSets[lift]) {
+  for (const lift of allLifts) {
+    for (const s of (sessionSets[lift] || [])) {
       if (s.reps > 0) {
         allSets.push({ lift, weightKg: s.weightKg || 0, reps: s.reps });
       }
@@ -367,7 +490,22 @@ function finishWorkout() {
     sets: allSets,
     xpEarned: xp,
   };
+  if (activePlanMode && activePlanId) {
+    session.planRef = { planId: activePlanId, weekNum: activePlanWeekNum, dayNum: activePlanDayNum };
+  }
   saveSession(session);
+
+  // Mark plan day complete
+  if (activePlanMode && activePlanId) {
+    markPlanDayComplete(activePlanId, activePlanWeekNum, activePlanDayNum, session.id);
+  }
+
+  // Reset plan mode
+  activePlanMode    = false;
+  activePlanId      = null;
+  activePlanWeekNum = null;
+  activePlanDayNum  = null;
+  planAccessoryLifts = [];
 
   // Show results
   renderResults(xp, newPBs, leveledUp, profile);
@@ -413,6 +551,339 @@ function renderResults(xp, newPBs, leveledUp, profile) {
   } else {
     pbList.innerHTML = '<div class="result-row"><span class="rr-label" style="width:100%;text-align:center;color:var(--muted)">No new personal bests this session</span></div>';
   }
+}
+
+// ── Plans screen ──────────────────────────────────────────────────
+
+function startPlanWorkout(planId, weekNum, dayNum) {
+  const plans = getPlans();
+  const plan = plans.find(p => p.id === planId);
+  if (!plan) return;
+  const week = plan.weeks.find(w => w.weekNum === weekNum);
+  const day  = week?.days.find(d => d.dayNum  === dayNum);
+  if (!day) return;
+
+  activePlanMode    = true;
+  activePlanId      = planId;
+  activePlanWeekNum = weekNum;
+  activePlanDayNum  = dayNum;
+
+  // Build selectedLifts from benchmark exercises in this day (deduplicated, preserving order)
+  const seen = new Set();
+  selectedLifts = [];
+  day.exercises.forEach(ex => {
+    if (ex.isBenchmark && !seen.has(ex.name)) {
+      seen.add(ex.name);
+      selectedLifts.push(ex.name);
+    }
+  });
+
+  renderLoggingScreen();
+  showScreen('logging');
+}
+
+function renderPlans() {
+  const plan = getActivePlan();
+  const activeView = document.getElementById('plan-active-view');
+  const emptyState = document.getElementById('plan-empty-state');
+
+  if (!plan) {
+    activeView.classList.add('hidden');
+    emptyState.classList.remove('hidden');
+    return;
+  }
+  activeView.classList.remove('hidden');
+  emptyState.classList.add('hidden');
+
+  // Find next incomplete day (global next, not filtered by week tab)
+  let nextWeekNum = null, nextDayNum = null;
+  outer:
+  for (const week of plan.weeks) {
+    for (const day of week.days) {
+      if (!day.completedSessionId) {
+        nextWeekNum = week.weekNum;
+        nextDayNum  = day.dayNum;
+        break outer;
+      }
+    }
+  }
+
+  // Progress counts
+  const completedCount = plan.weeks.reduce((n, w) => n + w.days.filter(d => d.completedSessionId).length, 0);
+  const totalCount     = plan.weeks.reduce((n, w) => n + w.days.length, 0);
+  const pct = totalCount > 0 ? (completedCount / totalCount * 100).toFixed(1) : 0;
+
+  document.getElementById('plan-name').textContent = plan.name;
+  document.getElementById('plan-started').textContent = `Started ${formatDate(plan.startDate)}`;
+  document.getElementById('plan-progress-bar-fill').style.width = pct + '%';
+  document.getElementById('plan-progress-text').textContent =
+    completedCount < totalCount
+      ? `${completedCount} / ${totalCount} sessions complete`
+      : '🏆 Plan complete!';
+
+  // Default view week = the week containing the next session (or 1 if all done)
+  if (currentPlanViewWeek === null) {
+    currentPlanViewWeek = nextWeekNum || 1;
+  }
+
+  // Week tabs
+  const weekTabsEl = document.getElementById('plan-week-tabs');
+  weekTabsEl.innerHTML = '';
+  plan.weeks.forEach(week => {
+    const allDone = week.days.every(d => d.completedSessionId);
+    const tab = document.createElement('button');
+    tab.className = 'plan-week-tab' + (week.weekNum === currentPlanViewWeek ? ' active' : '') + (allDone ? ' done' : '');
+    tab.textContent = `W${week.weekNum}`;
+    tab.title = week.label;
+    tab.addEventListener('click', () => {
+      currentPlanViewWeek = week.weekNum;
+      renderPlans();
+    });
+    weekTabsEl.appendChild(tab);
+  });
+
+  // Days list for selected week
+  const selectedWeek = plan.weeks.find(w => w.weekNum === currentPlanViewWeek);
+  const daysListEl = document.getElementById('plan-days-list');
+  daysListEl.innerHTML = '';
+
+  if (selectedWeek) {
+    const weekLabelEl = document.createElement('div');
+    weekLabelEl.className = 'section-label';
+    weekLabelEl.textContent = selectedWeek.label;
+    daysListEl.appendChild(weekLabelEl);
+
+    selectedWeek.days.forEach(day => {
+      const isCompleted = !!day.completedSessionId;
+      const isNext      = day.dayNum === nextDayNum && selectedWeek.weekNum === nextWeekNum;
+
+      const card = document.createElement('div');
+      card.className = 'card plan-day-card' +
+        (isCompleted ? ' plan-day-done' : '') +
+        (isNext ? ' plan-day-next' : '');
+
+      const benchCount = day.exercises.filter(ex => ex.isBenchmark).length;
+      const totalEx    = day.exercises.length;
+
+      const exercisesHTML = day.exercises.map(ex => {
+        const wStr = ex.targetWeightKg != null && ex.targetWeightKg > 0 ? ` @ ${ex.targetWeightKg} kg` : '';
+        const noteStr = ex.note ? `<span class="plan-ex-note"> · ${ex.note}</span>` : '';
+        return `<div class="plan-exercise-row">
+          <span class="plan-ex-name${ex.isBenchmark ? '' : ' plan-ex-acc'}">${ex.name}</span>
+          <span class="plan-ex-prescription">${ex.sets}&thinsp;×&thinsp;${ex.reps}${wStr}</span>
+          ${noteStr}
+        </div>`;
+      }).join('');
+
+      const statusBadge = isCompleted
+        ? '<span class="plan-status-badge done">Done</span>'
+        : isNext
+        ? '<span class="plan-status-badge next">Next</span>'
+        : '';
+
+      const statusIcon = isCompleted ? '✓' : isNext ? '▶' : '○';
+      const metaStr = `${totalEx} exercises${benchCount < totalEx ? ` · ${totalEx - benchCount} accessory` : ''}`;
+
+      card.innerHTML = `
+        <div class="plan-day-header">
+          <div class="plan-day-status-icon">${statusIcon}</div>
+          <div class="plan-day-info">
+            <div class="plan-day-name">${day.label}</div>
+            <div class="plan-day-meta">${metaStr}</div>
+          </div>
+          ${statusBadge}
+        </div>
+        <div class="plan-day-exercises${isNext || isCompleted ? '' : ' hidden'}">
+          ${exercisesHTML}
+          ${isNext ? `<div style="margin-top:10px"><button class="btn btn-primary plan-day-start-btn" data-week="${selectedWeek.weekNum}" data-day="${day.dayNum}">Start this workout →</button></div>` : ''}
+        </div>
+      `;
+
+      // Toggle expand/collapse on header click
+      card.querySelector('.plan-day-header').addEventListener('click', () => {
+        card.querySelector('.plan-day-exercises').classList.toggle('hidden');
+      });
+
+      // Start button inside card
+      card.querySelector('.plan-day-start-btn')?.addEventListener('click', e => {
+        e.stopPropagation();
+        startPlanWorkout(plan.id, selectedWeek.weekNum, day.dayNum);
+      });
+
+      daysListEl.appendChild(card);
+    });
+  }
+
+  // Global "Start next workout" button
+  const startBtn = document.getElementById('start-next-plan-btn');
+  if (nextDayNum !== null) {
+    startBtn.disabled = false;
+    const nw = plan.weeks.find(w => w.weekNum === nextWeekNum);
+    const nd = nw?.days.find(d => d.dayNum === nextDayNum);
+    startBtn.textContent = `Start ${nd ? nd.label : 'next workout'} (W${nextWeekNum}) →`;
+    startBtn.onclick = () => startPlanWorkout(plan.id, nextWeekNum, nextDayNum);
+  } else {
+    startBtn.disabled = true;
+    startBtn.textContent = 'Plan Complete! 🏆';
+  }
+}
+
+// ── Plan builder ──────────────────────────────────────────────────
+
+function initPlanBuilder() {
+  planBuilderDays = [
+    { name: '', exercises: [{ name: '', sets: 3, reps: 10, weightKg: null }] },
+  ];
+  document.getElementById('pb-plan-name').value = '';
+  document.getElementById('pb-weeks').value     = '8';
+  renderPlanBuilderDays();
+}
+
+// Flush current DOM input values → planBuilderDays (safety before any re-render)
+function flushPlanBuilderInputs() {
+  document.querySelectorAll('#pb-days-container .pb-day-card').forEach((card, di) => {
+    if (!planBuilderDays[di]) return;
+    const n = card.querySelector('.pb-day-name');
+    if (n) planBuilderDays[di].name = n.value;
+    card.querySelectorAll('.pb-ex-row').forEach((row, ei) => {
+      const ex = planBuilderDays[di].exercises[ei];
+      if (!ex) return;
+      const nE = row.querySelector('.pb-ex-name');
+      const sE = row.querySelector('.pb-ex-sets');
+      const rE = row.querySelector('.pb-ex-reps');
+      const wE = row.querySelector('.pb-ex-weight');
+      if (nE) ex.name     = nE.value;
+      if (sE) ex.sets     = parseInt(sE.value) || 0;
+      if (rE) ex.reps     = parseInt(rE.value) || 0;
+      if (wE) ex.weightKg = wE.value !== '' ? parseFloat(wE.value) : null;
+    });
+  });
+}
+
+function renderPlanBuilderDays() {
+  const container = document.getElementById('pb-days-container');
+  container.innerHTML = '';
+
+  planBuilderDays.forEach((day, di) => {
+    const card = document.createElement('div');
+    card.className = 'card pb-day-card';
+    card.style.marginBottom = '10px';
+
+    const exRowsHTML = day.exercises.map((ex, ei) => `
+      <div class="pb-ex-row" data-di="${di}" data-ei="${ei}">
+        <input class="form-input pb-ex-name"   placeholder="Exercise name" value="${ex.name || ''}">
+        <input class="form-input pb-ex-sets"   type="number" min="1" max="20"  placeholder="Sets"  value="${ex.sets  || ''}">
+        <input class="form-input pb-ex-reps"   type="number" min="1" max="100" placeholder="Reps"  value="${ex.reps  || ''}">
+        <input class="form-input pb-ex-weight" type="number" min="0" step="0.5" placeholder="kg"   value="${ex.weightKg != null ? ex.weightKg : ''}">
+        <button class="del-set-btn pb-rm-ex" data-di="${di}" data-ei="${ei}" title="Remove">✕</button>
+      </div>`).join('');
+
+    card.innerHTML = `
+      <div class="pb-day-header">
+        <input class="form-input pb-day-name" placeholder="Day name e.g. Squat" value="${day.name || ''}">
+        <button class="btn btn-ghost btn-sm pb-rm-day" data-di="${di}" style="color:var(--muted);flex-shrink:0">Remove</button>
+      </div>
+      <div class="pb-ex-header">
+        <span>Exercise</span><span>Sets</span><span>Reps</span><span>kg</span><span></span>
+      </div>
+      <div class="pb-ex-list">
+        ${exRowsHTML || '<p style="font-size:12px;color:var(--muted);margin:4px 0 4px">No exercises yet</p>'}
+      </div>
+      <button class="btn btn-ghost btn-sm pb-add-ex" data-di="${di}" style="margin-top:6px">+ Add exercise</button>
+    `;
+
+    // Day name — direct mutation
+    card.querySelector('.pb-day-name').addEventListener('input', e => {
+      planBuilderDays[di].name = e.target.value;
+    });
+
+    // Remove day
+    card.querySelector('.pb-rm-day').addEventListener('click', () => {
+      flushPlanBuilderInputs();
+      planBuilderDays.splice(di, 1);
+      renderPlanBuilderDays();
+    });
+
+    // Add exercise
+    card.querySelector('.pb-add-ex').addEventListener('click', () => {
+      flushPlanBuilderInputs();
+      planBuilderDays[di].exercises.push({ name: '', sets: 3, reps: 10, weightKg: null });
+      renderPlanBuilderDays();
+      // Focus the new exercise name input
+      const rows = container.querySelectorAll(`.pb-day-card:nth-child(${di + 1}) .pb-ex-name`);
+      if (rows.length) rows[rows.length - 1].focus();
+    });
+
+    // Remove exercise
+    card.querySelectorAll('.pb-rm-ex').forEach(btn => {
+      btn.addEventListener('click', () => {
+        flushPlanBuilderInputs();
+        planBuilderDays[parseInt(btn.dataset.di)].exercises.splice(parseInt(btn.dataset.ei), 1);
+        renderPlanBuilderDays();
+      });
+    });
+
+    // Exercise field changes — direct mutation (no re-render)
+    card.querySelectorAll('.pb-ex-row').forEach(row => {
+      const d = parseInt(row.dataset.di), e = parseInt(row.dataset.ei);
+      row.querySelector('.pb-ex-name').addEventListener('input',   ev => { planBuilderDays[d].exercises[e].name     = ev.target.value; });
+      row.querySelector('.pb-ex-sets').addEventListener('input',   ev => { planBuilderDays[d].exercises[e].sets     = parseInt(ev.target.value) || 0; });
+      row.querySelector('.pb-ex-reps').addEventListener('input',   ev => { planBuilderDays[d].exercises[e].reps     = parseInt(ev.target.value) || 0; });
+      row.querySelector('.pb-ex-weight').addEventListener('input', ev => { planBuilderDays[d].exercises[e].weightKg = ev.target.value !== '' ? parseFloat(ev.target.value) : null; });
+    });
+
+    container.appendChild(card);
+  });
+}
+
+function savePlanFromBuilder() {
+  flushPlanBuilderInputs();
+
+  const name     = document.getElementById('pb-plan-name').value.trim();
+  const numWeeks = Math.max(1, Math.min(24, parseInt(document.getElementById('pb-weeks').value) || 8));
+
+  if (!name) { toast('Please enter a plan name.', 'error'); return; }
+  if (planBuilderDays.length === 0) { toast('Add at least one training day.', 'error'); return; }
+  for (const d of planBuilderDays) {
+    if (!d.name.trim())           { toast('All days need a name.', 'error'); return; }
+    if (d.exercises.length === 0) { toast(`Day "${d.name}" has no exercises.`, 'error'); return; }
+    for (const ex of d.exercises) {
+      if (!ex.name.trim()) { toast('All exercises need a name.', 'error'); return; }
+      if (!(ex.sets  > 0)) { toast(`Invalid sets for "${ex.name}".`, 'error'); return; }
+      if (!(ex.reps  > 0)) { toast(`Invalid reps for "${ex.name}".`, 'error'); return; }
+    }
+  }
+
+  const LIFTS_SET = new Set(LIFTS);
+  const weeks = [];
+  for (let w = 1; w <= numWeeks; w++) {
+    weeks.push({
+      weekNum: w, label: `Week ${w}`, type: 'volume',
+      days: planBuilderDays.map((d, i) => ({
+        dayNum: i + 1, label: d.name.trim(), completedSessionId: null,
+        exercises: d.exercises.map(ex => ({
+          name: ex.name.trim(), sets: ex.sets, reps: ex.reps,
+          targetWeightKg: ex.weightKg,
+          isBenchmark: LIFTS_SET.has(ex.name.trim()),
+          note: '',
+        })),
+      })),
+    });
+  }
+
+  const existing = getActivePlan();
+  if (existing) {
+    if (!confirm(`Replace current plan "${existing.name}"?\nYour completed sessions are kept.`)) return;
+    deletePlan(existing.id);
+  }
+
+  const newPlan = { id: uuid(), name, startDate: today(), active: true, weeks };
+  savePlan(newPlan);
+  currentPlanViewWeek = 1;
+  toast(`Plan "${name}" saved!`);
+  renderHome();
+  renderPlans();
+  showScreen('plans');
 }
 
 // ── Progress screen ───────────────────────────────────────────────
@@ -1178,6 +1649,17 @@ function initSync() {
     }
   });
 
+  // Continue without sync — use local storage only
+  document.getElementById('continue-local-btn')?.addEventListener('click', () => {
+    const profile = getProfile();
+    if (!profile) {
+      showScreen('onboarding');
+    } else {
+      renderHome();
+      showScreen('home');
+    }
+  });
+
   // Profile screen sign-in button (same handler)
   document.getElementById('sync-signin-btn')?.addEventListener('click', async () => {
     try {
@@ -1223,13 +1705,27 @@ function init() {
       if (screen === 'progress')   { renderProgress(); }
       if (screen === 'standards')  { renderStandards(); }
       if (screen === 'profile')    { renderProfile(); }
+      if (screen === 'plans')      { currentPlanViewWeek = null; renderPlans(); }
       showScreen(screen);
     });
   });
 
-  // Back buttons
+  // Back buttons — reset plan mode when leaving the logging screen
   document.querySelectorAll('.back-btn').forEach(btn => {
-    btn.addEventListener('click', () => showScreen(btn.dataset.to));
+    btn.addEventListener('click', () => {
+      if (btn.dataset.to === 'workout' && activePlanMode) {
+        activePlanMode    = false;
+        activePlanId      = null;
+        activePlanWeekNum = null;
+        activePlanDayNum  = null;
+        planAccessoryLifts = [];
+        currentPlanViewWeek = null;
+        renderPlans();
+        showScreen('plans');
+        return;
+      }
+      showScreen(btn.dataset.to);
+    });
   });
 
   // Finish workout
@@ -1283,6 +1779,43 @@ function init() {
   document.getElementById('share-download-btn')?.addEventListener('click', shareDownload);
   document.getElementById('share-native-btn')?.addEventListener('click', shareNative);
   document.getElementById('share-copy-btn')?.addEventListener('click', shareCopyText);
+
+  // Plans screen
+  document.getElementById('load-gvt-plan-btn')?.addEventListener('click', () => {
+    if (getActivePlan()) {
+      if (!confirm('Replace your current plan with the GVT template?\nCompleted sessions are kept.')) return;
+      deletePlan(getActivePlan().id);
+    }
+    const plan = createGVTPlan();
+    savePlan(plan);
+    toast('8-Week GVT plan loaded! Weights calculated from your PBs.');
+    currentPlanViewWeek = 1;
+    renderPlans();
+    renderHome();
+  });
+
+  document.getElementById('delete-plan-btn')?.addEventListener('click', () => {
+    if (!confirm('Remove this training plan? Your completed sessions are kept.')) return;
+    const plan = getActivePlan();
+    if (plan) { deletePlan(plan.id); }
+    currentPlanViewWeek = null;
+    renderPlans();
+    renderHome();
+    toast('Plan removed.');
+  });
+
+  // Plan builder
+  document.getElementById('build-custom-plan-btn')?.addEventListener('click', () => {
+    initPlanBuilder();
+    showScreen('plan-builder');
+  });
+  document.getElementById('pb-cancel-btn')?.addEventListener('click', () => showScreen('plans'));
+  document.getElementById('pb-add-day-btn')?.addEventListener('click', () => {
+    flushPlanBuilderInputs();
+    planBuilderDays.push({ name: '', exercises: [{ name: '', sets: 3, reps: 10, weightKg: null }] });
+    renderPlanBuilderDays();
+  });
+  document.getElementById('pb-save-btn')?.addEventListener('click', savePlanFromBuilder);
 
   // Onboarding
   initOnboarding();
