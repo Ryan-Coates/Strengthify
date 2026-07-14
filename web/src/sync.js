@@ -100,6 +100,7 @@ async function syncSignOut() {
 
 function _userDoc()       { return _syncDb.collection('users').doc(_syncUser.uid); }
 function _sessionDoc(id)  { return _userDoc().collection('sessions').doc(id); }
+function _planDoc(id)     { return _userDoc().collection('plans').doc(id); }
 
 // ── Fire-and-forget push (called after every local write) ─────────
 
@@ -140,6 +141,24 @@ function syncDeleteSession(sessionId) {
     .catch(e => console.error('[Sync] deleteSession failed:', e));
 }
 
+function syncPushPlan(plan) {
+  if (!_syncDb || !_syncUser) return;
+  console.log('[Sync] Pushing plan:', plan.id, plan.name);
+  _planDoc(plan.id)
+    .set(plan)
+    .then(() => console.log('[Sync] Plan pushed OK:', plan.id))
+    .catch(e => console.error('[Sync] pushPlan failed:', e));
+}
+
+function syncDeletePlan(planId) {
+  if (!_syncDb || !_syncUser) return;
+  console.log('[Sync] Deleting plan from cloud:', planId);
+  _planDoc(planId)
+    .delete()
+    .then(() => console.log('[Sync] Plan deleted OK:', planId))
+    .catch(e => console.error('[Sync] deletePlan failed:', e));
+}
+
 // ── Merge on sign-in ──────────────────────────────────────────────
 // Pull cloud data, merge with local (last write wins for profile/PBs,
 // union merge for sessions), then push any local-only sessions up.
@@ -150,14 +169,16 @@ async function syncMergeOnSignIn() {
   console.group('[Sync] Merge on sign-in');
   console.log('Pulling cloud data…');
 
-  // Pull cloud root doc + sessions subcollection in parallel
-  const [mainSnap, sessSnap] = await Promise.all([
+  // Pull cloud root doc, sessions, and plans subcollections in parallel
+  const [mainSnap, sessSnap, planSnap] = await Promise.all([
     _userDoc().get(),
     _userDoc().collection('sessions').get(),
+    _userDoc().collection('plans').get(),
   ]);
 
   const cloud       = mainSnap.exists ? mainSnap.data() : {};
   const cloudSess   = sessSnap.docs.map(d => d.data());
+  const cloudPlans  = planSnap.docs.map(d => d.data());
   const cloudProf   = cloud.profile  || null;
   const cloudPbs    = cloud.pbs      || null;
   const cloudProfTs = cloud.profileUpdatedAt || 0;
@@ -166,6 +187,7 @@ async function syncMergeOnSignIn() {
   const localProf   = getProfile();
   const localPbs    = getPBs();
   const localSess   = getSessions();
+  const localPlans  = getPlans();
   const localIds    = new Set(localSess.map(s => s.id));
   const cloudIds    = new Set(cloudSess.map(s => s.id));
 
@@ -220,6 +242,41 @@ async function syncMergeOnSignIn() {
         .then(() => console.log(`[Sync] Batch pushed ${Math.min(batchSize, newFromLocal.length - i)} sessions OK.`))
         .catch(e => console.error('[Sync] Batch push failed:', e));
     }
+  }
+
+  // ── Plans: merge by ID, updatedAt wins on conflict ───────────────
+  const localPlanMap = Object.fromEntries(localPlans.map(p => [p.id, p]));
+  const cloudPlanMap = Object.fromEntries(cloudPlans.map(p => [p.id, p]));
+  const allPlanIds   = new Set([...Object.keys(localPlanMap), ...Object.keys(cloudPlanMap)]);
+
+  let plansMerged = [];
+  const plansToCloud = [];
+
+  for (const id of allPlanIds) {
+    const local = localPlanMap[id];
+    const cloud = cloudPlanMap[id];
+    if (local && cloud) {
+      // Both exist — pick the one with the newer updatedAt
+      const winner = (cloud.updatedAt || 0) > (local.updatedAt || 0) ? cloud : local;
+      plansMerged.push(winner);
+      if (winner === local && (local.updatedAt || 0) > (cloud.updatedAt || 0)) {
+        plansToCloud.push(local);   // local is newer — push it up
+      }
+    } else if (local) {
+      plansMerged.push(local);
+      plansToCloud.push(local);     // cloud doesn't have it — push up
+    } else {
+      plansMerged.push(cloud);      // local doesn't have it — keep cloud copy
+    }
+  }
+
+  if (plansMerged.length > 0 || cloudPlans.length > 0) {
+    localStorage.setItem(KEYS.PLANS, JSON.stringify(plansMerged));
+    console.log(`Plans: merged ${plansMerged.length} plan(s) into localStorage.`);
+  }
+  if (plansToCloud.length > 0) {
+    plansToCloud.forEach(p => syncPushPlan(p));
+    console.log(`Plans: pushed ${plansToCloud.length} plan(s) to cloud.`);
   }
 
   console.log('Merge complete.');

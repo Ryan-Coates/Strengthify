@@ -616,16 +616,19 @@ function getPlans() {
 }
 
 function savePlan(plan) {
+  plan.updatedAt = Date.now();
   const plans = getPlans();
   const idx = plans.findIndex(p => p.id === plan.id);
   if (idx >= 0) plans[idx] = plan;
   else plans.push(plan);
   localStorage.setItem(KEYS.PLANS, JSON.stringify(plans));
+  if (typeof syncPushPlan === 'function') syncPushPlan(plan);
 }
 
 function deletePlan(planId) {
   const plans = getPlans().filter(p => p.id !== planId);
   localStorage.setItem(KEYS.PLANS, JSON.stringify(plans));
+  if (typeof syncDeletePlan === 'function') syncDeletePlan(planId);
 }
 
 function getActivePlan() {
@@ -641,7 +644,9 @@ function markPlanDayComplete(planId, weekNum, dayNum, sessionId) {
   const day = week.days.find(d => d.dayNum === dayNum);
   if (!day) return;
   day.completedSessionId = sessionId;
+  plan.updatedAt = Date.now();
   localStorage.setItem(KEYS.PLANS, JSON.stringify(plans));
+  if (typeof syncPushPlan === 'function') syncPushPlan(plan);
 }
 
 // Creates the pre-built 8-week GVT plan.
