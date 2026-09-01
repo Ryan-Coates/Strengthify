@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<!-- Built: 2026-07-14 09:49:22 -->
+<!-- Built: 2026-09-01 13:18:39 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -25,6 +25,10 @@
   --green:      #4caf7d;
   --amber:      #f5a623;
   --red:        #e05c5c;
+  --mob-orange: #f5a623;
+  --mob-blue:   #4a90d9;
+  --mob-green:  #4caf7d;
+  --mob-purple: #9b6ae0;
   --radius:     12px;
   --radius-sm:  8px;
   --shadow:     0 4px 24px rgba(0,0,0,0.45);
@@ -586,6 +590,25 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
   100% { transform: scale(1); opacity: 1; }
 }
 
+/* ── Mobility runner ─────────────────────────────────────────────── */
+.mobility-block-dots { display: flex; gap: 6px; padding: 0 16px 14px; }
+.mobility-dot {
+  flex: 1; height: 5px; border-radius: 99px; background: var(--surface2);
+  transition: background 0.2s;
+}
+.mobility-card {
+  text-align: center; padding: 32px 20px;
+  border-top: 4px solid var(--accent);
+  transition: border-color 0.2s;
+}
+.mobility-block-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--muted); margin-bottom: 16px;
+}
+.mobility-exercise-name { font-size: 23px; font-weight: 700; margin-bottom: 12px; }
+.mobility-exercise-desc { font-size: 14px; color: var(--muted); line-height: 1.55; margin-bottom: 18px; }
+.mobility-progress { font-size: 12px; color: var(--muted); }
+
   </style>
 </head>
 <body>
@@ -755,6 +778,14 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
       </button>
     </div>
 
+    <!-- Start mobility CTA -->
+    <div style="padding:0 16px 4px">
+      <button class="btn btn-secondary" id="home-start-mobility-btn" style="height:52px;display:flex;align-items:center;justify-content:center;gap:8px">
+        <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8"><circle cx="12" cy="4" r="2"/><path d="M12 22v-8l-4 3m4-3l4 3M7 9l5-2 5 2M8 13l4-6 4 6"/></svg>
+        Start mobility
+      </button>
+    </div>
+
     <!-- Recent sessions -->
     <div class="section-label">Recent workouts</div>
     <div id="recent-sessions"></div>
@@ -828,6 +859,32 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
 
     <div style="padding:0 16px 16px">
       <button class="btn btn-primary" id="results-done-btn">Done</button>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       MOBILITY
+  ══════════════════════════════════════════════════ -->
+  <section id="mobility-screen" class="hidden">
+
+    <div class="page-header">
+      <h1>Mobility</h1>
+      <button class="btn btn-ghost btn-sm" id="mobility-exit-btn">✕ Exit</button>
+    </div>
+
+    <div class="mobility-block-dots" id="mobility-block-dots"></div>
+
+    <div class="card mobility-card" id="mobility-card">
+      <div class="mobility-block-label" id="mobility-block-label"></div>
+      <div class="mobility-exercise-name" id="mobility-exercise-name"></div>
+      <div class="mobility-exercise-desc" id="mobility-exercise-desc"></div>
+      <div class="mobility-progress" id="mobility-progress"></div>
+    </div>
+
+    <div style="padding:0 16px 16px">
+      <button class="btn btn-primary" id="mobility-next-btn" style="height:52px"></button>
     </div>
 
   </section>
@@ -1816,6 +1873,60 @@ const LIFTS = [
   'Push-up',
 ];
 
+// ── Mobility Routine ─────────────────────────────────────────────────
+// 4 blocks worked through in order; each ~5 minutes. Colors used for
+// the block progress dots/card accent in the mobility runner UI.
+
+const MOBILITY_ROUTINE = {
+  title: '20-Minute Mobility Routine',
+  footer: 'Rotate these routines throughout the week! Focus on mobility, stability, and recovery.',
+  blocks: [
+    {
+      name: 'Warm-Up Mobility Flow',
+      color: 'orange',
+      exercises: [
+        { name: 'Cat-Cow', description: 'Arch and round your back slowly, breathing through each movement.' },
+        { name: 'Thread the Needle', description: 'From all-fours, slide one arm under your body and rotate to stretch upper back.' },
+        { name: 'Hip Circles', description: 'Rotate hips in large circles while keeping torso stable.' },
+        { name: 'Deep Squat Hold', description: 'Sit into a deep squat, chest up, gently rock side to side.' },
+      ],
+    },
+    {
+      name: 'Auxiliary Strength',
+      color: 'blue',
+      exercises: [
+        { name: 'Scapular Push-Ups', description: 'In plank, protract and retract shoulder blades without bending arms.' },
+        { name: 'Push-Ups', description: 'Perform 8-15 controlled reps, keeping your body in a straight line from head to heels.' },
+        { name: 'Y-T-W Raises', description: 'Lift arms into Y, T, and W shapes slowly to activate upper back.' },
+        { name: 'B-Stance Glute Bridge', description: 'One foot forward, lift hips using mainly the back leg\u2019s glute.' },
+        { name: 'Plank Hold', description: 'Hold a forearm plank for 30-45 seconds, keeping hips level and core braced.' },
+        { name: 'Dead Bugs', description: 'Lower opposite arm and leg while keeping lower back pressed down.' },
+      ],
+    },
+    {
+      name: 'Mobility Strength',
+      color: 'green',
+      exercises: [
+        { name: 'Knee-Over-Toe Split Squat', description: 'Front knee travels forward over toes while keeping heel down.' },
+        { name: '90/90 Transitions', description: 'Rotate knees side to side while keeping feet grounded.' },
+        { name: 'Russian Twists', description: 'Rotate torso side to side, tapping the floor each side for 12-16 total reps.' },
+        { name: 'Hamstring Sweep', description: 'Hinge forward and reach toward foot to stretch hamstrings.' },
+        { name: 'Lat Stretch', description: 'Hold onto a surface, sink hips back, lightly pull against the stretch.' },
+      ],
+    },
+    {
+      name: 'Recovery & Reset',
+      color: 'purple',
+      exercises: [
+        { name: 'Box Breathing', description: 'Inhale 4 sec, hold 4 sec, exhale 4 sec, hold 4 sec.' },
+        { name: 'Pec Stretch', description: 'Forearm on doorway, step forward until chest opens.' },
+        { name: 'Child\u2019s Pose Reach', description: 'Sit back on heels, reach arms to one side to stretch lats and ribs.' },
+        { name: 'Neck CARs', description: 'Slow, controlled circles with your head exploring full range.' },
+      ],
+    },
+  ],
+};
+
 // ── Training Plans ─────────────────────────────────────────────────
 
 function getPlans() {
@@ -2424,7 +2535,7 @@ async function syncMergeOnSignIn() {
 
 // ── Screen registry ───────────────────────────────────────────────
 
-const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder'];
+const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder', 'mobility'];
 let currentScreen = null;
 const KG_PER_LB = 0.45359237;
 const LB_PER_KG = 1 / KG_PER_LB;
@@ -4114,6 +4225,62 @@ function initSync() {
   });
 }
 
+// ── Mobility routine ──────────────────────────────────────────────
+
+let mobilityBlockIdx = 0;
+let mobilityExerciseIdx = 0;
+const MOBILITY_DOT_COLORS = { orange: 'var(--mob-orange)', blue: 'var(--mob-blue)', green: 'var(--mob-green)', purple: 'var(--mob-purple)' };
+
+function startMobility() {
+  mobilityBlockIdx = 0;
+  mobilityExerciseIdx = 0;
+  renderMobilityExercise();
+  showScreen('mobility');
+}
+
+function renderMobilityExercise() {
+  const block    = MOBILITY_ROUTINE.blocks[mobilityBlockIdx];
+  const exercise = block.exercises[mobilityExerciseIdx];
+  const dotColor = MOBILITY_DOT_COLORS[block.color] || 'var(--accent)';
+
+  document.getElementById('mobility-card').style.borderTopColor = dotColor;
+  document.getElementById('mobility-block-label').textContent = `Block ${mobilityBlockIdx + 1} of ${MOBILITY_ROUTINE.blocks.length} \u00b7 ${block.name}`;
+  document.getElementById('mobility-exercise-name').textContent = exercise.name;
+  document.getElementById('mobility-exercise-desc').textContent = exercise.description;
+  document.getElementById('mobility-progress').textContent = `Exercise ${mobilityExerciseIdx + 1} of ${block.exercises.length}`;
+
+  const isLastExerciseInBlock = mobilityExerciseIdx === block.exercises.length - 1;
+  const isLastBlock = mobilityBlockIdx === MOBILITY_ROUTINE.blocks.length - 1;
+  document.getElementById('mobility-next-btn').textContent =
+    (isLastExerciseInBlock && isLastBlock) ? 'Finish routine' : (isLastExerciseInBlock ? 'Next block \u2192' : 'Next exercise \u2192');
+
+  const dotsWrap = document.getElementById('mobility-block-dots');
+  dotsWrap.innerHTML = '';
+  MOBILITY_ROUTINE.blocks.forEach((b, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'mobility-dot';
+    if (i <= mobilityBlockIdx) dot.style.background = MOBILITY_DOT_COLORS[b.color] || 'var(--accent)';
+    dotsWrap.appendChild(dot);
+  });
+}
+
+function advanceMobility() {
+  const block = MOBILITY_ROUTINE.blocks[mobilityBlockIdx];
+  if (mobilityExerciseIdx < block.exercises.length - 1) {
+    mobilityExerciseIdx++;
+    renderMobilityExercise();
+    return;
+  }
+  if (mobilityBlockIdx < MOBILITY_ROUTINE.blocks.length - 1) {
+    mobilityBlockIdx++;
+    mobilityExerciseIdx = 0;
+    renderMobilityExercise();
+    return;
+  }
+  toast('Mobility routine complete!');
+  showScreen('home');
+}
+
 // ── App init ──────────────────────────────────────────────────────
 
 function init() {
@@ -4236,6 +4403,11 @@ function init() {
     renderPlanBuilderDays();
   });
   document.getElementById('pb-save-btn')?.addEventListener('click', savePlanFromBuilder);
+
+  // Mobility
+  document.getElementById('home-start-mobility-btn')?.addEventListener('click', startMobility);
+  document.getElementById('mobility-exit-btn')?.addEventListener('click', () => showScreen('home'));
+  document.getElementById('mobility-next-btn')?.addEventListener('click', advanceMobility);
 
   // Onboarding
   initOnboarding();

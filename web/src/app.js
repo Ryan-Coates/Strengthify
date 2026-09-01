@@ -4,7 +4,7 @@
 
 // ── Screen registry ───────────────────────────────────────────────
 
-const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder'];
+const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder', 'mobility'];
 let currentScreen = null;
 const KG_PER_LB = 0.45359237;
 const LB_PER_KG = 1 / KG_PER_LB;
@@ -1694,6 +1694,62 @@ function initSync() {
   });
 }
 
+// ── Mobility routine ──────────────────────────────────────────────
+
+let mobilityBlockIdx = 0;
+let mobilityExerciseIdx = 0;
+const MOBILITY_DOT_COLORS = { orange: 'var(--mob-orange)', blue: 'var(--mob-blue)', green: 'var(--mob-green)', purple: 'var(--mob-purple)' };
+
+function startMobility() {
+  mobilityBlockIdx = 0;
+  mobilityExerciseIdx = 0;
+  renderMobilityExercise();
+  showScreen('mobility');
+}
+
+function renderMobilityExercise() {
+  const block    = MOBILITY_ROUTINE.blocks[mobilityBlockIdx];
+  const exercise = block.exercises[mobilityExerciseIdx];
+  const dotColor = MOBILITY_DOT_COLORS[block.color] || 'var(--accent)';
+
+  document.getElementById('mobility-card').style.borderTopColor = dotColor;
+  document.getElementById('mobility-block-label').textContent = `Block ${mobilityBlockIdx + 1} of ${MOBILITY_ROUTINE.blocks.length} \u00b7 ${block.name}`;
+  document.getElementById('mobility-exercise-name').textContent = exercise.name;
+  document.getElementById('mobility-exercise-desc').textContent = exercise.description;
+  document.getElementById('mobility-progress').textContent = `Exercise ${mobilityExerciseIdx + 1} of ${block.exercises.length}`;
+
+  const isLastExerciseInBlock = mobilityExerciseIdx === block.exercises.length - 1;
+  const isLastBlock = mobilityBlockIdx === MOBILITY_ROUTINE.blocks.length - 1;
+  document.getElementById('mobility-next-btn').textContent =
+    (isLastExerciseInBlock && isLastBlock) ? 'Finish routine' : (isLastExerciseInBlock ? 'Next block \u2192' : 'Next exercise \u2192');
+
+  const dotsWrap = document.getElementById('mobility-block-dots');
+  dotsWrap.innerHTML = '';
+  MOBILITY_ROUTINE.blocks.forEach((b, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'mobility-dot';
+    if (i <= mobilityBlockIdx) dot.style.background = MOBILITY_DOT_COLORS[b.color] || 'var(--accent)';
+    dotsWrap.appendChild(dot);
+  });
+}
+
+function advanceMobility() {
+  const block = MOBILITY_ROUTINE.blocks[mobilityBlockIdx];
+  if (mobilityExerciseIdx < block.exercises.length - 1) {
+    mobilityExerciseIdx++;
+    renderMobilityExercise();
+    return;
+  }
+  if (mobilityBlockIdx < MOBILITY_ROUTINE.blocks.length - 1) {
+    mobilityBlockIdx++;
+    mobilityExerciseIdx = 0;
+    renderMobilityExercise();
+    return;
+  }
+  toast('Mobility routine complete!');
+  showScreen('home');
+}
+
 // ── App init ──────────────────────────────────────────────────────
 
 function init() {
@@ -1816,6 +1872,11 @@ function init() {
     renderPlanBuilderDays();
   });
   document.getElementById('pb-save-btn')?.addEventListener('click', savePlanFromBuilder);
+
+  // Mobility
+  document.getElementById('home-start-mobility-btn')?.addEventListener('click', startMobility);
+  document.getElementById('mobility-exit-btn')?.addEventListener('click', () => showScreen('home'));
+  document.getElementById('mobility-next-btn')?.addEventListener('click', advanceMobility);
 
   // Onboarding
   initOnboarding();

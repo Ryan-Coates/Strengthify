@@ -608,6 +608,60 @@ const LIFTS = [
   'Push-up',
 ];
 
+// ── Mobility Routine ─────────────────────────────────────────────────
+// 4 blocks worked through in order; each ~5 minutes. Colors used for
+// the block progress dots/card accent in the mobility runner UI.
+
+const MOBILITY_ROUTINE = {
+  title: '20-Minute Mobility Routine',
+  footer: 'Rotate these routines throughout the week! Focus on mobility, stability, and recovery.',
+  blocks: [
+    {
+      name: 'Warm-Up Mobility Flow',
+      color: 'orange',
+      exercises: [
+        { name: 'Cat-Cow', description: 'Arch and round your back slowly, breathing through each movement.' },
+        { name: 'Thread the Needle', description: 'From all-fours, slide one arm under your body and rotate to stretch upper back.' },
+        { name: 'Hip Circles', description: 'Rotate hips in large circles while keeping torso stable.' },
+        { name: 'Deep Squat Hold', description: 'Sit into a deep squat, chest up, gently rock side to side.' },
+      ],
+    },
+    {
+      name: 'Auxiliary Strength',
+      color: 'blue',
+      exercises: [
+        { name: 'Scapular Push-Ups', description: 'In plank, protract and retract shoulder blades without bending arms.' },
+        { name: 'Push-Ups', description: 'Perform 8-15 controlled reps, keeping your body in a straight line from head to heels.' },
+        { name: 'Y-T-W Raises', description: 'Lift arms into Y, T, and W shapes slowly to activate upper back.' },
+        { name: 'B-Stance Glute Bridge', description: 'One foot forward, lift hips using mainly the back leg\u2019s glute.' },
+        { name: 'Plank Hold', description: 'Hold a forearm plank for 30-45 seconds, keeping hips level and core braced.' },
+        { name: 'Dead Bugs', description: 'Lower opposite arm and leg while keeping lower back pressed down.' },
+      ],
+    },
+    {
+      name: 'Mobility Strength',
+      color: 'green',
+      exercises: [
+        { name: 'Knee-Over-Toe Split Squat', description: 'Front knee travels forward over toes while keeping heel down.' },
+        { name: '90/90 Transitions', description: 'Rotate knees side to side while keeping feet grounded.' },
+        { name: 'Russian Twists', description: 'Rotate torso side to side, tapping the floor each side for 12-16 total reps.' },
+        { name: 'Hamstring Sweep', description: 'Hinge forward and reach toward foot to stretch hamstrings.' },
+        { name: 'Lat Stretch', description: 'Hold onto a surface, sink hips back, lightly pull against the stretch.' },
+      ],
+    },
+    {
+      name: 'Recovery & Reset',
+      color: 'purple',
+      exercises: [
+        { name: 'Box Breathing', description: 'Inhale 4 sec, hold 4 sec, exhale 4 sec, hold 4 sec.' },
+        { name: 'Pec Stretch', description: 'Forearm on doorway, step forward until chest opens.' },
+        { name: 'Child\u2019s Pose Reach', description: 'Sit back on heels, reach arms to one side to stretch lats and ribs.' },
+        { name: 'Neck CARs', description: 'Slow, controlled circles with your head exploring full range.' },
+      ],
+    },
+  ],
+};
+
 // ── Training Plans ─────────────────────────────────────────────────
 
 function getPlans() {

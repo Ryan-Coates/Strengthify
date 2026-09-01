@@ -178,6 +178,14 @@
       </button>
     </div>
 
+    <!-- Start mobility CTA -->
+    <div style="padding:0 16px 4px">
+      <button class="btn btn-secondary" id="home-start-mobility-btn" style="height:52px;display:flex;align-items:center;justify-content:center;gap:8px">
+        <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8"><circle cx="12" cy="4" r="2"/><path d="M12 22v-8l-4 3m4-3l4 3M7 9l5-2 5 2M8 13l4-6 4 6"/></svg>
+        Start mobility
+      </button>
+    </div>
+
     <!-- Recent sessions -->
     <div class="section-label">Recent workouts</div>
     <div id="recent-sessions"></div>
@@ -251,6 +259,32 @@
 
     <div style="padding:0 16px 16px">
       <button class="btn btn-primary" id="results-done-btn">Done</button>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       MOBILITY
+  ══════════════════════════════════════════════════ -->
+  <section id="mobility-screen" class="hidden">
+
+    <div class="page-header">
+      <h1>Mobility</h1>
+      <button class="btn btn-ghost btn-sm" id="mobility-exit-btn">✕ Exit</button>
+    </div>
+
+    <div class="mobility-block-dots" id="mobility-block-dots"></div>
+
+    <div class="card mobility-card" id="mobility-card">
+      <div class="mobility-block-label" id="mobility-block-label"></div>
+      <div class="mobility-exercise-name" id="mobility-exercise-name"></div>
+      <div class="mobility-exercise-desc" id="mobility-exercise-desc"></div>
+      <div class="mobility-progress" id="mobility-progress"></div>
+    </div>
+
+    <div style="padding:0 16px 16px">
+      <button class="btn btn-primary" id="mobility-next-btn" style="height:52px"></button>
     </div>
 
   </section>

@@ -14,6 +14,10 @@
   --green:      #4caf7d;
   --amber:      #f5a623;
   --red:        #e05c5c;
+  --mob-orange: #f5a623;
+  --mob-blue:   #4a90d9;
+  --mob-green:  #4caf7d;
+  --mob-purple: #9b6ae0;
   --radius:     12px;
   --radius-sm:  8px;
   --shadow:     0 4px 24px rgba(0,0,0,0.45);
@@ -574,3 +578,22 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
   0% { transform: scale(0.96); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
+
+/* ── Mobility runner ─────────────────────────────────────────────── */
+.mobility-block-dots { display: flex; gap: 6px; padding: 0 16px 14px; }
+.mobility-dot {
+  flex: 1; height: 5px; border-radius: 99px; background: var(--surface2);
+  transition: background 0.2s;
+}
+.mobility-card {
+  text-align: center; padding: 32px 20px;
+  border-top: 4px solid var(--accent);
+  transition: border-color 0.2s;
+}
+.mobility-block-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--muted); margin-bottom: 16px;
+}
+.mobility-exercise-name { font-size: 23px; font-weight: 700; margin-bottom: 12px; }
+.mobility-exercise-desc { font-size: 14px; color: var(--muted); line-height: 1.55; margin-bottom: 18px; }
+.mobility-progress { font-size: 12px; color: var(--muted); }
