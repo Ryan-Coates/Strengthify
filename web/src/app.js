@@ -1700,9 +1700,17 @@ let mobilityBlockIdx = 0;
 let mobilityExerciseIdx = 0;
 const MOBILITY_DOT_COLORS = { orange: 'var(--mob-orange)', blue: 'var(--mob-blue)', green: 'var(--mob-green)', purple: 'var(--mob-purple)' };
 
+// Random index into block.exercises, avoiding an immediate repeat when possible
+function randomMobilityExerciseIdx(block, excludeIdx) {
+  if (block.exercises.length === 1) return 0;
+  let idx;
+  do { idx = Math.floor(Math.random() * block.exercises.length); } while (idx === excludeIdx);
+  return idx;
+}
+
 function startMobility() {
   mobilityBlockIdx = 0;
-  mobilityExerciseIdx = 0;
+  mobilityExerciseIdx = randomMobilityExerciseIdx(MOBILITY_ROUTINE.blocks[0], -1);
   renderMobilityExercise();
   showScreen('mobility');
 }
@@ -1711,17 +1719,14 @@ function renderMobilityExercise() {
   const block    = MOBILITY_ROUTINE.blocks[mobilityBlockIdx];
   const exercise = block.exercises[mobilityExerciseIdx];
   const dotColor = MOBILITY_DOT_COLORS[block.color] || 'var(--accent)';
+  const isLastBlock = mobilityBlockIdx === MOBILITY_ROUTINE.blocks.length - 1;
 
   document.getElementById('mobility-card').style.borderTopColor = dotColor;
   document.getElementById('mobility-block-label').textContent = `Block ${mobilityBlockIdx + 1} of ${MOBILITY_ROUTINE.blocks.length} \u00b7 ${block.name}`;
   document.getElementById('mobility-exercise-name').textContent = exercise.name;
   document.getElementById('mobility-exercise-desc').textContent = exercise.description;
-  document.getElementById('mobility-progress').textContent = `Exercise ${mobilityExerciseIdx + 1} of ${block.exercises.length}`;
 
-  const isLastExerciseInBlock = mobilityExerciseIdx === block.exercises.length - 1;
-  const isLastBlock = mobilityBlockIdx === MOBILITY_ROUTINE.blocks.length - 1;
-  document.getElementById('mobility-next-btn').textContent =
-    (isLastExerciseInBlock && isLastBlock) ? 'Finish routine' : (isLastExerciseInBlock ? 'Next block \u2192' : 'Next exercise \u2192');
+  document.getElementById('mobility-next-block-btn').classList.toggle('hidden', isLastBlock);
 
   const dotsWrap = document.getElementById('mobility-block-dots');
   dotsWrap.innerHTML = '';
@@ -1733,19 +1738,20 @@ function renderMobilityExercise() {
   });
 }
 
-function advanceMobility() {
+function nextMobilityExercise() {
   const block = MOBILITY_ROUTINE.blocks[mobilityBlockIdx];
-  if (mobilityExerciseIdx < block.exercises.length - 1) {
-    mobilityExerciseIdx++;
-    renderMobilityExercise();
-    return;
-  }
-  if (mobilityBlockIdx < MOBILITY_ROUTINE.blocks.length - 1) {
-    mobilityBlockIdx++;
-    mobilityExerciseIdx = 0;
-    renderMobilityExercise();
-    return;
-  }
+  mobilityExerciseIdx = randomMobilityExerciseIdx(block, mobilityExerciseIdx);
+  renderMobilityExercise();
+}
+
+function nextMobilityBlock() {
+  if (mobilityBlockIdx >= MOBILITY_ROUTINE.blocks.length - 1) return;
+  mobilityBlockIdx++;
+  mobilityExerciseIdx = randomMobilityExerciseIdx(MOBILITY_ROUTINE.blocks[mobilityBlockIdx], -1);
+  renderMobilityExercise();
+}
+
+function finishMobility() {
   toast('Mobility routine complete!');
   showScreen('home');
 }
@@ -1876,7 +1882,9 @@ function init() {
   // Mobility
   document.getElementById('home-start-mobility-btn')?.addEventListener('click', startMobility);
   document.getElementById('mobility-exit-btn')?.addEventListener('click', () => showScreen('home'));
-  document.getElementById('mobility-next-btn')?.addEventListener('click', advanceMobility);
+  document.getElementById('mobility-next-exercise-btn')?.addEventListener('click', nextMobilityExercise);
+  document.getElementById('mobility-next-block-btn')?.addEventListener('click', nextMobilityBlock);
+  document.getElementById('mobility-finish-btn')?.addEventListener('click', finishMobility);
 
   // Onboarding
   initOnboarding();
