@@ -25,6 +25,42 @@
         {
           "name": "Deep Squat Hold",
           "description": "Sit into a deep squat, chest up, gently rock side to side."
+        },
+        {
+          "name": "Banded Shoulder Dislocates",
+          "description": "Hold a band wide with both hands, raise it overhead and back behind you, keeping arms straight throughout."
+        },
+        {
+          "name": "World's Greatest Stretch",
+          "description": "From a deep lunge, rotate your torso and reach one arm to the sky to open hips and upper back."
+        },
+        {
+          "name": "Arm Circles",
+          "description": "Make large controlled circles with straight arms, forward then reverse, to warm up the shoulders."
+        },
+        {
+          "name": "Ankle Circles",
+          "description": "Lift one foot and rotate the ankle through its full range in each direction."
+        },
+        {
+          "name": "Leg Swings (Front-to-Back)",
+          "description": "Holding a support, swing one leg forward and back with a relaxed, growing range."
+        },
+        {
+          "name": "Leg Swings (Side-to-Side)",
+          "description": "Holding a support, swing one leg across your body and back out to open the hip."
+        },
+        {
+          "name": "Standing Torso Twists",
+          "description": "Rotate your upper body side to side with loose arms to warm up the spine."
+        },
+        {
+          "name": "Inchworm to Plank",
+          "description": "Hinge over, walk your hands out to a plank, pause, then walk your feet back in to your hands."
+        },
+        {
+          "name": "Wrist Circles & Stretch",
+          "description": "Rotate each wrist through its full range, then gently press the palm back to stretch the forearm."
         }
       ]
     },
@@ -37,6 +73,10 @@
           "description": "In plank, protract and retract shoulder blades without bending arms."
         },
         {
+          "name": "Push-Ups",
+          "description": "Perform 8-15 controlled reps, keeping your body in a straight line from head to heels."
+        },
+        {
           "name": "Y-T-W Raises",
           "description": "Lift arms into Y, T, and W shapes slowly to activate upper back."
         },
@@ -45,8 +85,60 @@
           "description": "One foot forward, lift hips using mainly the back leg’s glute."
         },
         {
+          "name": "Banded Glute Bridge",
+          "description": "Loop a band above your knees, drive hips up while pressing knees outward against the band."
+        },
+        {
+          "name": "Band Pull-Aparts",
+          "description": "Hold a resistance band at shoulder width and pull it apart, squeezing shoulder blades together for 12-15 reps."
+        },
+        {
+          "name": "Banded Y-Raises",
+          "description": "Anchor a band low, raise both arms overhead into a Y shape against the resistance."
+        },
+        {
+          "name": "Banded Face Pulls",
+          "description": "Anchor a band at chest height, pull toward your face with elbows high, squeezing shoulder blades together."
+        },
+        {
+          "name": "Banded Rows",
+          "description": "Anchor a band in front of you, row both hands to your ribs, squeezing shoulder blades together."
+        },
+        {
+          "name": "Banded External Rotations",
+          "description": "Elbow pinned to your side, rotate your forearm outward against band resistance to strengthen the rotator cuff."
+        },
+        {
+          "name": "Plank Hold",
+          "description": "Hold a forearm plank for 30-45 seconds, keeping hips level and core braced."
+        },
+        {
           "name": "Dead Bugs",
           "description": "Lower opposite arm and leg while keeping lower back pressed down."
+        },
+        {
+          "name": "Bird Dog",
+          "description": "From all-fours, extend one arm and the opposite leg while keeping hips level and core braced."
+        },
+        {
+          "name": "Superman Hold",
+          "description": "Lie face down and lift your arms, chest, and legs off the floor, holding briefly at the top."
+        },
+        {
+          "name": "Side Plank",
+          "description": "Prop up on one forearm and lift your hips into a straight line, holding each side."
+        },
+        {
+          "name": "Wall Slides",
+          "description": "Back flat against a wall, slide your arms up and down while keeping contact with the wall."
+        },
+        {
+          "name": "Reverse Snow Angels",
+          "description": "Lying face down, sweep your arms overhead and back like a snow angel, squeezing shoulder blades."
+        },
+        {
+          "name": "Single-Leg Glute Bridge",
+          "description": "Drive one heel down to lift your hips while the other leg stays extended out straight."
         }
       ]
     },
@@ -63,12 +155,52 @@
           "description": "Rotate knees side to side while keeping feet grounded."
         },
         {
+          "name": "Russian Twists",
+          "description": "Rotate torso side to side, tapping the floor each side for 12-16 total reps."
+        },
+        {
+          "name": "Halos",
+          "description": "Circle a light weight or band around your head, reversing direction halfway through."
+        },
+        {
+          "name": "Banded Lateral Walks",
+          "description": "Loop a band above your knees and take side steps, keeping tension on the band and hips level."
+        },
+        {
+          "name": "Banded Clamshells",
+          "description": "Loop a band above your knees, lie on your side and open your top knee against the resistance."
+        },
+        {
+          "name": "Banded Good Mornings",
+          "description": "Stand on a band, hinge at the hips keeping a flat back, feeling tension build through your hamstrings."
+        },
+        {
           "name": "Hamstring Sweep",
           "description": "Hinge forward and reach toward foot to stretch hamstrings."
         },
         {
           "name": "Lat Stretch",
           "description": "Hold onto a surface, sink hips back, lightly pull against the stretch."
+        },
+        {
+          "name": "Cossack Squat",
+          "description": "Shift side to side into a deep lateral squat, keeping the straight leg's heel down."
+        },
+        {
+          "name": "Frog Stretch",
+          "description": "Knees wide on all-fours, rock your hips back and forward to open the inner thighs."
+        },
+        {
+          "name": "Pigeon Pose",
+          "description": "Front shin angled forward on the floor, sink your hips down to stretch the glute and hip."
+        },
+        {
+          "name": "Couch Stretch",
+          "description": "Rear foot propped up behind you, drive your hips forward to stretch the quad and hip flexor."
+        },
+        {
+          "name": "Spiderman Lunge with Rotation",
+          "description": "Step into a deep lunge, plant both hands down, and rotate one arm toward the sky."
         }
       ]
     },
@@ -85,12 +217,44 @@
           "description": "Forearm on doorway, step forward until chest opens."
         },
         {
+          "name": "Banded Hamstring Stretch",
+          "description": "Loop a band around one foot and gently pull the leg straight toward you to deepen the hamstring stretch."
+        },
+        {
+          "name": "Banded Hip Flexor Stretch",
+          "description": "Loop a band low around your hip, step forward and gently shift your weight to deepen the hip flexor stretch."
+        },
+        {
           "name": "Child's Pose Reach",
           "description": "Sit back on heels, reach arms to one side to stretch lats and ribs."
         },
         {
           "name": "Neck CARs",
           "description": "Slow, controlled circles with your head exploring full range."
+        },
+        {
+          "name": "Downward Dog",
+          "description": "Hips lifted high, heels reaching toward the floor, arms and back long."
+        },
+        {
+          "name": "Figure-4 Stretch",
+          "description": "Lying down, cross one ankle over the opposite knee and pull the far thigh in to stretch the glute."
+        },
+        {
+          "name": "Cobra Stretch",
+          "description": "Lying face down, press your chest up while keeping hips down to extend the spine."
+        },
+        {
+          "name": "Cross-Body Shoulder Stretch",
+          "description": "Pull one arm across your chest, holding just above the elbow, to stretch the rear shoulder."
+        },
+        {
+          "name": "Supine Spinal Twist",
+          "description": "Lying on your back, drop both knees to one side while keeping shoulders flat on the floor."
+        },
+        {
+          "name": "Legs-Up-The-Wall",
+          "description": "Lie on your back with legs resting up a wall and breathe slowly to help the body downshift."
         }
       ]
     }
