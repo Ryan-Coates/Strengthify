@@ -35,6 +35,8 @@ Open **My weekly blocks** on Home, or access it from Plans. Choose a start date
 - Progress is saved locally, included in JSON backups, and synced when signed in.
   Cloud conflicts use the most recently saved whole commitment, like training plans;
   simultaneous offline edits on different devices are not combined.
+  Cloud storage wraps each week's check-offs in an object for Firestore compatibility;
+  local data and JSON backups retain the original week-by-week arrays.
 - **Start a new commitment** allows another date after confirmation. It replaces
   the previous checklist, so export a backup first if you want to keep it.
 

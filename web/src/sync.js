@@ -123,9 +123,27 @@ function syncPushPBs(pbs) {
     .catch(e => console.error('[Sync] pushPBs failed:', e));
 }
 
-function syncPushRoutine(routine, updatedAt) {
+function routineToCloud(routine) {
+  if (routine === null) return null;
+  validateRoutine(routine);
+  // Firestore permits arrays of maps, but not arrays directly inside arrays.
+  return { ...routine, completed: routine.completed.map(blocks => ({ blocks })) };
+}
+
+function routineFromCloud(routine) {
+  if (routine == null) return null;
+  const decoded = {
+    ...routine,
+    completed: Array.isArray(routine.completed) ?
+      routine.completed.map(week => Array.isArray(week) ? week : week?.blocks) : routine.completed,
+  };
+  validateRoutine(decoded);
+  return decoded;
+}
+
+async function syncPushRoutine(routine, updatedAt) {
   if (!_syncDb || !_syncUser) return;
-  return _userDoc().set({ routine, routineUpdatedAt: updatedAt }, { merge: true });
+  return _userDoc().set({ routine: routineToCloud(routine), routineUpdatedAt: updatedAt }, { merge: true });
 }
 
 function syncPushSession(session) {
@@ -193,8 +211,8 @@ async function syncMergeOnSignIn() {
   const localRoutineTs = Number(localStorage.getItem(KEYS.ROUTINE_TS) || localRoutine?.updatedAt || 0);
 
   if (cloudRoutineTs > localRoutineTs) {
-    if (cloud.routine != null) validateRoutine(cloud.routine);
-    localStorage.setItem(KEYS.ROUTINE, JSON.stringify(cloud.routine || null));
+    const routine = routineFromCloud(cloud.routine);
+    localStorage.setItem(KEYS.ROUTINE, JSON.stringify(routine));
     localStorage.setItem(KEYS.ROUTINE_TS, String(cloudRoutineTs));
   } else if (localRoutineTs > cloudRoutineTs) {
     await syncPushRoutine(localRoutine, localRoutineTs);

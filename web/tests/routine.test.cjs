@@ -116,17 +116,29 @@ test('backup round-trip retains progress and old backups do not overwrite the co
   assert.ok(a.run('Number(localStorage.getItem(KEYS.ROUTINE_TS))') > 0);
 });
 
+function assertFirestoreData(value) {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      if (Array.isArray(item)) throw new Error('Nested arrays are not supported');
+      assertFirestoreData(item);
+    }
+  } else if (value && typeof value === 'object') {
+    Object.values(value).forEach(assertFirestoreData);
+  }
+}
+
 function cloudApp(cloud) {
   const a = app();
   a.context.cloud = cloud;
   a.context.writes = [];
+  a.context.assertFirestoreData = assertFirestoreData;
   a.run(`
     _syncUser = { uid: 'test-user' };
     _syncDb = {
       collection: () => ({
         doc: () => ({
           get: async () => ({ exists: true, data: () => cloud }),
-          set: async data => { writes.push(data); },
+          set: data => { assertFirestoreData(data); writes.push(data); return Promise.resolve(); },
           collection: () => ({ get: async () => ({ docs: [] }) }),
         }),
       }),
@@ -143,10 +155,13 @@ test('cloud merge restores a newer routine and explicit clearing, not an older c
   const remote = a.data('getRoutine()');
   remote.completed[0][0] = true;
   remote.updatedAt += 1000;
-  a.context.cloud.routine = remote;
+  a.context.remote = remote;
+  a.context.cloud.routine = a.data('routineToCloud(remote)');
   a.context.cloud.routineUpdatedAt = remote.updatedAt;
   await a.run('syncMergeOnSignIn()');
   assert.equal(a.run('getRoutine().completed[0][0]'), true);
+  assert.equal(a.run('getRoutine().completed.length'), 8);
+  assert.equal(a.run('getRoutine().completed[0].length'), 10);
   assert.equal(a.context.writes.length, 0);
   a.context.cloud.routine = null;
   a.context.cloud.routineUpdatedAt += 1000;
@@ -191,4 +206,51 @@ test('offline cloud writes preserve local check-offs and notify the user', async
   assert.equal(a.run('getRoutine().completed[0][0]'), true);
   assert.equal(a.context.notifications.length, 2);
   assert.match(a.context.notifications[0], /saved on this device.*cloud sync failed/);
+});
+
+test('Firestore payload uses eight week maps and round-trips all eighty check-offs', async () => {
+  const a = cloudApp({});
+  a.run("createRoutine('2026-10-26')");
+  a.run("for (let block = 0; block < 10; block++) setRoutineBlock(0, block, true, '2026-10-26')");
+  a.run("setRoutineBlock(7, 9, true, '2026-12-20')");
+  await Promise.resolve();
+  const original = a.data('getRoutine()');
+  assert.throws(() => assertFirestoreData(original), /Nested arrays/);
+  const payload = a.context.writes.at(-1).routine;
+  assertFirestoreData(payload);
+  assert.equal(payload.completed.length, 8);
+  assert.equal(payload.completed[0].blocks.length, 10);
+  assert.equal(payload.completed[7].blocks[9], true);
+  a.context.payload = payload;
+  assert.deepEqual(a.data('routineFromCloud(payload)'), original);
+  assert.deepEqual(a.data('getRoutine()'), original);
+  a.run("saveRoutine(null)");
+  await Promise.resolve();
+  assert.equal(a.context.writes.at(-1).routine, null);
+});
+
+test('cloud decoding accepts the original shape but rejects malformed weeks before overwriting local data', async () => {
+  const a = cloudApp({});
+  a.run("createRoutine('2026-10-26')");
+  const original = a.data('getRoutine()');
+  a.context.original = original;
+  assert.deepEqual(a.data('routineFromCloud(original)'), original);
+  a.context.cloud.routine = { ...original, completed: [{ blocks: [true] }] };
+  a.context.cloud.routineUpdatedAt = original.updatedAt + 1000;
+  await assert.rejects(a.run('syncMergeOnSignIn()'), /Invalid routine/);
+  assert.deepEqual(a.data('getRoutine()'), original);
+});
+
+test('synchronous Firestore errors become promise rejections and leave the local commitment saved', async () => {
+  const a = cloudApp({});
+  a.context.notifications = [];
+  a.run(`
+    toast = message => notifications.push(message);
+    _syncDb.collection = () => ({ doc: () => ({ set: () => { throw new Error('validation failed'); } }) });
+    createRoutine('2026-10-26');
+  `);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(a.run('getRoutine().startDate'), '2026-10-26');
+  assert.equal(a.context.notifications.length, 1);
+  await assert.rejects(a.run('syncPushRoutine(getRoutine(), Date.now())'), /validation failed/);
 });
