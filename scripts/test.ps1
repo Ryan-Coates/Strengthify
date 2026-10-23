@@ -1,10 +1,9 @@
 <#
 .SYNOPSIS
-    Run JVM unit tests inside Docker.
+    Run the web app tests with Node.js 18 or later.
 
 .DESCRIPTION
-    Runs ./gradlew test inside the build container.
-    HTML report: app/build/reports/tests/testDebugUnitTest/index.html
+    Uses Node's built-in test runner. No dependencies are required.
 
 .EXAMPLE
     .\scripts\test.ps1
@@ -16,15 +15,9 @@ $projectRoot = Split-Path $PSScriptRoot -Parent
 Push-Location $projectRoot
 
 try {
-    Write-Host "`n[Strengthify] Running unit tests..." -ForegroundColor Cyan
-    docker compose run --rm test
-
-    $report = Join-Path $projectRoot "app\build\reports\tests\testDebugUnitTest\index.html"
-    if (Test-Path $report) {
-        Write-Host "`n[Strengthify] Test report: $report" -ForegroundColor Green
-        # Open the report in the default browser
-        Start-Process $report
-    }
+    Write-Host "`n[Strengthify] Running web tests..." -ForegroundColor Cyan
+    node --test web\tests\routine.test.cjs
+    if ($LASTEXITCODE -ne 0) { throw "Web tests failed (exit $LASTEXITCODE)." }
 } finally {
     Pop-Location
 }

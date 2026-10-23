@@ -79,6 +79,90 @@ body {
   letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px;
 }
 
+/* Flexible weekly commitment */
+.routine-home {
+  background: radial-gradient(ellipse at top right, #36305c 0%, transparent 70%), var(--surface);
+  border-color: #514785;
+}
+.routine-kicker {
+  color: #b8b0ff; font-size: 10px; font-weight: 800;
+  letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px;
+}
+.routine-home h2 { font-size: 22px; line-height: 1.25; margin-bottom: 10px; }
+.routine-home p { color: #c7c4df; font-size: 13px; margin-bottom: 14px; }
+.routine-preview { list-style: none; margin-bottom: 18px; }
+.routine-preview li { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.routine-preview strong { display: block; font-size: 13px; }
+.routine-preview span { display: block; font-size: 12px; color: #c7c4df; }
+.routine-journey { font-size: 14px; font-weight: 700; color: #85e1c5; margin-bottom: 10px; }
+.routine-week-tabs { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; margin: 0 16px 12px; }
+.routine-week-tab {
+  min-height: 44px; padding: 8px 0; border: 1px solid var(--border);
+  background: var(--surface); border-radius: var(--radius-sm); color: var(--text);
+  font: inherit; font-size: 13px; cursor: pointer;
+}
+.routine-week-tab.complete { color: #85e1c5; border-color: var(--green); }
+.routine-week-tab.selected { background: var(--accent2); color: white; border-color: #b8b0ff; }
+.routine-week-heading { display: flex; justify-content: space-between; align-items: center; }
+.routine-week-heading h2 { font-size: 19px; }
+.routine-week-heading strong { color: #85e1c5; font-size: 24px; }
+.routine-week-summary p { font-size: 12px; color: #c7c4df; }
+#routine-week-progress {
+  display: block; appearance: none; width: 100%; height: 10px; border: none;
+  border-radius: 99px; overflow: hidden; background: var(--surface2); margin: 12px 0;
+}
+#routine-week-progress::-webkit-progress-bar { background: var(--surface2); }
+#routine-week-progress::-webkit-progress-value { background: linear-gradient(90deg, #9c8fff, #61d5b5); transition: width 0.3s; }
+#routine-week-progress::-moz-progress-bar { background: linear-gradient(90deg, #9c8fff, #61d5b5); }
+.routine-workout h3 { font-size: 16px; }
+.routine-workout-meta { font-size: 12px; color: #b7b7cf; margin-top: 4px; }
+.routine-workout ol { margin: 12px 0 12px 22px; font-size: 14px; }
+.routine-workout li { padding-left: 3px; margin-bottom: 4px; }
+.routine-workout li::marker { color: #b8b0ff; font-weight: 700; }
+.routine-blocks { display: flex; gap: 10px; margin-top: 14px; }
+.routine-block {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 48px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 13px; cursor: pointer; background: var(--surface2);
+}
+.routine-block:has(input:checked) { background: #193b31; border-color: var(--green); color: #a3f0d3; }
+.routine-block:has(input:disabled) { opacity: 0.5; cursor: not-allowed; }
+.routine-block input { width: 19px; height: 19px; accent-color: #61d5b5; }
+.routine-block:focus-within, .routine-week-tab:focus-visible { outline: 2px solid #b8b0ff; outline-offset: 3px; }
+.routine-footnote { margin: 0 16px 20px; color: #b7b7cf; font-size: 12px; }
+.routine-celebration {
+  margin: auto; width: calc(100% - 32px); max-width: 400px; padding: 32px 24px 24px;
+  background: radial-gradient(ellipse at top, #39305e, var(--surface) 75%);
+  color: var(--text); border: 1px solid #7c6af7; border-radius: 24px;
+  text-align: center; overflow: hidden; box-shadow: 0 20px 80px #0009;
+}
+.routine-celebration::backdrop { background: #080810bb; backdrop-filter: blur(5px); }
+.routine-celebration h2 { font-size: 27px; line-height: 1.2; margin: 12px 0; position: relative; }
+.routine-celebration p { color: #c7c4df; font-size: 14px; margin-bottom: 24px; position: relative; }
+.routine-celebration .btn { position: relative; }
+.routine-trophy { font-size: 72px; position: relative; margin-bottom: 14px; }
+.routine-celebration[open] .routine-trophy { animation: routine-trophy-pop 0.8s cubic-bezier(0.2, 1.5, 0.5, 1) both; }
+.routine-confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.routine-confetti i {
+  position: absolute; left: var(--x); top: -20px; width: 8px; height: 16px;
+  border-radius: 2px; background: var(--color);
+}
+.routine-celebration[open] .routine-confetti i { animation: routine-confetti-fall 2.6s var(--delay) ease-in both; }
+@keyframes routine-trophy-pop {
+  0% { transform: scale(0.2) rotate(-20deg); opacity: 0; }
+  60% { transform: scale(1.15) rotate(8deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); }
+}
+@keyframes routine-confetti-fall {
+  0% { transform: translateY(-20px) rotate(0); opacity: 1; }
+  100% { transform: translateY(550px) rotate(540deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .routine-celebration[open] .routine-trophy, .routine-celebration[open] .routine-confetti i { animation: none; }
+  .routine-confetti { display: none; }
+  #routine-week-progress::-webkit-progress-value { transition: none; }
+}
+
 /* ── XP / Level bar ──────────────────────────────────────────────── */
 #xp-card { display: flex; align-items: center; gap: 16px; }
 .level-badge {

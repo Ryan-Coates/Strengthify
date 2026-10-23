@@ -1,5 +1,8 @@
 # Strengthify — Implementation Plan
 
+> Historical Android design document. The native project has been retired.
+> See [README.md](README.md) for the current web app, build, and weekly commitment.
+
 ## Overview
 
 A focused Android strength-training app that records workouts, awards XP, and compares lifts against age/weight benchmarks. Deliberately minimal: a small fixed set of compound lifts, a clear levelling system, and zero fluff.

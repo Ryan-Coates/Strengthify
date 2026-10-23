@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<!-- Built: 2026-09-11 09:48:55 -->
+<!-- Built: 2026-10-23 09:42:01 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -88,6 +88,90 @@ body {
 .card-title {
   font-size: 11px; font-weight: 600; text-transform: uppercase;
   letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px;
+}
+
+/* Flexible weekly commitment */
+.routine-home {
+  background: radial-gradient(ellipse at top right, #36305c 0%, transparent 70%), var(--surface);
+  border-color: #514785;
+}
+.routine-kicker {
+  color: #b8b0ff; font-size: 10px; font-weight: 800;
+  letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px;
+}
+.routine-home h2 { font-size: 22px; line-height: 1.25; margin-bottom: 10px; }
+.routine-home p { color: #c7c4df; font-size: 13px; margin-bottom: 14px; }
+.routine-preview { list-style: none; margin-bottom: 18px; }
+.routine-preview li { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.routine-preview strong { display: block; font-size: 13px; }
+.routine-preview span { display: block; font-size: 12px; color: #c7c4df; }
+.routine-journey { font-size: 14px; font-weight: 700; color: #85e1c5; margin-bottom: 10px; }
+.routine-week-tabs { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; margin: 0 16px 12px; }
+.routine-week-tab {
+  min-height: 44px; padding: 8px 0; border: 1px solid var(--border);
+  background: var(--surface); border-radius: var(--radius-sm); color: var(--text);
+  font: inherit; font-size: 13px; cursor: pointer;
+}
+.routine-week-tab.complete { color: #85e1c5; border-color: var(--green); }
+.routine-week-tab.selected { background: var(--accent2); color: white; border-color: #b8b0ff; }
+.routine-week-heading { display: flex; justify-content: space-between; align-items: center; }
+.routine-week-heading h2 { font-size: 19px; }
+.routine-week-heading strong { color: #85e1c5; font-size: 24px; }
+.routine-week-summary p { font-size: 12px; color: #c7c4df; }
+#routine-week-progress {
+  display: block; appearance: none; width: 100%; height: 10px; border: none;
+  border-radius: 99px; overflow: hidden; background: var(--surface2); margin: 12px 0;
+}
+#routine-week-progress::-webkit-progress-bar { background: var(--surface2); }
+#routine-week-progress::-webkit-progress-value { background: linear-gradient(90deg, #9c8fff, #61d5b5); transition: width 0.3s; }
+#routine-week-progress::-moz-progress-bar { background: linear-gradient(90deg, #9c8fff, #61d5b5); }
+.routine-workout h3 { font-size: 16px; }
+.routine-workout-meta { font-size: 12px; color: #b7b7cf; margin-top: 4px; }
+.routine-workout ol { margin: 12px 0 12px 22px; font-size: 14px; }
+.routine-workout li { padding-left: 3px; margin-bottom: 4px; }
+.routine-workout li::marker { color: #b8b0ff; font-weight: 700; }
+.routine-blocks { display: flex; gap: 10px; margin-top: 14px; }
+.routine-block {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 48px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 13px; cursor: pointer; background: var(--surface2);
+}
+.routine-block:has(input:checked) { background: #193b31; border-color: var(--green); color: #a3f0d3; }
+.routine-block:has(input:disabled) { opacity: 0.5; cursor: not-allowed; }
+.routine-block input { width: 19px; height: 19px; accent-color: #61d5b5; }
+.routine-block:focus-within, .routine-week-tab:focus-visible { outline: 2px solid #b8b0ff; outline-offset: 3px; }
+.routine-footnote { margin: 0 16px 20px; color: #b7b7cf; font-size: 12px; }
+.routine-celebration {
+  margin: auto; width: calc(100% - 32px); max-width: 400px; padding: 32px 24px 24px;
+  background: radial-gradient(ellipse at top, #39305e, var(--surface) 75%);
+  color: var(--text); border: 1px solid #7c6af7; border-radius: 24px;
+  text-align: center; overflow: hidden; box-shadow: 0 20px 80px #0009;
+}
+.routine-celebration::backdrop { background: #080810bb; backdrop-filter: blur(5px); }
+.routine-celebration h2 { font-size: 27px; line-height: 1.2; margin: 12px 0; position: relative; }
+.routine-celebration p { color: #c7c4df; font-size: 14px; margin-bottom: 24px; position: relative; }
+.routine-celebration .btn { position: relative; }
+.routine-trophy { font-size: 72px; position: relative; margin-bottom: 14px; }
+.routine-celebration[open] .routine-trophy { animation: routine-trophy-pop 0.8s cubic-bezier(0.2, 1.5, 0.5, 1) both; }
+.routine-confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.routine-confetti i {
+  position: absolute; left: var(--x); top: -20px; width: 8px; height: 16px;
+  border-radius: 2px; background: var(--color);
+}
+.routine-celebration[open] .routine-confetti i { animation: routine-confetti-fall 2.6s var(--delay) ease-in both; }
+@keyframes routine-trophy-pop {
+  0% { transform: scale(0.2) rotate(-20deg); opacity: 0; }
+  60% { transform: scale(1.15) rotate(8deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); }
+}
+@keyframes routine-confetti-fall {
+  0% { transform: translateY(-20px) rotate(0); opacity: 1; }
+  100% { transform: translateY(550px) rotate(540deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .routine-celebration[open] .routine-trophy, .routine-celebration[open] .routine-confetti i { animation: none; }
+  .routine-confetti { display: none; }
+  #routine-week-progress::-webkit-progress-value { transition: none; }
 }
 
 /* ── XP / Level bar ──────────────────────────────────────────────── */
@@ -732,6 +816,13 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
     </div>
 
     <!-- 1000 lb club progress -->
+    <div class="card routine-home">
+      <div class="routine-kicker">The 8-week commitment</div>
+      <h2 id="home-routine-title">Your week. Your rhythm.</h2>
+      <p id="home-routine-detail"></p>
+      <button class="btn btn-primary" data-open-routine>My weekly blocks <span aria-hidden="true">→</span></button>
+    </div>
+
     <div class="club-wrap">
       <div class="club-card" id="club-card">
         <div class="club-kicker" id="club-kicker">1000 lb club progress</div>
@@ -902,6 +993,13 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
     <div class="page-header">
       <h1>Training Plan</h1>
       <button class="btn btn-ghost btn-sm" id="build-custom-plan-btn" style="font-size:12px">+ New plan</button>
+    </div>
+
+    <div class="card routine-home">
+      <div class="routine-kicker">Prefer a flexible week?</div>
+      <h2>Build a rhythm, not a timetable.</h2>
+      <p>Five workout types. Two of each. Any days you like.</p>
+      <button class="btn btn-secondary" data-open-routine>Open my 8-week commitment</button>
     </div>
 
     <!-- No plan state -->
@@ -1202,7 +1300,62 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
 
   </section>
 
+  <section id="routine-screen" class="hidden" aria-labelledby="routine-heading">
+    <div class="page-header">
+      <h1 id="routine-heading">Weekly blocks</h1>
+      <button class="btn btn-ghost btn-sm back-btn" data-to="home">← Home</button>
+    </div>
+    <div id="routine-setup" class="card routine-home">
+      <div class="routine-kicker">Make a little room for you</div>
+      <h2>8 weeks. No fixed days.</h2>
+      <p>Do each of these five workouts twice a week. Each block takes about 25 minutes.
+        Stack a few together or spread them out around your week.</p>
+      <ul id="routine-preview" class="routine-preview"></ul>
+      <p>Each week is seven days from your chosen start date, not a Monday-to-Sunday timetable.
+        That's 10 blocks per week, 80 across your commitment.</p>
+      <form id="routine-form">
+        <div class="form-group">
+          <label class="form-label" for="routine-start-date">My start date</label>
+          <input class="form-input" id="routine-start-date" type="date" min="1000-01-01" max="9999-11-06" required>
+        </div>
+        <button class="btn btn-primary" type="submit">I'm in for 8 weeks</button>
+        <button class="btn btn-ghost hidden" type="button" id="routine-cancel-setup">Keep my current commitment</button>
+      </form>
+    </div>
+    <div id="routine-dashboard" class="hidden">
+      <div class="card routine-home">
+        <div class="routine-kicker">My 8-week commitment</div>
+        <h2>Your week. Your rhythm.</h2>
+        <p id="routine-dates"></p>
+        <div id="routine-journey" class="routine-journey"></div>
+        <button class="btn btn-ghost btn-sm" id="routine-new">Start a new commitment</button>
+      </div>
+      <div id="routine-week-tabs" class="routine-week-tabs" role="group" aria-label="Choose a routine week"></div>
+      <div class="card routine-week-summary">
+        <div class="routine-week-heading">
+          <h2 id="routine-week-title"></h2>
+          <strong id="routine-week-count"></strong>
+        </div>
+        <p id="routine-week-dates"></p>
+        <progress id="routine-week-progress" max="10" value="0" aria-label="Weekly workout blocks"></progress>
+        <p id="routine-week-message" role="status"></p>
+      </div>
+      <div id="routine-checklist"></div>
+      <p class="routine-footnote">Tick a block after you finish it. Untick to undo. Check-offs track your commitment;
+        use Workout separately if you want to log sets and earn XP.</p>
+    </div>
+  </section>
+
 </div><!-- /#app -->
+
+<dialog id="routine-celebration" class="routine-celebration" aria-labelledby="routine-celebration-title" aria-describedby="routine-celebration-copy">
+  <div id="routine-confetti" class="routine-confetti" aria-hidden="true"></div>
+  <div class="routine-trophy" aria-hidden="true">🏆</div>
+  <div class="routine-kicker">Commitment looks good on you</div>
+  <h2 id="routine-celebration-title"></h2>
+  <p id="routine-celebration-copy"></p>
+  <button id="routine-celebration-close" class="btn btn-primary">Enjoy the win</button>
+</dialog>
 
 <!-- ══════════════════════════════════════════
      SHARE MODAL
@@ -1277,6 +1430,8 @@ const KEYS = {
   PBS:      'sf_pbs',
   PBS_TS:   'sf_pbs_ts',
   PLANS:    'sf_plans',
+  ROUTINE:  'sf_routine',
+  ROUTINE_TS: 'sf_routine_ts',
 };
 
 // ── Default / helpers ─────────────────────────────────────────────
@@ -1741,12 +1896,14 @@ function exportData() {
     profile:  getProfile(),
     sessions: getSessions(),
     pbs:      getPBs(),
+    routine:  getRoutine(),
     exportedAt: new Date().toISOString(),
   }, null, 2);
 }
 
 function importData(jsonStr) {
   const data = JSON.parse(jsonStr);
+  if (data.routine != null) validateRoutine(data.routine);
   if (data.profile)  saveProfile(data.profile);
   if (data.sessions) {
     localStorage.setItem(KEYS.SESSIONS, JSON.stringify(data.sessions));
@@ -1755,6 +1912,7 @@ function importData(jsonStr) {
     }
   }
   if (data.pbs)      savePBs(data.pbs);
+  if (Object.hasOwn(data, 'routine')) saveRoutine(data.routine);
 }
 
 // ── Session update (for editing) ──────────────────────────────────
@@ -2283,6 +2441,309 @@ function drawLineChart(canvas, points, opts = {}) {
 
 </script>
 <script>
+  // Flexible weekly blocks are independent of set-by-set workout logging.
+const ROUTINE_WORKOUTS = [
+  { name: 'Pull - push - pull', moves: ['Lat pulldown', 'Bench press', 'Face pulls'], note: '5 rounds. Rest 1 minute after each superset.' },
+  { name: 'Core - leg - core', moves: ['Crunches', 'Barbell squat', 'Hollow hold'], note: '5 rounds. Rest 1 minute after each superset.' },
+  { name: 'Push - pull - push', moves: ['Tricep extensions', 'Pull-ups', 'Lateral raises'], note: 'Move through the three exercises as a superset.' },
+  { name: 'Leg - deadlift - leg', moves: ['Goblet squat', 'Deadlift', 'Bulgarian split squat'], note: '5 rounds. Rest 1 minute after each superset.' },
+  { name: 'Strength - mobility - strength', moves: ['Halos', 'Stretches', 'Forearm curls'], note: 'Combine strength and mobility in one block.' },
+];
+const ROUTINE_WEEKS = 8;
+const ROUTINE_WEEK_TOTAL = ROUTINE_WORKOUTS.length * 2;
+const ROUTINE_DAY_MS = 86400000;
+let routineViewWeek = null;
+
+function routineDateNumber(value) {
+  if (typeof value !== 'string' || !/^[1-9]\d{3}-\d{2}-\d{2}$/.test(value)) {
+    throw new Error('Choose a valid start date.');
+  }
+  const ms = Date.parse(value + 'T00:00:00Z');
+  if (!Number.isFinite(ms) || new Date(ms).toISOString().slice(0, 10) !== value) {
+    throw new Error('Choose a valid start date.');
+  }
+  return ms / ROUTINE_DAY_MS;
+}
+
+function routineLocalDate(now = new Date()) {
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
+function routineDateAt(startDate, offset) {
+  return new Date((routineDateNumber(startDate) + offset) * ROUTINE_DAY_MS).toISOString().slice(0, 10);
+}
+
+function routineDateLabel(date) {
+  return new Date(routineDateNumber(date) * ROUTINE_DAY_MS).toLocaleDateString(undefined, {
+    day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
+  });
+}
+
+function routineCurrentWeek(routine, date = routineLocalDate()) {
+  // Calendar-day arithmetic avoids DST and UTC/local midnight shifts.
+  return Math.floor((routineDateNumber(date) - routineDateNumber(routine.startDate)) / 7);
+}
+
+function validateRoutine(routine) {
+  if (!routine || typeof routine.id !== 'string' || !routine.id ||
+      !Number.isFinite(routine.updatedAt) || routine.updatedAt <= 0 ||
+      !Array.isArray(routine.completed) || routine.completed.length !== ROUTINE_WEEKS ||
+      !routine.completed.every(week => Array.isArray(week) && week.length === ROUTINE_WEEK_TOTAL &&
+        week.every(done => typeof done === 'boolean')) ||
+      !Array.isArray(routine.celebratedWeeks) ||
+      !routine.celebratedWeeks.every(week => Number.isInteger(week) && week >= 0 && week < ROUTINE_WEEKS)) {
+    throw new Error('Invalid routine data. Restore a valid backup.');
+  }
+  routineDateNumber(routine.startDate);
+  routineDateNumber(routineDateAt(routine.startDate, 55));
+}
+
+function getRoutine() {
+  const raw = localStorage.getItem(KEYS.ROUTINE);
+  const routine = raw ? JSON.parse(raw) : null;
+  if (routine !== null) validateRoutine(routine);
+  return routine;
+}
+
+function saveRoutine(routine) {
+  if (routine !== null) {
+    routine.updatedAt = Math.max(Date.now(), (routine.updatedAt || 0) + 1);
+    validateRoutine(routine);
+  }
+  const updatedAt = routine ? routine.updatedAt : Date.now();
+  localStorage.setItem(KEYS.ROUTINE, JSON.stringify(routine));
+  localStorage.setItem(KEYS.ROUTINE_TS, String(updatedAt));
+  if (typeof syncPushRoutine === 'function') {
+    syncPushRoutine(routine, updatedAt)?.catch(error => {
+      console.error('[Sync] pushRoutine failed:', error);
+      setSyncStatus('error');
+      toast('Routine saved on this device, but cloud sync failed. Try Sync now when online.', 'error');
+    });
+  }
+}
+
+function createRoutine(startDate) {
+  routineDateNumber(startDate);
+  const routine = {
+    id: uuid(), startDate, updatedAt: Date.now(),
+    completed: Array.from({ length: ROUTINE_WEEKS }, () => Array(ROUTINE_WEEK_TOTAL).fill(false)),
+    celebratedWeeks: [],
+  };
+  saveRoutine(routine);
+  return routine;
+}
+
+function setRoutineBlock(week, block, done, date = routineLocalDate()) {
+  const routine = getRoutine();
+  if (!routine || !Number.isInteger(week) || week < 0 || week >= ROUTINE_WEEKS ||
+      !Number.isInteger(block) || block < 0 || block >= ROUTINE_WEEK_TOTAL || typeof done !== 'boolean') {
+    throw new Error('That workout block could not be found.');
+  }
+  if (week > routineCurrentWeek(routine, date)) throw new Error('This week has not started yet.');
+  routine.completed[week][block] = done;
+  const celebrate = routine.completed[week].every(Boolean) && !routine.celebratedWeeks.includes(week);
+  if (celebrate) routine.celebratedWeeks.push(week);
+  saveRoutine(routine);
+  return { routine, celebrate };
+}
+
+function renderRoutineHome() {
+  const routine = getRoutine();
+  const title = document.getElementById('home-routine-title');
+  const detail = document.getElementById('home-routine-detail');
+  if (!routine) {
+    title.textContent = 'Your week. Your rhythm.';
+    detail.textContent = 'Commit to 8 weeks of flexible, 25-minute workout blocks.';
+    return;
+  }
+  const current = routineCurrentWeek(routine);
+  const week = Math.max(0, Math.min(7, current));
+  const total = routine.completed.flat().filter(Boolean).length;
+  title.textContent = current < 0 ? 'Your commitment is locked in' :
+    current >= 8 ? 'Eight weeks, your way' : `Week ${week + 1}: keep showing up`;
+  detail.textContent = current < 0 ? `Starts ${routineDateLabel(routine.startDate)}. No fixed workout days.` :
+    current >= 8 ? `${total} / 80 blocks completed. Review your journey.` :
+      `${routine.completed[week].filter(Boolean).length} / 10 blocks this week. Mix, match, make it yours.`;
+}
+
+function openRoutine() {
+  routineViewWeek = null;
+  document.getElementById('routine-setup').classList.toggle('hidden', !!getRoutine());
+  renderRoutine();
+  showScreen('routine');
+}
+
+function renderRoutine() {
+  const routine = getRoutine();
+  document.getElementById('routine-dashboard').classList.toggle('hidden', !routine);
+  document.getElementById('routine-cancel-setup').classList.toggle('hidden', !routine);
+  const preview = document.getElementById('routine-preview');
+  preview.replaceChildren();
+  ROUTINE_WORKOUTS.forEach(workout => {
+    const item = document.createElement('li');
+    const heading = document.createElement('strong');
+    heading.textContent = workout.name;
+    const moves = document.createElement('span');
+    moves.textContent = workout.moves.join(' / ');
+    item.append(heading, moves);
+    preview.appendChild(item);
+  });
+  if (!document.getElementById('routine-start-date').value) {
+    const now = new Date();
+    const untilMonday = 8 - (now.getDay() || 7);
+    document.getElementById('routine-start-date').value = routineDateAt(routineLocalDate(now), untilMonday);
+  }
+  if (!routine) return;
+  const current = routineCurrentWeek(routine);
+  if (routineViewWeek === null) routineViewWeek = Math.max(0, Math.min(7, current));
+  const week = routineViewWeek;
+  const count = routine.completed[week].filter(Boolean).length;
+  const total = routine.completed.flat().filter(Boolean).length;
+  const completedWeeks = routine.completed.filter(w => w.every(Boolean)).length;
+  document.getElementById('routine-journey').textContent = `${total} / 80 blocks · ${completedWeeks} / 8 weeks complete`;
+  document.getElementById('routine-dates').textContent =
+    `${routineDateLabel(routine.startDate)} - ${routineDateLabel(routineDateAt(routine.startDate, 55))}`;
+  document.getElementById('routine-week-title').textContent = `Week ${week + 1}`;
+  document.getElementById('routine-week-dates').textContent =
+    `${routineDateLabel(routineDateAt(routine.startDate, week * 7))} - ${routineDateLabel(routineDateAt(routine.startDate, week * 7 + 6))}`;
+  document.getElementById('routine-week-count').textContent = `${count} / 10`;
+  const progress = document.getElementById('routine-week-progress');
+  progress.value = count;
+  progress.textContent = `${count} of 10 blocks completed`;
+  document.getElementById('routine-week-message').textContent = week > current ?
+    'A little preview. Check-offs unlock when this week starts.' :
+    count === 10 ? 'Week complete! You made room for yourself.' :
+    week < current ? 'Review this week or catch up on check-offs you forgot to record.' :
+    'No fixed days. Stack blocks together or spread them out.';
+  const tabs = document.getElementById('routine-week-tabs');
+  tabs.replaceChildren();
+  routine.completed.forEach((blocks, index) => {
+    const done = blocks.filter(Boolean).length;
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'routine-week-tab' + (index === week ? ' selected' : '') + (done === 10 ? ' complete' : '');
+    tab.setAttribute('aria-pressed', String(index === week));
+    tab.setAttribute('aria-label', `Week ${index + 1}, ${done} of 10 complete${index === current ? ', current week' : ''}`);
+    tab.textContent = `${index + 1}${done === 10 ? ' ✓' : ''}`;
+    tab.addEventListener('click', () => { routineViewWeek = index; renderRoutine(); });
+    tabs.appendChild(tab);
+  });
+  const checklist = document.getElementById('routine-checklist');
+  checklist.replaceChildren();
+  ROUTINE_WORKOUTS.forEach((workout, index) => {
+    const card = document.createElement('article');
+    card.className = 'card routine-workout';
+    const heading = document.createElement('h3');
+    heading.textContent = workout.name;
+    const meta = document.createElement('p');
+    meta.className = 'routine-workout-meta';
+    meta.textContent = '~25 min per block · Twice this week';
+    const moves = document.createElement('ol');
+    workout.moves.forEach(move => {
+      const li = document.createElement('li');
+      li.textContent = move;
+      moves.appendChild(li);
+    });
+    const note = document.createElement('p');
+    note.className = 'routine-workout-meta';
+    note.textContent = workout.note;
+    const checks = document.createElement('div');
+    checks.className = 'routine-blocks';
+    for (let repeat = 0; repeat < 2; repeat++) {
+      const block = index * 2 + repeat;
+      const label = document.createElement('label');
+      label.className = 'routine-block';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.id = `routine-block-${block}`;
+      input.checked = routine.completed[week][block];
+      input.disabled = week > current;
+      input.setAttribute('aria-label', `${workout.name}, block ${repeat + 1}`);
+      input.addEventListener('change', () => {
+        try {
+          const result = setRoutineBlock(week, block, input.checked);
+          renderRoutine();
+          renderRoutineHome();
+          document.getElementById(input.id).focus();
+          if (result.celebrate) celebrateRoutineWeek(week, result.routine.completed.every(w => w.every(Boolean)));
+        } catch (error) {
+          input.checked = !input.checked;
+          console.error('[Routine] Check-off failed:', error);
+          toast(error.message, 'error');
+        }
+      });
+      const text = document.createElement('span');
+      text.textContent = `Block ${repeat + 1}`;
+      label.append(input, text);
+      checks.appendChild(label);
+    }
+    card.append(heading, meta, moves, note, checks);
+    checklist.appendChild(card);
+  });
+}
+
+function celebrateRoutineWeek(week, allDone) {
+  const dialog = document.getElementById('routine-celebration');
+  document.getElementById('routine-celebration-title').textContent = allDone ? 'All 8 weeks. You did it!' : `Week ${week + 1}, in the bag!`;
+  document.getElementById('routine-celebration-copy').textContent = allDone ?
+    '80 blocks. One commitment kept. Take a bow.' : 'Ten blocks complete. A busy week, a stronger you.';
+  const confetti = document.getElementById('routine-confetti');
+  confetti.replaceChildren();
+  for (let i = 0; i < 36; i++) {
+    const piece = document.createElement('i');
+    piece.style.setProperty('--x', `${(i * 37) % 100}%`);
+    piece.style.setProperty('--delay', `${(i % 7) * 0.07}s`);
+    piece.style.setProperty('--color', ['#b8b0ff', '#61d5b5', '#ffd86b'][i % 3]);
+    confetti.appendChild(piece);
+  }
+  dialog.showModal();
+}
+
+function initRoutine() {
+  document.querySelectorAll('[data-open-routine]').forEach(button => button.addEventListener('click', openRoutine));
+  document.getElementById('routine-form').addEventListener('submit', event => {
+    event.preventDefault();
+    try {
+      const date = document.getElementById('routine-start-date').value;
+      routineDateNumber(date);
+      if (getRoutine() && !confirm('Start a new 8-week commitment? This replaces your existing routine checklist. Logged workouts are kept.')) return;
+      createRoutine(date);
+      routineViewWeek = null;
+      document.getElementById('routine-setup').classList.add('hidden');
+      renderRoutine();
+      renderRoutineHome();
+      toast('You are committed. Eight weeks, your way!');
+    } catch (error) {
+      console.error('[Routine] Commitment failed:', error);
+      toast(error.message, 'error');
+    }
+  });
+  document.getElementById('routine-new').addEventListener('click', () => {
+    document.getElementById('routine-setup').classList.remove('hidden');
+    document.getElementById('routine-start-date').focus();
+  });
+  document.getElementById('routine-cancel-setup').addEventListener('click', () => {
+    document.getElementById('routine-setup').classList.add('hidden');
+  });
+  document.getElementById('routine-celebration-close').addEventListener('click', () => {
+    document.getElementById('routine-celebration').close();
+  });
+  let lastDate = routineLocalDate();
+  const refresh = () => {
+    const date = routineLocalDate();
+    if (date === lastDate) return;
+    lastDate = date;
+    routineViewWeek = null;
+    if (getProfile()) renderRoutineHome();
+    if (currentScreen === 'routine') renderRoutine();
+  };
+  window.addEventListener('focus', refresh);
+  document.addEventListener('visibilitychange', refresh);
+  setInterval(refresh, 60000);
+}
+
+</script>
+<script>
   // =====================================================================
 // Strengthify Web — Cloud Sync (Firebase + Google Sign-In)
 // =====================================================================
@@ -2408,6 +2869,11 @@ function syncPushPBs(pbs) {
     .catch(e => console.error('[Sync] pushPBs failed:', e));
 }
 
+function syncPushRoutine(routine, updatedAt) {
+  if (!_syncDb || !_syncUser) return;
+  return _userDoc().set({ routine, routineUpdatedAt: updatedAt }, { merge: true });
+}
+
 function syncPushSession(session) {
   if (!_syncDb || !_syncUser) return;
   console.log('[Sync] Pushing session:', session.id, session.date);
@@ -2468,6 +2934,17 @@ async function syncMergeOnSignIn() {
   const cloudPbs    = cloud.pbs      || null;
   const cloudProfTs = cloud.profileUpdatedAt || 0;
   const cloudPbsTs  = cloud.pbsUpdatedAt     || 0;
+  const cloudRoutineTs = cloud.routineUpdatedAt || 0;
+  const localRoutine = getRoutine();
+  const localRoutineTs = Number(localStorage.getItem(KEYS.ROUTINE_TS) || localRoutine?.updatedAt || 0);
+
+  if (cloudRoutineTs > localRoutineTs) {
+    if (cloud.routine != null) validateRoutine(cloud.routine);
+    localStorage.setItem(KEYS.ROUTINE, JSON.stringify(cloud.routine || null));
+    localStorage.setItem(KEYS.ROUTINE_TS, String(cloudRoutineTs));
+  } else if (localRoutineTs > cloudRoutineTs) {
+    await syncPushRoutine(localRoutine, localRoutineTs);
+  }
 
   const localProf   = getProfile();
   const localPbs    = getPBs();
@@ -2577,7 +3054,7 @@ async function syncMergeOnSignIn() {
 
 // ── Screen registry ───────────────────────────────────────────────
 
-const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder', 'mobility'];
+const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder', 'mobility', 'routine'];
 let currentScreen = null;
 const KG_PER_LB = 0.45359237;
 const LB_PER_KG = 1 / KG_PER_LB;
@@ -2651,6 +3128,7 @@ function renderHome() {
   document.getElementById('xp-nums').textContent          = `${progress.current} / ${progress.needed} XP${nextLabel}`;
 
   renderThousandClubCard(pbs);
+  renderRoutineHome();
 
   // Plan next-workout card
   const plan = getActivePlan();
@@ -4254,9 +4732,9 @@ function initSync() {
     try {
       const result = await syncMergeOnSignIn();
       setSyncStatus('synced');
+      renderHome();
       if (result.newSessions > 0) {
         toast(`Synced ${result.newSessions} new workout${result.newSessions > 1 ? 's' : ''}.`);
-        renderHome();
       } else {
         toast('Already up to date.');
       }
@@ -4336,6 +4814,7 @@ function init() {
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const screen = btn.dataset.screen;
+      if (screen === 'home')      { renderHome(); }
       if (screen === 'workout')   { initWorkoutScreen(); }
       if (screen === 'progress')   { renderProgress(); }
       if (screen === 'standards')  { renderStandards(); }
@@ -4461,6 +4940,7 @@ function init() {
 
   // Onboarding
   initOnboarding();
+  initRoutine();
 
   // Cloud sync
   initSync();

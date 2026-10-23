@@ -1,68 +1,66 @@
 # Strengthify
-Track workouts, earn XP, and compare against strength benchmarks.
 
-## Requirements
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) — the only tool you need to build an APK
-- [Android Studio](https://developer.android.com/studio) — optional, for IDE-based development
+A local-first web app to track workouts, earn XP, compare strength benchmarks,
+and commit to flexible training. The native Android project has been retired.
 
----
+## Build and run
 
-## Build an APK (no Android Studio needed)
+Requires PowerShell 5.1 or later. No package installation is needed.
 
 ```powershell
-.\scripts\apk.ps1
+.\web\build.ps1
+Start-Process .\web\dist\index.html
 ```
 
-This builds the project inside Docker and opens the output folder in Explorer.  
-Copy `app-debug.apk` to your phone and sideload it.
+The build bundles the HTML, CSS, and JavaScript into [web/dist/index.html](web/dist/index.html).
+It also updates the original [web/dist/strengthify.html](web/dist/strengthify.html)
+entry point with the same app for existing bookmarks.
+GitHub Actions builds and deploys this page to GitHub Pages on pushes to `main`.
+Google sign-in and cloud sync require internet access; local-only mode does not.
 
-**First run takes ~10 minutes** to download Gradle dependencies. Subsequent builds are fast.
+## Eight-week commitment
 
-### Sideload to phone
-1. Connect phone via USB → choose **File Transfer** mode
-2. Copy `app-debug.apk` to your phone's Downloads folder
-3. On phone: **Settings → Apps → Special App Access → Install Unknown Apps**
-   Allow your Files app, then open it and tap the APK
+Open **My weekly blocks** on Home, or access it from Plans. Choose a start date
+(defaults to next Monday) and select **I'm in for 8 weeks**.
 
----
+- Eight seven-day weeks begin on your chosen date, with no assigned workout days.
+- Each week has two blocks of each of the five workout types: **10 blocks per week,
+  80 in total**, at roughly 25 minutes per block.
+- Combine blocks in one visit or spread them throughout the week.
+- Each workout card shows the example movements and supplied superset instructions.
+- Check off a block after doing it; untick it to undo. Past weeks remain editable,
+  while future weeks can be previewed but not checked off.
+- Completing all ten blocks unlocks a trophy and confetti celebration once per week.
+  Reduced-motion preferences disable the animation.
+- Progress is saved locally, included in JSON backups, and synced when signed in.
+  Cloud conflicts use the most recently saved whole commitment, like training plans;
+  simultaneous offline edits on different devices are not combined.
+- **Start a new commitment** allows another date after confirmation. It replaces
+  the previous checklist, so export a backup first if you want to keep it.
 
-## Open in Android Studio
+Checklist blocks are separate from workout logs: they do not create sets, personal
+bests, or XP. Use **Workout** separately for those. Existing GVT/custom plans and
+the mobility routine remain available.
 
-The Gradle wrapper files (`gradlew`, `gradlew.bat`, `gradle/wrapper/gradle-wrapper.jar`) are
-already generated in this repo. Simply:
+## Backups and sync
 
-1. Install [Android Studio](https://developer.android.com/studio)
-2. **File → Open** → select this folder
-3. Wait for Gradle sync (downloads ~500 MB on first open)
-4. Run on a connected device or emulator with the **▶ Run** button
+Use **Profile > Export backup (JSON)** to download your data, and **Import backup**
+to restore it. Older backups without a commitment leave the current commitment
+untouched. A new backup with a `null` commitment explicitly clears it on restore.
+Signing out keeps local data. **Reset all data** clears this browser only, not
+existing cloud records.
 
----
+Firebase setup and access-rule instructions are in [web/src/sync.js](web/src/sync.js).
 
-## One-time Docker setup (if wrapper files are missing)
+## Tests
+
+Requires Node.js 18 or later.
 
 ```powershell
-.\scripts\setup.ps1
+.\scripts\test.ps1
 ```
 
----
-
-## All scripts
-
-| Script | What it does |
-|---|---|
-| `.\scripts\apk.ps1` | Build debug APK + open folder in Explorer |
-| `.\scripts\apk.ps1 -Release` | Build unsigned release APK |
-| `.\scripts\install-adb.ps1` | Install APK directly to phone via ADB over USB |
-| `.\scripts\install-adb.ps1 -WiFi 192.168.x.x` | Install wirelessly via ADB |
-| `.\scripts\setup.ps1` | Re-generate Gradle wrapper files via Docker |
-
----
-
-## Docker commands (advanced)
-
-```powershell
-docker compose run --rm build    # assemble debug APK
-docker compose run --rm test     # run unit tests
-docker compose run --rm lint     # Android lint
-docker compose run --rm shell    # interactive bash shell in build container
-```
+The tests use Node's built-in test runner, with no dependencies. They cover week
+boundaries, local dates, check-off limits, persistence, celebrations, backup
+compatibility, and cloud merging. Rebuild after changing sources; do not edit
+the generated distribution page manually.

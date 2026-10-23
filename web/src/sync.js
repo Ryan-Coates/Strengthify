@@ -123,6 +123,11 @@ function syncPushPBs(pbs) {
     .catch(e => console.error('[Sync] pushPBs failed:', e));
 }
 
+function syncPushRoutine(routine, updatedAt) {
+  if (!_syncDb || !_syncUser) return;
+  return _userDoc().set({ routine, routineUpdatedAt: updatedAt }, { merge: true });
+}
+
 function syncPushSession(session) {
   if (!_syncDb || !_syncUser) return;
   console.log('[Sync] Pushing session:', session.id, session.date);
@@ -183,6 +188,17 @@ async function syncMergeOnSignIn() {
   const cloudPbs    = cloud.pbs      || null;
   const cloudProfTs = cloud.profileUpdatedAt || 0;
   const cloudPbsTs  = cloud.pbsUpdatedAt     || 0;
+  const cloudRoutineTs = cloud.routineUpdatedAt || 0;
+  const localRoutine = getRoutine();
+  const localRoutineTs = Number(localStorage.getItem(KEYS.ROUTINE_TS) || localRoutine?.updatedAt || 0);
+
+  if (cloudRoutineTs > localRoutineTs) {
+    if (cloud.routine != null) validateRoutine(cloud.routine);
+    localStorage.setItem(KEYS.ROUTINE, JSON.stringify(cloud.routine || null));
+    localStorage.setItem(KEYS.ROUTINE_TS, String(cloudRoutineTs));
+  } else if (localRoutineTs > cloudRoutineTs) {
+    await syncPushRoutine(localRoutine, localRoutineTs);
+  }
 
   const localProf   = getProfile();
   const localPbs    = getPBs();

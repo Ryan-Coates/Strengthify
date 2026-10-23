@@ -8,6 +8,8 @@ const KEYS = {
   PBS:      'sf_pbs',
   PBS_TS:   'sf_pbs_ts',
   PLANS:    'sf_plans',
+  ROUTINE:  'sf_routine',
+  ROUTINE_TS: 'sf_routine_ts',
 };
 
 // ── Default / helpers ─────────────────────────────────────────────
@@ -472,12 +474,14 @@ function exportData() {
     profile:  getProfile(),
     sessions: getSessions(),
     pbs:      getPBs(),
+    routine:  getRoutine(),
     exportedAt: new Date().toISOString(),
   }, null, 2);
 }
 
 function importData(jsonStr) {
   const data = JSON.parse(jsonStr);
+  if (data.routine != null) validateRoutine(data.routine);
   if (data.profile)  saveProfile(data.profile);
   if (data.sessions) {
     localStorage.setItem(KEYS.SESSIONS, JSON.stringify(data.sessions));
@@ -486,6 +490,7 @@ function importData(jsonStr) {
     }
   }
   if (data.pbs)      savePBs(data.pbs);
+  if (Object.hasOwn(data, 'routine')) saveRoutine(data.routine);
 }
 
 // ── Session update (for editing) ──────────────────────────────────

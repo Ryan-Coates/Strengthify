@@ -4,7 +4,7 @@
 
 // ── Screen registry ───────────────────────────────────────────────
 
-const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder', 'mobility'];
+const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder', 'mobility', 'routine'];
 let currentScreen = null;
 const KG_PER_LB = 0.45359237;
 const LB_PER_KG = 1 / KG_PER_LB;
@@ -78,6 +78,7 @@ function renderHome() {
   document.getElementById('xp-nums').textContent          = `${progress.current} / ${progress.needed} XP${nextLabel}`;
 
   renderThousandClubCard(pbs);
+  renderRoutineHome();
 
   // Plan next-workout card
   const plan = getActivePlan();
@@ -1681,9 +1682,9 @@ function initSync() {
     try {
       const result = await syncMergeOnSignIn();
       setSyncStatus('synced');
+      renderHome();
       if (result.newSessions > 0) {
         toast(`Synced ${result.newSessions} new workout${result.newSessions > 1 ? 's' : ''}.`);
-        renderHome();
       } else {
         toast('Already up to date.');
       }
@@ -1763,6 +1764,7 @@ function init() {
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const screen = btn.dataset.screen;
+      if (screen === 'home')      { renderHome(); }
       if (screen === 'workout')   { initWorkoutScreen(); }
       if (screen === 'progress')   { renderProgress(); }
       if (screen === 'standards')  { renderStandards(); }
@@ -1888,6 +1890,7 @@ function init() {
 
   // Onboarding
   initOnboarding();
+  initRoutine();
 
   // Cloud sync
   initSync();

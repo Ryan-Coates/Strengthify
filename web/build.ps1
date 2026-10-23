@@ -27,6 +27,7 @@ $files = @{
     dataJs   = Join-Path $SrcDir 'data.js'
     chartJs  = Join-Path $SrcDir 'chart.js'
     syncJs   = Join-Path $SrcDir 'sync.js'
+    routineJs = Join-Path $SrcDir 'routine.js'
     appJs    = Join-Path $SrcDir 'app.js'
 }
 
@@ -42,6 +43,7 @@ $style    = Get-Content $files.style    -Raw -Encoding UTF8
 $dataJs   = Get-Content $files.dataJs   -Raw -Encoding UTF8
 $chartJs  = Get-Content $files.chartJs  -Raw -Encoding UTF8
 $syncJs   = Get-Content $files.syncJs   -Raw -Encoding UTF8
+$routineJs = Get-Content $files.routineJs -Raw -Encoding UTF8
 $appJs    = Get-Content $files.appJs    -Raw -Encoding UTF8
 
 # ── Inject CSS ────────────────────────────────────────────────────────────────
@@ -52,6 +54,7 @@ $template = $template -replace '/\* __STYLE__ \*/', $style
 $template = $template -replace '/\* __DATA_JS__ \*/',  $dataJs
 $template = $template -replace '/\* __CHART_JS__ \*/', $chartJs
 $template = $template -replace '/\* __SYNC_JS__ \*/',  $syncJs
+$template = $template -replace '/\* __ROUTINE_JS__ \*/', $routineJs
 $template = $template -replace '/\* __APP_JS__ \*/',   $appJs
 
 # ── Stamp build metadata ──────────────────────────────────────────────────────
@@ -60,10 +63,11 @@ $template = $template -replace '<!DOCTYPE html>', "<!DOCTYPE html>`n$stamp"
 
 # ── Write output ──────────────────────────────────────────────────────────────
 [System.IO.File]::WriteAllText($OutFile, $template, [System.Text.Encoding]::UTF8)
+[System.IO.File]::WriteAllText((Join-Path $DistDir 'strengthify.html'), $template, [System.Text.Encoding]::UTF8)
 
 $sizeKB = [Math]::Round((Get-Item $OutFile).Length / 1KB, 1)
 Write-Host ""
 Write-Host "  Output : $OutFile" -ForegroundColor Green
 Write-Host "  Size   : ${sizeKB} KB" -ForegroundColor Green
 Write-Host ""
-Write-Host "Done. Open dist/strengthify.html in any browser." -ForegroundColor Cyan
+Write-Host "Done. Open dist/index.html in any browser." -ForegroundColor Cyan

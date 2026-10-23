@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<!-- Built: 2026-04-23 10:56:46 -->
+<!-- Built: 2026-10-23 09:42:01 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -7,6 +7,7 @@
   <meta name="description" content="Strengthify — Track strength, earn XP, beat benchmarks">
   <meta name="theme-color" content="#0f0f12">
   <title>Strengthify</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f0f12'/%3E%3Crect x='2' y='13' width='4' height='6' rx='1.5' fill='%237c6af7'/%3E%3Crect x='26' y='13' width='4' height='6' rx='1.5' fill='%237c6af7'/%3E%3Crect x='5' y='10' width='4' height='12' rx='2' fill='%237c6af7'/%3E%3Crect x='23' y='10' width='4' height='12' rx='2' fill='%237c6af7'/%3E%3Crect x='9' y='14.5' width='14' height='3' rx='1.5' fill='%237c6af7'/%3E%3C/svg%3E">
   <style>
     /* =====================================================================
    Strengthify Web — Stylesheet
@@ -24,6 +25,10 @@
   --green:      #4caf7d;
   --amber:      #f5a623;
   --red:        #e05c5c;
+  --mob-orange: #f5a623;
+  --mob-blue:   #4a90d9;
+  --mob-green:  #4caf7d;
+  --mob-purple: #9b6ae0;
   --radius:     12px;
   --radius-sm:  8px;
   --shadow:     0 4px 24px rgba(0,0,0,0.45);
@@ -85,6 +90,90 @@ body {
   letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px;
 }
 
+/* Flexible weekly commitment */
+.routine-home {
+  background: radial-gradient(ellipse at top right, #36305c 0%, transparent 70%), var(--surface);
+  border-color: #514785;
+}
+.routine-kicker {
+  color: #b8b0ff; font-size: 10px; font-weight: 800;
+  letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px;
+}
+.routine-home h2 { font-size: 22px; line-height: 1.25; margin-bottom: 10px; }
+.routine-home p { color: #c7c4df; font-size: 13px; margin-bottom: 14px; }
+.routine-preview { list-style: none; margin-bottom: 18px; }
+.routine-preview li { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.routine-preview strong { display: block; font-size: 13px; }
+.routine-preview span { display: block; font-size: 12px; color: #c7c4df; }
+.routine-journey { font-size: 14px; font-weight: 700; color: #85e1c5; margin-bottom: 10px; }
+.routine-week-tabs { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; margin: 0 16px 12px; }
+.routine-week-tab {
+  min-height: 44px; padding: 8px 0; border: 1px solid var(--border);
+  background: var(--surface); border-radius: var(--radius-sm); color: var(--text);
+  font: inherit; font-size: 13px; cursor: pointer;
+}
+.routine-week-tab.complete { color: #85e1c5; border-color: var(--green); }
+.routine-week-tab.selected { background: var(--accent2); color: white; border-color: #b8b0ff; }
+.routine-week-heading { display: flex; justify-content: space-between; align-items: center; }
+.routine-week-heading h2 { font-size: 19px; }
+.routine-week-heading strong { color: #85e1c5; font-size: 24px; }
+.routine-week-summary p { font-size: 12px; color: #c7c4df; }
+#routine-week-progress {
+  display: block; appearance: none; width: 100%; height: 10px; border: none;
+  border-radius: 99px; overflow: hidden; background: var(--surface2); margin: 12px 0;
+}
+#routine-week-progress::-webkit-progress-bar { background: var(--surface2); }
+#routine-week-progress::-webkit-progress-value { background: linear-gradient(90deg, #9c8fff, #61d5b5); transition: width 0.3s; }
+#routine-week-progress::-moz-progress-bar { background: linear-gradient(90deg, #9c8fff, #61d5b5); }
+.routine-workout h3 { font-size: 16px; }
+.routine-workout-meta { font-size: 12px; color: #b7b7cf; margin-top: 4px; }
+.routine-workout ol { margin: 12px 0 12px 22px; font-size: 14px; }
+.routine-workout li { padding-left: 3px; margin-bottom: 4px; }
+.routine-workout li::marker { color: #b8b0ff; font-weight: 700; }
+.routine-blocks { display: flex; gap: 10px; margin-top: 14px; }
+.routine-block {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 48px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 13px; cursor: pointer; background: var(--surface2);
+}
+.routine-block:has(input:checked) { background: #193b31; border-color: var(--green); color: #a3f0d3; }
+.routine-block:has(input:disabled) { opacity: 0.5; cursor: not-allowed; }
+.routine-block input { width: 19px; height: 19px; accent-color: #61d5b5; }
+.routine-block:focus-within, .routine-week-tab:focus-visible { outline: 2px solid #b8b0ff; outline-offset: 3px; }
+.routine-footnote { margin: 0 16px 20px; color: #b7b7cf; font-size: 12px; }
+.routine-celebration {
+  margin: auto; width: calc(100% - 32px); max-width: 400px; padding: 32px 24px 24px;
+  background: radial-gradient(ellipse at top, #39305e, var(--surface) 75%);
+  color: var(--text); border: 1px solid #7c6af7; border-radius: 24px;
+  text-align: center; overflow: hidden; box-shadow: 0 20px 80px #0009;
+}
+.routine-celebration::backdrop { background: #080810bb; backdrop-filter: blur(5px); }
+.routine-celebration h2 { font-size: 27px; line-height: 1.2; margin: 12px 0; position: relative; }
+.routine-celebration p { color: #c7c4df; font-size: 14px; margin-bottom: 24px; position: relative; }
+.routine-celebration .btn { position: relative; }
+.routine-trophy { font-size: 72px; position: relative; margin-bottom: 14px; }
+.routine-celebration[open] .routine-trophy { animation: routine-trophy-pop 0.8s cubic-bezier(0.2, 1.5, 0.5, 1) both; }
+.routine-confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.routine-confetti i {
+  position: absolute; left: var(--x); top: -20px; width: 8px; height: 16px;
+  border-radius: 2px; background: var(--color);
+}
+.routine-celebration[open] .routine-confetti i { animation: routine-confetti-fall 2.6s var(--delay) ease-in both; }
+@keyframes routine-trophy-pop {
+  0% { transform: scale(0.2) rotate(-20deg); opacity: 0; }
+  60% { transform: scale(1.15) rotate(8deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); }
+}
+@keyframes routine-confetti-fall {
+  0% { transform: translateY(-20px) rotate(0); opacity: 1; }
+  100% { transform: translateY(550px) rotate(540deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .routine-celebration[open] .routine-trophy, .routine-celebration[open] .routine-confetti i { animation: none; }
+  .routine-confetti { display: none; }
+  #routine-week-progress::-webkit-progress-value { transition: none; }
+}
+
 /* ── XP / Level bar ──────────────────────────────────────────────── */
 #xp-card { display: flex; align-items: center; gap: 16px; }
 .level-badge {
@@ -117,6 +206,95 @@ body {
 }
 .stat-chip .s-val { font-size: 22px; font-weight: 700; color: var(--accent); }
 .stat-chip .s-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ── 1000 lb club hero ──────────────────────────────────────────── */
+.club-wrap { padding: 0 16px 12px; }
+.club-card {
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(124,106,247,0.25) 0%, rgba(124,106,247,0) 55%),
+    linear-gradient(150deg, #1f1b33 0%, #191b27 55%, #162026 100%);
+  border: 1px solid rgba(124,106,247,0.4);
+  border-radius: 16px;
+  padding: 18px 16px 16px;
+  box-shadow: 0 16px 30px rgba(0,0,0,0.35);
+}
+.club-kicker {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #b8b0ff;
+  font-weight: 700;
+}
+.club-achievement {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #132016;
+  background: linear-gradient(135deg, #ffd86b, #8ee3bf);
+  padding: 5px 10px;
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  animation: clubPop 0.3s ease;
+}
+.club-total {
+  margin-top: 6px;
+  font-size: 42px;
+  line-height: 0.95;
+  font-weight: 800;
+  color: #f7f6ff;
+}
+.club-total-sub {
+  margin-top: 4px;
+  font-size: 15px;
+  color: #c7c4df;
+  font-weight: 600;
+}
+.club-bar-track {
+  margin-top: 14px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(20,22,30,0.8);
+  border: 1px solid rgba(138,128,220,0.35);
+  overflow: hidden;
+}
+.club-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8f82ff, #61d5b5);
+  transition: width 0.45s ease;
+}
+.club-meta-row {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #cbc8df;
+  font-weight: 600;
+}
+.club-lifts {
+  margin-top: 12px;
+  border-top: 1px solid rgba(137,129,207,0.35);
+  padding-top: 10px;
+}
+.club-lift-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 13px;
+  color: #dfdcef;
+}
+.club-lift-row span:last-child {
+  color: #ffffff;
+  font-weight: 700;
+  text-align: right;
+}
 
 /* ── Buttons ─────────────────────────────────────────────────────── */
 .btn {
@@ -342,9 +520,178 @@ canvas { display: block; width: 100% !important; }
 .empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.4; }
 .empty-state p { font-size: 14px; }
 
+/* ── Clickable session items ─────────────────────────────────────── */
+.session-item-link { cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.session-item-link:hover { border-color: var(--accent); background: rgba(124,106,247,0.06); }
+.session-item .si-arrow { font-size: 20px; color: var(--accent); margin-top: 2px; }
+
+/* ── Clickable benchmark cards ───────────────────────────────────── */
+.bench-card-link { cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.bench-card-link:hover { border-color: var(--accent); background: rgba(124,106,247,0.06); }
+
+/* ── Share modal ─────────────────────────────────────────────────── */
+.share-modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.75);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(4px);
+}
+.share-modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 100%; max-width: 420px;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.share-modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.share-canvas-wrap {
+  padding: 14px 14px 8px;
+  background: var(--bg);
+  display: flex; justify-content: center;
+}
+.share-canvas-wrap canvas {
+  border-radius: 10px;
+  width: 100% !important;
+  height: auto !important;
+  display: block;
+}
+.share-actions {
+  display: flex; gap: 8px; padding: 12px 14px 14px;
+}
+.share-actions .btn { flex: 1; padding: 12px 8px; font-size: 13px; }
+
+/* ── Plan builder ────────────────────────────────────────────────── */
+.pb-day-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.pb-day-header input { flex: 1; }
+
+.pb-ex-header {
+  display: grid;
+  grid-template-columns: 3fr 1fr 1fr 1.2fr 0.4fr;
+  gap: 6px;
+  font-size: 11px; color: var(--muted);
+  padding: 0 2px; margin-bottom: 4px;
+}
+.pb-ex-row {
+  display: grid;
+  grid-template-columns: 3fr 1fr 1fr 1.2fr 0.4fr;
+  gap: 6px; align-items: center; margin-bottom: 6px;
+}
+.pb-ex-row input {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); border-radius: var(--radius-sm);
+  padding: 8px 10px; font-size: 13px; width: 100%;
+}
+.pb-ex-row input:focus { outline: none; border-color: var(--accent); }
+.pb-ex-row input::placeholder { color: var(--muted); }
+
 /* ── Misc ────────────────────────────────────────────────────────── */
 .hidden { display: none !important; }
 hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px 12px; }
+
+/* ── Plans screen ────────────────────────────────────────────────── */
+.plan-week-tabs {
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px; margin-bottom: 12px;
+}
+.plan-week-tab {
+  padding: 5px 12px; border-radius: 99px; font-size: 12px; font-weight: 700;
+  background: var(--surface); border: 1.5px solid var(--border);
+  color: var(--muted); cursor: pointer; transition: all 0.15s;
+}
+.plan-week-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.plan-week-tab.done   { border-color: var(--green); color: var(--green); }
+.plan-week-tab.active.done { background: var(--green); border-color: var(--green); }
+
+/* Plan day cards */
+.plan-day-card { margin-bottom: 10px; }
+.plan-day-card.plan-day-done { border-color: var(--green); }
+.plan-day-card.plan-day-next { border-color: var(--accent); background: rgba(124,106,247,0.05); }
+
+.plan-day-header {
+  display: flex; align-items: center; gap: 12px; cursor: pointer;
+}
+.plan-day-status-icon {
+  font-size: 16px; font-weight: 800; width: 22px; text-align: center; flex-shrink: 0;
+  color: var(--muted);
+}
+.plan-day-card.plan-day-done .plan-day-status-icon { color: var(--green); }
+.plan-day-card.plan-day-next .plan-day-status-icon { color: var(--accent); }
+.plan-day-info { flex: 1; min-width: 0; }
+.plan-day-name { font-size: 14px; font-weight: 700; }
+.plan-day-meta { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+.plan-status-badge {
+  font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 99px;
+  text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0;
+}
+.plan-status-badge.done { background: rgba(76,175,125,0.15); color: var(--green); }
+.plan-status-badge.next { background: rgba(124,106,247,0.15); color: var(--accent); }
+
+/* Plan exercise rows inside expanded day card */
+.plan-day-exercises {
+  margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.plan-exercise-row {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+}
+.plan-ex-name { font-size: 13px; font-weight: 600; flex: 1; min-width: 100px; }
+.plan-ex-acc  { color: var(--muted); font-weight: 500; }
+.plan-ex-prescription { font-size: 13px; color: var(--text); white-space: nowrap; }
+.plan-ex-note { font-size: 11px; color: var(--muted); }
+
+/* Home screen — plan next-workout card */
+.plan-next-card {
+  background:
+    radial-gradient(120% 160% at 0% 0%, rgba(124,106,247,0.2) 0%, rgba(124,106,247,0) 60%),
+    var(--surface);
+  border: 1px solid rgba(124,106,247,0.45);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.plan-next-kicker {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--accent); margin-bottom: 4px;
+}
+.plan-next-title { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+.plan-next-sub   { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.plan-next-btn   { height: 44px; font-size: 14px; }
+
+@media (max-width: 420px) {
+  .club-total { font-size: 36px; }
+}
+
+@keyframes clubPop {
+  0% { transform: scale(0.96); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── Mobility runner ─────────────────────────────────────────────── */
+.mobility-block-dots { display: flex; gap: 6px; padding: 0 16px 14px; }
+.mobility-dot {
+  flex: 1; height: 5px; border-radius: 99px; background: var(--surface2);
+  transition: background 0.2s;
+}
+.mobility-card {
+  text-align: center; padding: 32px 20px;
+  border-top: 4px solid var(--accent);
+  transition: border-color 0.2s;
+}
+.mobility-block-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--muted); margin-bottom: 16px;
+}
+.mobility-exercise-name { font-size: 23px; font-weight: 700; margin-bottom: 12px; }
+.mobility-exercise-desc { font-size: 14px; color: var(--muted); line-height: 1.55; margin-bottom: 18px; }
+.mobility-progress { font-size: 12px; color: var(--muted); }
 
   </style>
 </head>
@@ -354,6 +701,36 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
 <div id="toast-container"></div>
 
 <div id="app">
+
+  <!-- ══════════════════════════════════════════════════
+       SIGN IN (gate screen — shown before everything)
+  ══════════════════════════════════════════════════ -->
+  <section id="signin-screen" class="hidden">
+    <div class="ob-logo">
+      <h1>Strengthify</h1>
+      <p>Track strength, earn XP, beat benchmarks.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Welcome back</div>
+      <p style="font-size:13px;color:var(--muted);margin:0 0 16px">Sign in with Google to access your data across all your devices.</p>
+      <button class="btn btn-secondary" id="welcome-signin-btn" style="display:flex;align-items:center;justify-content:center;gap:8px">
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Sign in with Google
+      </button>
+      <div style="text-align:center;margin-top:14px">
+        <button id="continue-local-btn" class="btn btn-ghost btn-sm" style="color:var(--muted);font-size:12px;font-weight:500">
+          Continue without sync (local only)
+        </button>
+      </div>
+    </div>
+  </section>
+
 
   <!-- ══════════════════════════════════════════════════
        ONBOARDING
@@ -438,6 +815,52 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
       </div>
     </div>
 
+    <!-- 1000 lb club progress -->
+    <div class="card routine-home">
+      <div class="routine-kicker">The 8-week commitment</div>
+      <h2 id="home-routine-title">Your week. Your rhythm.</h2>
+      <p id="home-routine-detail"></p>
+      <button class="btn btn-primary" data-open-routine>My weekly blocks <span aria-hidden="true">→</span></button>
+    </div>
+
+    <div class="club-wrap">
+      <div class="club-card" id="club-card">
+        <div class="club-kicker" id="club-kicker">1000 lb club progress</div>
+        <div class="club-achievement hidden" id="club-achievement">1000 lb club achieved</div>
+        <div class="club-total" id="club-total-lb">0 lb</div>
+        <div class="club-total-sub" id="club-total-kg">Estimated total: 0 lb (0.0 kg)</div>
+        <div class="club-bar-track"><div class="club-bar-fill" id="club-progress-fill" style="width:0%"></div></div>
+        <div class="club-meta-row">
+          <span id="club-progress-pct">0%</span>
+          <span id="club-remaining">Goal in progress</span>
+        </div>
+        <div class="club-lifts">
+          <div class="club-lift-row">
+            <span>Back Squat true max</span>
+            <span id="club-squat">0 lb (0 kg)</span>
+          </div>
+          <div class="club-lift-row">
+            <span>Bench Press true max</span>
+            <span id="club-bench">0 lb (0 kg)</span>
+          </div>
+          <div class="club-lift-row">
+            <span>Deadlift true max</span>
+            <span id="club-deadlift">0 lb (0 kg)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plan next-workout card (shown when a plan is active) -->
+    <div id="home-plan-card" class="hidden" style="padding:0 16px 4px">
+      <div class="plan-next-card">
+        <div class="plan-next-kicker">Active plan</div>
+        <div class="plan-next-title" id="home-plan-name"></div>
+        <div class="plan-next-sub" id="home-plan-next"></div>
+        <button class="btn btn-primary plan-next-btn" id="home-plan-start-btn">Start next workout →</button>
+      </div>
+    </div>
+
     <!-- Start workout CTA -->
     <div style="padding:0 16px 4px">
       <button class="btn btn-primary nav-btn" data-screen="workout" style="height:52px">
@@ -446,12 +869,26 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
       </button>
     </div>
 
+    <!-- Start mobility CTA -->
+    <div style="padding:0 16px 4px">
+      <button class="btn btn-secondary" id="home-start-mobility-btn" style="height:52px;display:flex;align-items:center;justify-content:center;gap:8px">
+        <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8"><circle cx="12" cy="4" r="2"/><path d="M12 22v-8l-4 3m4-3l4 3M7 9l5-2 5 2M8 13l4-6 4 6"/></svg>
+        Start mobility
+      </button>
+    </div>
+
     <!-- Recent sessions -->
     <div class="section-label">Recent workouts</div>
     <div id="recent-sessions"></div>
 
     <!-- Benchmark overview -->
-    <div class="section-label">Benchmark progress</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px;margin:16px 0 8px">
+      <div class="section-label" style="margin:0;padding:0">Benchmark progress</div>
+      <button class="btn btn-ghost btn-sm" id="share-benchmarks-btn" style="padding:6px 12px;font-size:12px;display:flex;align-items:center;gap:5px">
+        <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share
+      </button>
+    </div>
     <div class="bench-grid" id="benchmark-grid"></div>
 
   </section>
@@ -519,6 +956,147 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
 
 
   <!-- ══════════════════════════════════════════════════
+       MOBILITY
+  ══════════════════════════════════════════════════ -->
+  <section id="mobility-screen" class="hidden">
+
+    <div class="page-header">
+      <h1>Mobility</h1>
+      <button class="btn btn-ghost btn-sm" id="mobility-exit-btn">✕ Exit</button>
+    </div>
+
+    <div class="mobility-block-dots" id="mobility-block-dots"></div>
+
+    <div class="card mobility-card" id="mobility-card">
+      <div class="mobility-block-label" id="mobility-block-label"></div>
+      <div class="mobility-exercise-name" id="mobility-exercise-name"></div>
+      <div class="mobility-exercise-desc" id="mobility-exercise-desc"></div>
+      <div class="mobility-progress" id="mobility-progress">Repeat as many exercises as you like, then move on when ready.</div>
+    </div>
+
+    <div style="padding:0 16px 10px">
+      <button class="btn btn-primary" id="mobility-next-exercise-btn" style="height:52px">Next exercise (random) →</button>
+    </div>
+    <div style="display:flex;gap:10px;padding:0 16px 16px">
+      <button class="btn btn-secondary" id="mobility-next-block-btn" style="flex:1">Next block →</button>
+      <button class="btn btn-secondary" id="mobility-finish-btn" style="flex:1">Finish routine</button>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       PLANS
+  ══════════════════════════════════════════════════ -->
+  <section id="plans-screen" class="hidden">
+
+    <div class="page-header">
+      <h1>Training Plan</h1>
+      <button class="btn btn-ghost btn-sm" id="build-custom-plan-btn" style="font-size:12px">+ New plan</button>
+    </div>
+
+    <div class="card routine-home">
+      <div class="routine-kicker">Prefer a flexible week?</div>
+      <h2>Build a rhythm, not a timetable.</h2>
+      <p>Five workout types. Two of each. Any days you like.</p>
+      <button class="btn btn-secondary" data-open-routine>Open my 8-week commitment</button>
+    </div>
+
+    <!-- No plan state -->
+    <div id="plan-empty-state">
+      <div class="empty-state" style="padding:48px 16px 24px">
+        <svg viewBox="0 0 24 24" style="width:48px;height:48px;margin-bottom:12px;opacity:0.4;stroke:currentColor;fill:none;stroke-width:1.8">
+          <path stroke="currentColor" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M12 12h3M12 16h3M9 12h.01M9 16h.01"/>
+        </svg>
+        <p style="font-size:15px;font-weight:600;margin-bottom:6px">No active training plan</p>
+        <p style="font-size:13px;margin-bottom:0">Load the pre-built 8-week GVT programme to begin structured training</p>
+      </div>
+      <div style="padding:0 16px 16px">
+        <button class="btn btn-primary" id="load-gvt-plan-btn">Load 8-Week GVT Plan</button>
+      </div>
+    </div>
+
+    <!-- Active plan view -->
+    <div id="plan-active-view" class="hidden">
+
+      <!-- Plan header card -->
+      <div class="card" style="margin-bottom:12px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+          <div>
+            <div id="plan-name" style="font-size:17px;font-weight:700;margin-bottom:2px"></div>
+            <div id="plan-started" style="font-size:12px;color:var(--muted)"></div>
+          </div>
+          <button id="delete-plan-btn" class="btn btn-ghost btn-sm" style="padding:5px 10px;font-size:12px;color:var(--muted);flex-shrink:0">Remove</button>
+        </div>
+        <div style="margin-top:12px">
+          <div style="height:6px;border-radius:99px;background:var(--surface2);overflow:hidden">
+            <div id="plan-progress-bar-fill" style="height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 0.4s;width:0%"></div>
+          </div>
+          <div id="plan-progress-text" style="font-size:12px;color:var(--muted);margin-top:4px"></div>
+        </div>
+      </div>
+
+      <!-- Week selector tabs -->
+      <div class="plan-week-tabs" id="plan-week-tabs"></div>
+
+      <!-- Current week label + days list -->
+      <div id="plan-days-list"></div>
+
+      <!-- Start next workout -->
+      <div style="padding:0 16px 8px">
+        <button class="btn btn-primary" id="start-next-plan-btn">Start next workout →</button>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
+       PLAN BUILDER
+  ══════════════════════════════════════════════════ -->
+  <section id="plan-builder-screen" class="hidden">
+
+    <div class="page-header">
+      <div>
+        <h1>Build Plan</h1>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Same days repeat each week</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="pb-cancel-btn">Cancel</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Plan details</div>
+      <div class="form-group" style="margin-bottom:10px">
+        <label class="form-label" for="pb-plan-name">Plan name</label>
+        <input class="form-input" id="pb-plan-name" type="text" placeholder="e.g. My 8-Week Programme" maxlength="60">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label" for="pb-weeks">Number of weeks</label>
+        <input class="form-input" id="pb-weeks" type="number" min="1" max="24" step="1" value="8">
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px;margin:4px 0 6px">
+      <div class="section-label" style="margin:0;padding:0">Training days</div>
+    </div>
+    <p style="padding:0 16px;font-size:12px;color:var(--muted);margin-bottom:12px">
+      Define the day types for the week. Benchmark lifts (e.g. Back Squat, Bench Press) link to your PBs automatically.
+    </p>
+
+    <div id="pb-days-container"></div>
+
+    <div style="padding:0 16px 8px">
+      <button class="btn btn-secondary" id="pb-add-day-btn">+ Add training day</button>
+    </div>
+    <div style="padding:4px 16px 16px">
+      <button class="btn btn-primary" id="pb-save-btn">Save plan</button>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════
        PROGRESS
   ══════════════════════════════════════════════════ -->
   <section id="progress-screen" class="hidden">
@@ -541,9 +1119,49 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
 
 
   <!-- ══════════════════════════════════════════════════
-       STANDARDS
+       SESSION DETAIL / EDIT
   ══════════════════════════════════════════════════ -->
-  <section id="standards-screen" class="hidden">
+  <section id="session-detail-screen" class="hidden">
+    <div class="page-header">
+      <div>
+        <h1 id="sd-title">Workout</h1>
+        <div id="sd-meta" style="font-size:13px;color:var(--muted);margin-top:2px"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm back-btn" data-to="home">← Back</button>
+    </div>
+
+    <div id="sd-sets-container"></div>
+
+    <div style="padding:0 16px 8px">
+      <button class="btn btn-primary" id="sd-edit-btn">Edit this workout</button>
+    </div>
+    <div style="padding:0 16px 16px">
+      <button class="btn btn-secondary btn-danger" id="sd-delete-btn" style="background:none;border-color:var(--red);color:var(--red)">Delete workout</button>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       SESSION EDIT
+  ══════════════════════════════════════════════════ -->
+  <section id="session-edit-screen" class="hidden">
+    <div class="page-header">
+      <div>
+        <h1>Edit Workout</h1>
+        <div id="se-meta" style="font-size:13px;color:var(--muted);margin-top:2px"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="se-cancel-btn">Cancel</button>
+    </div>
+
+    <div id="se-lifts-container"></div>
+
+    <div style="padding:0 16px 16px">
+      <button class="btn btn-primary" id="se-save-btn">Save &amp; Recalculate XP</button>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       STANDARDS
+  ══════════════════════════════════════════════════ -->  <section id="standards-screen" class="hidden">
 
     <div class="page-header">
       <h1>Standards</h1>
@@ -628,6 +1246,47 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
       <button class="btn btn-primary" id="save-profile-btn">Save changes</button>
     </div>
 
+    <!-- Cloud Sync -->
+    <div class="card" id="sync-card">
+      <div class="card-title">Cloud Sync</div>
+
+      <!-- Not configured -->
+      <div id="sync-state-unconfigured">
+        <p style="font-size:13px;color:var(--muted);margin:0 0 4px">Sync is not yet configured.</p>
+        <p style="font-size:12px;color:var(--muted);margin:0">Add your Firebase config to <code style="font-size:11px">sync.js</code> to enable cross-device sync.</p>
+      </div>
+
+      <!-- Signed out -->
+      <div id="sync-state-signedout" class="hidden">
+        <p style="font-size:13px;color:var(--muted);margin:0 0 12px">Sign in with Google to sync your data across all your devices. Your local data is never deleted when you sign out.</p>
+        <button class="btn btn-secondary" id="sync-signin-btn" style="display:flex;align-items:center;justify-content:center;gap:8px">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Sign in with Google
+        </button>
+      </div>
+
+      <!-- Signed in -->
+      <div id="sync-state-signedin" class="hidden">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <img id="sync-avatar" src="" alt="" style="width:36px;height:36px;border-radius:50%;display:none">
+          <div style="flex:1;min-width:0">
+            <div id="sync-user-name" style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+            <div id="sync-user-email" style="font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+          </div>
+          <div id="sync-status-badge"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-secondary" id="sync-now-btn">Sync now</button>
+          <button class="btn btn-secondary" id="sync-signout-btn">Sign out</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Data management -->
     <div class="card">
       <div class="card-title">Data</div>
@@ -641,7 +1300,82 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
 
   </section>
 
+  <section id="routine-screen" class="hidden" aria-labelledby="routine-heading">
+    <div class="page-header">
+      <h1 id="routine-heading">Weekly blocks</h1>
+      <button class="btn btn-ghost btn-sm back-btn" data-to="home">← Home</button>
+    </div>
+    <div id="routine-setup" class="card routine-home">
+      <div class="routine-kicker">Make a little room for you</div>
+      <h2>8 weeks. No fixed days.</h2>
+      <p>Do each of these five workouts twice a week. Each block takes about 25 minutes.
+        Stack a few together or spread them out around your week.</p>
+      <ul id="routine-preview" class="routine-preview"></ul>
+      <p>Each week is seven days from your chosen start date, not a Monday-to-Sunday timetable.
+        That's 10 blocks per week, 80 across your commitment.</p>
+      <form id="routine-form">
+        <div class="form-group">
+          <label class="form-label" for="routine-start-date">My start date</label>
+          <input class="form-input" id="routine-start-date" type="date" min="1000-01-01" max="9999-11-06" required>
+        </div>
+        <button class="btn btn-primary" type="submit">I'm in for 8 weeks</button>
+        <button class="btn btn-ghost hidden" type="button" id="routine-cancel-setup">Keep my current commitment</button>
+      </form>
+    </div>
+    <div id="routine-dashboard" class="hidden">
+      <div class="card routine-home">
+        <div class="routine-kicker">My 8-week commitment</div>
+        <h2>Your week. Your rhythm.</h2>
+        <p id="routine-dates"></p>
+        <div id="routine-journey" class="routine-journey"></div>
+        <button class="btn btn-ghost btn-sm" id="routine-new">Start a new commitment</button>
+      </div>
+      <div id="routine-week-tabs" class="routine-week-tabs" role="group" aria-label="Choose a routine week"></div>
+      <div class="card routine-week-summary">
+        <div class="routine-week-heading">
+          <h2 id="routine-week-title"></h2>
+          <strong id="routine-week-count"></strong>
+        </div>
+        <p id="routine-week-dates"></p>
+        <progress id="routine-week-progress" max="10" value="0" aria-label="Weekly workout blocks"></progress>
+        <p id="routine-week-message" role="status"></p>
+      </div>
+      <div id="routine-checklist"></div>
+      <p class="routine-footnote">Tick a block after you finish it. Untick to undo. Check-offs track your commitment;
+        use Workout separately if you want to log sets and earn XP.</p>
+    </div>
+  </section>
+
 </div><!-- /#app -->
+
+<dialog id="routine-celebration" class="routine-celebration" aria-labelledby="routine-celebration-title" aria-describedby="routine-celebration-copy">
+  <div id="routine-confetti" class="routine-confetti" aria-hidden="true"></div>
+  <div class="routine-trophy" aria-hidden="true">🏆</div>
+  <div class="routine-kicker">Commitment looks good on you</div>
+  <h2 id="routine-celebration-title"></h2>
+  <p id="routine-celebration-copy"></p>
+  <button id="routine-celebration-close" class="btn btn-primary">Enjoy the win</button>
+</dialog>
+
+<!-- ══════════════════════════════════════════
+     SHARE MODAL
+══════════════════════════════════════════ -->
+<div id="share-modal" class="share-modal-overlay hidden">
+  <div class="share-modal-box">
+    <div class="share-modal-header">
+      <span style="font-size:15px;font-weight:700">Share benchmarks</span>
+      <button id="share-modal-close" class="btn btn-ghost btn-sm" style="padding:4px 10px">✕</button>
+    </div>
+    <div class="share-canvas-wrap">
+      <canvas id="share-canvas"></canvas>
+    </div>
+    <div class="share-actions">
+      <button class="btn btn-primary" id="share-download-btn">Download PNG</button>
+      <button class="btn btn-secondary" id="share-native-btn" style="display:none">Share…</button>
+      <button class="btn btn-secondary" id="share-copy-btn">Copy text</button>
+    </div>
+  </div>
+</div>
 
 
 <!-- ══════════════════════════════════════════
@@ -657,6 +1391,11 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
   <button class="nav-btn" data-screen="workout">
     <svg viewBox="0 0 24 24"><path stroke="currentColor" d="M6 4v16M18 4v16M6 12h12M3 8h3M18 8h3M3 16h3M18 16h3"/></svg>
     Workout
+  </button>
+
+  <button class="nav-btn" data-screen="plans">
+    <svg viewBox="0 0 24 24"><path stroke="currentColor" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M12 12h3M12 16h3M9 12h.01M9 16h.01"/></svg>
+    Plans
   </button>
 
   <button class="nav-btn" data-screen="progress">
@@ -676,6 +1415,10 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
 
 </nav>
 
+<!-- Firebase SDK (loaded only when cloud sync is configured) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
   // =====================================================================
 // Strengthify Web — Data Layer (localStorage)
@@ -685,6 +1428,10 @@ const KEYS = {
   PROFILE:  'sf_profile',
   SESSIONS: 'sf_sessions',
   PBS:      'sf_pbs',
+  PBS_TS:   'sf_pbs_ts',
+  PLANS:    'sf_plans',
+  ROUTINE:  'sf_routine',
+  ROUTINE_TS: 'sf_routine_ts',
 };
 
 // ── Default / helpers ─────────────────────────────────────────────
@@ -706,7 +1453,9 @@ function getProfile() {
 }
 
 function saveProfile(profile) {
+  profile._updatedAt = Date.now();
   localStorage.setItem(KEYS.PROFILE, JSON.stringify(profile));
+  if (typeof syncPushProfile === 'function') syncPushProfile(profile);
 }
 
 function createProfile(name, sex, dob, bodyweightKg, heightCm) {
@@ -735,6 +1484,7 @@ function saveSession(session) {
   const sessions = getSessions();
   sessions.unshift(session); // newest first
   localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions));
+  if (typeof syncPushSession === 'function') syncPushSession(session);
 }
 
 // ── Personal Bests ────────────────────────────────────────────────
@@ -746,6 +1496,8 @@ function getPBs() {
 
 function savePBs(pbs) {
   localStorage.setItem(KEYS.PBS, JSON.stringify(pbs));
+  localStorage.setItem(KEYS.PBS_TS, String(Date.now()));
+  if (typeof syncPushPBs === 'function') syncPushPBs(pbs);
 }
 
 // ── Age calculation ───────────────────────────────────────────────
@@ -808,6 +1560,31 @@ const STRENGTH_STANDARDS = {
     male:   [[0,0.05],[5,0.09],[20,0.16],[40,0.23],[60,0.30],[80,0.38],[95,0.49],[100,0.62]],
     female: [[0,0.03],[5,0.05],[20,0.09],[40,0.13],[60,0.18],[80,0.24],[95,0.31],[100,0.40]],
   },
+  'Front Squat': {
+    // ~80% of Back Squat 1RM; data derived from Strength Level front squat standards
+    male:   [[0,0.20],[5,0.40],[20,0.65],[40,0.90],[60,1.20],[80,1.50],[95,1.90],[100,2.40]],
+    female: [[0,0.15],[5,0.28],[20,0.45],[40,0.63],[60,0.82],[80,1.05],[95,1.35],[100,1.70]],
+  },
+};
+
+// Lifts where the user enters *added* weight (0 = bodyweight only);
+// kept for display purposes in session detail (shows "Bodyweight" instead of "0 kg").
+const BODYWEIGHT_LIFTS = new Set(['Push-up']);
+
+// Lifts ranked purely by rep count adjusted for bodyweight, NOT by estimated 1RM.
+const REP_BASED_LIFTS = new Set(['Push-up']);
+
+// Rep-based standards calibrated against strength-level.com bodyweight push-up data.
+// refReps are at a reference bodyweight (men: 80 kg, women: 60 kg).
+// Actual threshold for user = refReps × sqrt(refBW / userBW) × ageFactor(age).
+const REP_STANDARDS = {
+  'Push-up': {
+    refBW: { male: 80, female: 60 },
+    // [percentile, refReps at reference bodyweight]
+    // At 108 kg male (scale=0.860): 5%≈10, 20%≈21, 40%≈31, 60%≈45, 80%≈58, 95%≈76
+    male:   [[0,0],[5,12],[20,24],[40,36],[60,52],[80,68],[95,88],[100,110]],
+    female: [[0,0],[5,5], [20,12],[40,20],[60,30],[80,42],[95,58],[100,75]],
+  },
 };
 
 function ageFactor(age) {
@@ -859,6 +1636,42 @@ function getBenchmark(lift, profile) {
   const bp  = profile.sex === 'female' ? std.female : std.male;
   const age = calcAge(profile.dob);
   return interpRatio(bp, 50) * ageFactor(age) * profile.bodyweightKg;
+}
+
+// Returns percentile for a rep-based lift (e.g. Push-up)
+function getRepPercentile(lift, reps, profile) {
+  const std = REP_STANDARDS[lift];
+  if (!std || !reps || reps <= 0) return 0;
+  const sex   = profile.sex === 'female' ? 'female' : 'male';
+  const refBW = std.refBW[sex];
+  const bp    = std[sex];
+  const age   = calcAge(profile.dob);
+  const af    = ageFactor(age);
+  // Normalize user's reps to reference bodyweight and peak age.
+  // Heavier athletes need fewer reps to reach the same percentile.
+  const normReps = reps * Math.sqrt(profile.bodyweightKg / refBW) / af;
+  if (normReps <= bp[0][1]) return bp[0][0];
+  if (normReps >= bp[bp.length-1][1]) return 100;
+  for (let i = 1; i < bp.length; i++) {
+    if (normReps <= bp[i][1]) {
+      const [p0, r0] = bp[i-1], [p1, r1] = bp[i];
+      return Math.round(p0 + (normReps - r0) / (r1 - r0) * (p1 - p0));
+    }
+  }
+  return 100;
+}
+
+// Returns 50th-percentile rep count scaled to user's bodyweight and age
+function getRepBenchmark(lift, profile) {
+  const std = REP_STANDARDS[lift];
+  if (!std) return null;
+  const sex   = profile.sex === 'female' ? 'female' : 'male';
+  const refBW = std.refBW[sex];
+  const bp    = std[sex];
+  const age   = calcAge(profile.dob);
+  const af    = ageFactor(age);
+  const refReps = interpRatio(bp, 50);
+  return Math.round(refReps * Math.sqrt(refBW / profile.bodyweightKg) * af);
 }
 
 function tierFromPercentile(pct) {
@@ -947,6 +1760,12 @@ function epley1RM(weight, reps) {
   return weight * (1 + reps / 30);
 }
 
+// Effective weight including bodyweight for calisthenics lifts
+function effectiveWeight(lift, weightKg, profile) {
+  if (BODYWEIGHT_LIFTS.has(lift)) return weightKg + (profile ? profile.bodyweightKg : 0);
+  return weightKg;
+}
+
 // Ensure pb entry is always the full object shape
 function ensurePB(pbs, lift) {
   if (!pbs[lift] || typeof pbs[lift] !== 'object') {
@@ -972,62 +1791,73 @@ function calculateSessionXP(sets, profile) {
 
   for (const s of sets) {
     xp += XP.BASE_PER_SET;
-    const orm = epley1RM(s.weightKg, s.reps);
+    const effW = effectiveWeight(s.lift, s.weightKg, profile);
+    const orm = epley1RM(effW, s.reps);
 
     if (!sessionORM[s.lift] || orm > sessionORM[s.lift])
       sessionORM[s.lift] = orm;
 
-    if (s.reps === 1 && (!sessionOneRep[s.lift] || s.weightKg > sessionOneRep[s.lift]))
-      sessionOneRep[s.lift] = s.weightKg;
+    if (s.reps === 1 && (!sessionOneRep[s.lift] || effW > sessionOneRep[s.lift]))
+      sessionOneRep[s.lift] = effW;
 
     if (!sessionMaxReps[s.lift] || s.reps > sessionMaxReps[s.lift].reps ||
-        (s.reps === sessionMaxReps[s.lift].reps && s.weightKg > sessionMaxReps[s.lift].weightKg))
-      sessionMaxReps[s.lift] = { reps: s.reps, weightKg: s.weightKg };
+        (s.reps === sessionMaxReps[s.lift].reps && effW > sessionMaxReps[s.lift].weightKg))
+      sessionMaxReps[s.lift] = { reps: s.reps, weightKg: effW };
 
-    if (!sessionMaxWeight[s.lift] || s.weightKg > sessionMaxWeight[s.lift])
-      sessionMaxWeight[s.lift] = s.weightKg;
+    if (!sessionMaxWeight[s.lift] || effW > sessionMaxWeight[s.lift])
+      sessionMaxWeight[s.lift] = effW;
   }
 
   // Check PRs per lift
   for (const lift of Object.keys(sessionORM)) {
     const pb = ensurePB(pbs, lift);
 
-    // Estimated 1RM PR
-    if (sessionORM[lift] > pb.orm) {
-      xp += XP.PERSONAL_BEST;
-      newPBs.push({ lift, type: 'orm', value: sessionORM[lift] });
-      pb.orm = sessionORM[lift];
-    }
+    if (REP_BASED_LIFTS.has(lift)) {
+      // Rep-based lifts: only a new max rep count counts as a PR
+      const mr = sessionMaxReps[lift];
+      if (mr && mr.reps > pb.maxReps) {
+        xp += XP.PERSONAL_BEST;
+        newPBs.push({ lift, type: 'reps', value: mr.reps, weight: mr.weightKg });
+        pb.maxReps   = mr.reps;
+        pb.maxRepsKg = mr.weightKg;
+      }
+    } else {
+      // Weight-based lifts: orm, 1-rep, and rep PRs
+      if (sessionORM[lift] > pb.orm) {
+        xp += XP.PERSONAL_BEST;
+        newPBs.push({ lift, type: 'orm', value: sessionORM[lift] });
+        pb.orm = sessionORM[lift];
+      }
 
-    // Actual 1-rep PR
-    if (sessionOneRep[lift] && sessionOneRep[lift] > pb.oneRepKg) {
-      if (!newPBs.find(p => p.lift === lift && p.type === 'orm')) xp += XP.PERSONAL_BEST;
-      newPBs.push({ lift, type: 'oneRep', value: sessionOneRep[lift] });
-      pb.oneRepKg = sessionOneRep[lift];
-    }
+      if (sessionOneRep[lift] && sessionOneRep[lift] > pb.oneRepKg) {
+        if (!newPBs.find(p => p.lift === lift && p.type === 'orm')) xp += XP.PERSONAL_BEST;
+        newPBs.push({ lift, type: 'oneRep', value: sessionOneRep[lift] });
+        pb.oneRepKg = sessionOneRep[lift];
+      }
 
-    // Rep PR
-    const mr = sessionMaxReps[lift];
-    if (mr && (mr.reps > pb.maxReps ||
-        (mr.reps === pb.maxReps && mr.weightKg > pb.maxRepsKg))) {
-      newPBs.push({ lift, type: 'reps', value: mr.reps, weight: mr.weightKg });
-      pb.maxReps   = mr.reps;
-      pb.maxRepsKg = mr.weightKg;
-    }
+      const mr = sessionMaxReps[lift];
+      if (mr && (mr.reps > pb.maxReps ||
+          (mr.reps === pb.maxReps && mr.weightKg > pb.maxRepsKg))) {
+        newPBs.push({ lift, type: 'reps', value: mr.reps, weight: mr.weightKg });
+        pb.maxReps   = mr.reps;
+        pb.maxRepsKg = mr.weightKg;
+      }
 
-    // Highest weight PR (any rep count)
-    const mw = sessionMaxWeight[lift];
-    if (mw && mw > pb.maxWeightKg) {
-      pb.maxWeightKg = mw;
+      const mw = sessionMaxWeight[lift];
+      if (mw && mw > pb.maxWeightKg) {
+        pb.maxWeightKg = mw;
+      }
     }
   }
 
   // Benchmark tier bonus — use best lift in session
   const primaryLift = sets[0]?.lift;
   if (primaryLift) {
-    const pb         = ensurePB(pbs, primaryLift);
-    const percentile = getPercentile(primaryLift, pb.orm, profile);
-    const tier       = tierFromPercentile(percentile);
+    const pb = ensurePB(pbs, primaryLift);
+    const percentile = REP_BASED_LIFTS.has(primaryLift)
+      ? getRepPercentile(primaryLift, pb.maxReps, profile)
+      : getPercentile(primaryLift, pb.oneRepKg || pb.maxWeightKg, profile);
+    const tier = tierFromPercentile(percentile);
     xp += XP.TIER_BONUS[tier] || 0;
   }
 
@@ -1066,15 +1896,120 @@ function exportData() {
     profile:  getProfile(),
     sessions: getSessions(),
     pbs:      getPBs(),
+    routine:  getRoutine(),
     exportedAt: new Date().toISOString(),
   }, null, 2);
 }
 
 function importData(jsonStr) {
   const data = JSON.parse(jsonStr);
+  if (data.routine != null) validateRoutine(data.routine);
   if (data.profile)  saveProfile(data.profile);
-  if (data.sessions) localStorage.setItem(KEYS.SESSIONS, JSON.stringify(data.sessions));
+  if (data.sessions) {
+    localStorage.setItem(KEYS.SESSIONS, JSON.stringify(data.sessions));
+    if (typeof syncPushSession === 'function') {
+      (data.sessions || []).forEach(s => syncPushSession(s));
+    }
+  }
   if (data.pbs)      savePBs(data.pbs);
+  if (Object.hasOwn(data, 'routine')) saveRoutine(data.routine);
+}
+
+// ── Session update (for editing) ──────────────────────────────────
+
+function updateSession(sessionId, newSets) {
+  const sessions = getSessions();
+  const idx = sessions.findIndex(s => s.id === sessionId);
+  if (idx === -1) return null;
+  sessions[idx].sets = newSets;
+  localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions));
+  if (typeof syncPushSession === 'function') syncPushSession(sessions[idx]);
+  return sessions[idx];
+}
+
+// Rebuild all PBs and XP from scratch by replaying all sessions in order (oldest first)
+function recalculateAllPBsAndXP() {
+  const profile  = getProfile();
+  if (!profile) return;
+  const sessions = getSessions().slice().reverse(); // oldest first
+
+  // Reset PBs and profile XP
+  const freshPBs = {};
+  profile.totalXP = 0;
+  profile.level   = 0;
+
+  for (const session of sessions) {
+    // Build per-lift session bests for this session
+    const sessionORM       = {};
+    const sessionOneRep    = {};
+    const sessionMaxReps   = {};
+    const sessionMaxWeight = {};
+
+    let xp = 0;
+    for (const s of session.sets) {
+      xp += XP.BASE_PER_SET;
+      const effW = effectiveWeight(s.lift, s.weightKg, profile);
+      const orm  = epley1RM(effW, s.reps);
+
+      if (!sessionORM[s.lift] || orm > sessionORM[s.lift]) sessionORM[s.lift] = orm;
+      if (s.reps === 1 && (!sessionOneRep[s.lift] || effW > sessionOneRep[s.lift])) sessionOneRep[s.lift] = effW;
+      if (!sessionMaxReps[s.lift] || s.reps > sessionMaxReps[s.lift].reps ||
+          (s.reps === sessionMaxReps[s.lift].reps && effW > sessionMaxReps[s.lift].weightKg))
+        sessionMaxReps[s.lift] = { reps: s.reps, weightKg: effW };
+      if (!sessionMaxWeight[s.lift] || effW > sessionMaxWeight[s.lift]) sessionMaxWeight[s.lift] = effW;
+    }
+
+    for (const lift of Object.keys(sessionORM)) {
+      const pb = ensurePB(freshPBs, lift);
+
+      if (REP_BASED_LIFTS.has(lift)) {
+        const mr = sessionMaxReps[lift];
+        if (mr && mr.reps > pb.maxReps) {
+          xp += XP.PERSONAL_BEST;
+          pb.maxReps   = mr.reps;
+          pb.maxRepsKg = mr.weightKg;
+        }
+      } else {
+        if (sessionORM[lift] > pb.orm) {
+          xp += XP.PERSONAL_BEST;
+          pb.orm = sessionORM[lift];
+        }
+        if (sessionOneRep[lift] && sessionOneRep[lift] > pb.oneRepKg) {
+          if (sessionORM[lift] <= (freshPBs[lift]?.orm || 0) || xp === XP.BASE_PER_SET * session.sets.length)
+            xp += XP.PERSONAL_BEST;
+          pb.oneRepKg = sessionOneRep[lift];
+        }
+        const mr = sessionMaxReps[lift];
+        if (mr && (mr.reps > pb.maxReps ||
+            (mr.reps === pb.maxReps && mr.weightKg > pb.maxRepsKg))) {
+          pb.maxReps   = mr.reps;
+          pb.maxRepsKg = mr.weightKg;
+        }
+        const mw = sessionMaxWeight[lift];
+        if (mw && mw > pb.maxWeightKg) pb.maxWeightKg = mw;
+      }
+    }
+
+    const primaryLift = session.sets[0]?.lift;
+    if (primaryLift) {
+      const pb = ensurePB(freshPBs, primaryLift);
+      const percentile = REP_BASED_LIFTS.has(primaryLift)
+        ? getRepPercentile(primaryLift, pb.maxReps, profile)
+        : getPercentile(primaryLift, pb.oneRepKg || pb.maxWeightKg, profile);
+      const tier = tierFromPercentile(percentile);
+      xp += XP.TIER_BONUS[tier] || 0;
+    }
+
+    session.xpEarned = xp;
+    profile.totalXP += xp;
+    while (profile.totalXP >= xpForLevel(profile.level + 1)) profile.level++;
+  }
+
+  // Persist updated data (sessions back in newest-first order)
+  localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions.reverse()));
+  savePBs(freshPBs);
+  saveProfile(profile);
+  return { profile, pbs: freshPBs };
 }
 
 // ── Lift registry ────────────────────────────────────────────
@@ -1094,10 +2029,296 @@ const LIFTS = [
   'Pull-up / Chin-up',
   'Incline Bench Press',
   'Romanian Deadlift',
+  'Front Squat',
   'Dumbbell Press',
   'Dumbbell Curl',
   'Push-up',
 ];
+
+// ── Mobility Routine ─────────────────────────────────────────────────
+// 4 blocks worked through in order; each ~5 minutes. Colors used for
+// the block progress dots/card accent in the mobility runner UI.
+
+const MOBILITY_ROUTINE = {
+  title: '20-Minute Mobility Routine',
+  footer: 'Rotate these routines throughout the week! Focus on mobility, stability, and recovery.',
+  blocks: [
+    {
+      name: 'Warm-Up Mobility Flow',
+      color: 'orange',
+      exercises: [
+        { name: 'Cat-Cow', description: 'Arch and round your back slowly, breathing through each movement.' },
+        { name: 'Thread the Needle', description: 'From all-fours, slide one arm under your body and rotate to stretch upper back.' },
+        { name: 'Hip Circles', description: 'Rotate hips in large circles while keeping torso stable.' },
+        { name: 'Deep Squat Hold', description: 'Sit into a deep squat, chest up, gently rock side to side.' },
+        { name: 'Banded Shoulder Dislocates', description: 'Hold a band wide with both hands, raise it overhead and back behind you, keeping arms straight throughout.' },
+        { name: 'World\u2019s Greatest Stretch', description: 'From a deep lunge, rotate your torso and reach one arm to the sky to open hips and upper back.' },
+        { name: 'Arm Circles', description: 'Make large controlled circles with straight arms, forward then reverse, to warm up the shoulders.' },
+        { name: 'Ankle Circles', description: 'Lift one foot and rotate the ankle through its full range in each direction.' },
+        { name: 'Leg Swings (Front-to-Back)', description: 'Holding a support, swing one leg forward and back with a relaxed, growing range.' },
+        { name: 'Leg Swings (Side-to-Side)', description: 'Holding a support, swing one leg across your body and back out to open the hip.' },
+        { name: 'Standing Torso Twists', description: 'Rotate your upper body side to side with loose arms to warm up the spine.' },
+        { name: 'Inchworm to Plank', description: 'Hinge over, walk your hands out to a plank, pause, then walk your feet back in to your hands.' },
+        { name: 'Wrist Circles & Stretch', description: 'Rotate each wrist through its full range, then gently press the palm back to stretch the forearm.' },
+      ],
+    },
+    {
+      name: 'Auxiliary Strength',
+      color: 'blue',
+      exercises: [
+        { name: 'Scapular Push-Ups', description: 'In plank, protract and retract shoulder blades without bending arms.' },
+        { name: 'Push-Ups', description: 'Perform 8-15 controlled reps, keeping your body in a straight line from head to heels.' },
+        { name: 'Y-T-W Raises', description: 'Lift arms into Y, T, and W shapes slowly to activate upper back.' },
+        { name: 'B-Stance Glute Bridge', description: 'One foot forward, lift hips using mainly the back leg\u2019s glute.' },
+        { name: 'Banded Glute Bridge', description: 'Loop a band above your knees, drive hips up while pressing knees outward against the band.' },
+        { name: 'Band Pull-Aparts', description: 'Hold a resistance band at shoulder width and pull it apart, squeezing shoulder blades together for 12-15 reps.' },
+        { name: 'Banded Y-Raises', description: 'Anchor a band low, raise both arms overhead into a Y shape against the resistance.' },
+        { name: 'Banded Face Pulls', description: 'Anchor a band at chest height, pull toward your face with elbows high, squeezing shoulder blades together.' },
+        { name: 'Banded Rows', description: 'Anchor a band in front of you, row both hands to your ribs, squeezing shoulder blades together.' },
+        { name: 'Banded External Rotations', description: 'Elbow pinned to your side, rotate your forearm outward against band resistance to strengthen the rotator cuff.' },
+        { name: 'Plank Hold', description: 'Hold a forearm plank for 30-45 seconds, keeping hips level and core braced.' },
+        { name: 'Dead Bugs', description: 'Lower opposite arm and leg while keeping lower back pressed down.' },
+        { name: 'Bird Dog', description: 'From all-fours, extend one arm and the opposite leg while keeping hips level and core braced.' },
+        { name: 'Superman Hold', description: 'Lie face down and lift your arms, chest, and legs off the floor, holding briefly at the top.' },
+        { name: 'Side Plank', description: 'Prop up on one forearm and lift your hips into a straight line, holding each side.' },
+        { name: 'Wall Slides', description: 'Back flat against a wall, slide your arms up and down while keeping contact with the wall.' },
+        { name: 'Reverse Snow Angels', description: 'Lying face down, sweep your arms overhead and back like a snow angel, squeezing shoulder blades.' },
+        { name: 'Single-Leg Glute Bridge', description: 'Drive one heel down to lift your hips while the other leg stays extended out straight.' },
+      ],
+    },
+    {
+      name: 'Mobility Strength',
+      color: 'green',
+      exercises: [
+        { name: 'Knee-Over-Toe Split Squat', description: 'Front knee travels forward over toes while keeping heel down.' },
+        { name: '90/90 Transitions', description: 'Rotate knees side to side while keeping feet grounded.' },
+        { name: 'Russian Twists', description: 'Rotate torso side to side, tapping the floor each side for 12-16 total reps.' },
+        { name: 'Halos', description: 'Circle a light weight or band around your head, reversing direction halfway through.' },
+        { name: 'Banded Lateral Walks', description: 'Loop a band above your knees and take side steps, keeping tension on the band and hips level.' },
+        { name: 'Banded Clamshells', description: 'Loop a band above your knees, lie on your side and open your top knee against the resistance.' },
+        { name: 'Banded Good Mornings', description: 'Stand on a band, hinge at the hips keeping a flat back, feeling tension build through your hamstrings.' },
+        { name: 'Hamstring Sweep', description: 'Hinge forward and reach toward foot to stretch hamstrings.' },
+        { name: 'Lat Stretch', description: 'Hold onto a surface, sink hips back, lightly pull against the stretch.' },
+        { name: 'Cossack Squat', description: 'Shift side to side into a deep lateral squat, keeping the straight leg\u2019s heel down.' },
+        { name: 'Frog Stretch', description: 'Knees wide on all-fours, rock your hips back and forward to open the inner thighs.' },
+        { name: 'Pigeon Pose', description: 'Front shin angled forward on the floor, sink your hips down to stretch the glute and hip.' },
+        { name: 'Couch Stretch', description: 'Rear foot propped up behind you, drive your hips forward to stretch the quad and hip flexor.' },
+        { name: 'Spiderman Lunge with Rotation', description: 'Step into a deep lunge, plant both hands down, and rotate one arm toward the sky.' },
+      ],
+    },
+    {
+      name: 'Recovery & Reset',
+      color: 'purple',
+      exercises: [
+        { name: 'Box Breathing', description: 'Inhale 4 sec, hold 4 sec, exhale 4 sec, hold 4 sec.' },
+        { name: 'Pec Stretch', description: 'Forearm on doorway, step forward until chest opens.' },
+        { name: 'Banded Hamstring Stretch', description: 'Loop a band around one foot and gently pull the leg straight toward you to deepen the hamstring stretch.' },
+        { name: 'Banded Hip Flexor Stretch', description: 'Loop a band low around your hip, step forward and gently shift your weight to deepen the hip flexor stretch.' },
+        { name: 'Child\u2019s Pose Reach', description: 'Sit back on heels, reach arms to one side to stretch lats and ribs.' },
+        { name: 'Neck CARs', description: 'Slow, controlled circles with your head exploring full range.' },
+        { name: 'Downward Dog', description: 'Hips lifted high, heels reaching toward the floor, arms and back long.' },
+        { name: 'Figure-4 Stretch', description: 'Lying down, cross one ankle over the opposite knee and pull the far thigh in to stretch the glute.' },
+        { name: 'Cobra Stretch', description: 'Lying face down, press your chest up while keeping hips down to extend the spine.' },
+        { name: 'Cross-Body Shoulder Stretch', description: 'Pull one arm across your chest, holding just above the elbow, to stretch the rear shoulder.' },
+        { name: 'Supine Spinal Twist', description: 'Lying on your back, drop both knees to one side while keeping shoulders flat on the floor.' },
+        { name: 'Legs-Up-The-Wall', description: 'Lie on your back with legs resting up a wall and breathe slowly to help the body downshift.' },
+      ],
+    },
+  ],
+};
+
+// ── Training Plans ─────────────────────────────────────────────────
+
+function getPlans() {
+  const raw = localStorage.getItem(KEYS.PLANS);
+  return raw ? JSON.parse(raw) : [];
+}
+
+function savePlan(plan) {
+  plan.updatedAt = Date.now();
+  const plans = getPlans();
+  const idx = plans.findIndex(p => p.id === plan.id);
+  if (idx >= 0) plans[idx] = plan;
+  else plans.push(plan);
+  localStorage.setItem(KEYS.PLANS, JSON.stringify(plans));
+  if (typeof syncPushPlan === 'function') syncPushPlan(plan);
+}
+
+function deletePlan(planId) {
+  const plans = getPlans().filter(p => p.id !== planId);
+  localStorage.setItem(KEYS.PLANS, JSON.stringify(plans));
+  if (typeof syncDeletePlan === 'function') syncDeletePlan(planId);
+}
+
+function getActivePlan() {
+  return getPlans().find(p => p.active) || null;
+}
+
+function markPlanDayComplete(planId, weekNum, dayNum, sessionId) {
+  const plans = getPlans();
+  const plan = plans.find(p => p.id === planId);
+  if (!plan) return;
+  const week = plan.weeks.find(w => w.weekNum === weekNum);
+  if (!week) return;
+  const day = week.days.find(d => d.dayNum === dayNum);
+  if (!day) return;
+  day.completedSessionId = sessionId;
+  plan.updatedAt = Date.now();
+  localStorage.setItem(KEYS.PLANS, JSON.stringify(plans));
+  if (typeof syncPushPlan === 'function') syncPushPlan(plan);
+}
+
+// Creates the pre-built 8-week GVT plan.
+// Weights are derived from the user's current PBs (estimated 1RM) so they
+// are personalised on load.  Falls back to sensible defaults when no PBs exist.
+function createGVTPlan() {
+  const pbs = getPBs();
+  const LIFTS_SET = new Set(LIFTS);
+
+  // Round to nearest 2.5 kg, minimum 2.5
+  function r25(v) { return Math.max(Math.round(v / 2.5) * 2.5, 2.5); }
+
+  // Best estimated 1RM for a lift (0 if no data)
+  function orm(lift) {
+    const pb = pbs[lift];
+    return (pb && typeof pb === 'object') ? (pb.orm || 0) : 0;
+  }
+
+  // Target weight = factor × 1RM, or fallback if no PB
+  function wt(lift, factor, fallback) {
+    const o = orm(lift);
+    return o > 0 ? r25(o * factor) : fallback;
+  }
+
+  function ex(name, sets, reps, targetWeightKg, note) {
+    return { name, sets, reps, targetWeightKg: targetWeightKg ?? null,
+             isBenchmark: LIFTS_SET.has(name), note: note || '' };
+  }
+
+  // ── Volume-week weights ──────────────────────────────────────────
+  const sqGVT  = wt('Back Squat',           0.60, 60);   // 10×10 @ 60% 1RM
+  const bpGVT  = wt('Bench Press',          0.60, 50);
+  const dlGVT  = wt('Deadlift',             0.60, 70);
+
+  // Secondary 8×5 @ 70% 1RM
+  const rdlSec = orm('Romanian Deadlift') > 0
+    ? wt('Romanian Deadlift', 0.70, 60)
+    : wt('Deadlift', 0.595, 60);        // 70% × 85% of DL if no RDL PB
+
+  const puSec = (() => {                // pull-up added weight secondary
+    const pb = pbs['Pull-up / Chin-up'];
+    if (pb && typeof pb === 'object' && pb.maxWeightKg > 0) return r25(pb.maxWeightKg * 0.70);
+    return 0;                           // bodyweight
+  })();
+
+  // Front Squat: use own PB if available, else ~80% of back squat at same %
+  const fsSec  = orm('Front Squat') > 0
+    ? wt('Front Squat', 0.70, 50)
+    : wt('Back Squat', 0.56, 50);       // 80% BS × 70% = 56% BS
+
+  // Accessories day — medium volume @ 65% 1RM (4×10)
+  const brAcc  = wt('Barbell Row',          0.65, 55);
+  const ibAcc  = wt('Incline Bench Press',  0.65, 45);
+
+  // ── Deload weights (60% of volume weights) ───────────────────────
+  const sqD  = r25(sqGVT  * 0.60);
+  const bpD  = r25(bpGVT  * 0.60);
+  const dlD  = r25(dlGVT  * 0.60);
+  const rdlD = r25(rdlSec * 0.60);
+  const fsD  = r25(fsSec  * 0.60);
+  const brD  = r25(brAcc  * 0.60);
+  const ibD  = r25(ibAcc  * 0.60);
+
+  // ── PR-week weights (85-90% 1RM) ────────────────────────────────
+  const sqPR  = wt('Back Squat',           0.85, r25(sqGVT  * 1.42));
+  const bpPR  = wt('Bench Press',          0.85, r25(bpGVT  * 1.42));
+  const dlPR  = wt('Deadlift',             0.90, r25(dlGVT  * 1.50));
+  const rdlPR = orm('Romanian Deadlift') > 0
+    ? wt('Romanian Deadlift', 0.85, r25(rdlSec * 1.21))
+    : r25(rdlSec * 1.21);
+  const puPR  = puSec > 0 ? r25(puSec * 1.15) : 10;
+  const fsPR  = orm('Front Squat') > 0
+    ? wt('Front Squat', 0.85, r25(fsSec * 1.21))
+    : r25(fsSec * 1.21);
+  const brPR  = wt('Barbell Row',          0.80, r25(brAcc  * 1.23));
+  const ibPR  = wt('Incline Bench Press',  0.80, r25(ibAcc  * 1.23));
+
+  // ── Day factories ─────────────────────────────────────────────────
+  function day(num, label, exList) {
+    return { dayNum: num, label, completedSessionId: null, exercises: exList };
+  }
+
+  function volumeDays() { return [
+    day(1, 'Squat', [
+      ex('Back Squat',        10, 10, sqGVT,  'GVT · 60 s rest'),
+      ex('Romanian Deadlift',  8,  5, rdlSec, '8×5 @ 70%'),
+    ]),
+    day(2, 'Bench', [
+      ex('Bench Press',       10, 10, bpGVT, 'GVT · 60 s rest'),
+      ex('Pull-up / Chin-up',  8,  5, puSec, '8×5 · BW or added weight'),
+    ]),
+    day(3, 'Deadlift', [
+      ex('Deadlift',    10, 10, dlGVT, 'GVT · 90 s rest'),
+      ex('Front Squat',  8,  5, fsSec, '8×5 @ 70%'),
+    ]),
+    day(4, 'Accessories', [
+      ex('Barbell Row',          4, 10, brAcc, 'medium volume · 65%'),
+      ex('Incline Bench Press',  4,  8, ibAcc, '65% 1RM'),
+    ]),
+  ]; }
+
+  function deloadDays() { return [
+    day(1, 'Squat (Deload)', [
+      ex('Back Squat',        5, 5, sqD,  'Deload · 60%'),
+      ex('Romanian Deadlift', 5, 5, rdlD, 'Deload'),
+    ]),
+    day(2, 'Bench (Deload)', [
+      ex('Bench Press',       5, 5, bpD, 'Deload · 60%'),
+      ex('Pull-up / Chin-up', 5, 5,  0,  'Deload · BW'),
+    ]),
+    day(3, 'Deadlift (Deload)', [
+      ex('Deadlift',    5, 5, dlD, 'Deload · 60%'),
+      ex('Front Squat', 5, 5, fsD, 'Deload'),
+    ]),
+    day(4, 'Accessories (Deload)', [
+      ex('Barbell Row',          3, 12, brD, 'Deload · light'),
+      ex('Incline Bench Press',  3,  8, ibD, 'Deload'),
+    ]),
+  ]; }
+
+  function prDays() { return [
+    day(1, 'Squat (PR)', [
+      ex('Back Squat',        5, 5, sqPR,  'PR week · 85%'),
+      ex('Romanian Deadlift', 5, 3, rdlPR, 'PR week · heavy'),
+    ]),
+    day(2, 'Bench (PR)', [
+      ex('Bench Press',       5, 5, bpPR, 'PR week · 85%'),
+      ex('Pull-up / Chin-up', 5, 5, puPR, 'PR week · added weight'),
+    ]),
+    day(3, 'Deadlift (PR)', [
+      ex('Deadlift',    5, 3, dlPR, 'PR week · 90% · work to max'),
+      ex('Front Squat', 3, 5, fsPR, 'PR week'),
+    ]),
+    day(4, 'Accessories (PR)', [
+      ex('Barbell Row',          4,  8, brPR, 'PR week · heavier'),
+      ex('Incline Bench Press',  4,  5, ibPR, 'PR week'),
+    ]),
+  ]; }
+
+  const weeks = [];
+  for (let w = 1; w <= 8; w++) {
+    const isDeload = w === 7;
+    const isPR     = w === 8;
+    weeks.push({
+      weekNum: w,
+      label: isDeload ? 'Week 7 — Deload' : isPR ? 'Week 8 — PR Week' : `Week ${w} — Volume`,
+      type:   isDeload ? 'deload' : isPR ? 'pr' : 'volume',
+      days:   isDeload ? deloadDays() : isPR ? prDays() : volumeDays(),
+    });
+  }
+
+  return { id: uuid(), name: '8-Week GVT', startDate: today(), active: true, weeks };
+}
 
 </script>
 <script>
@@ -1220,21 +2441,632 @@ function drawLineChart(canvas, points, opts = {}) {
 
 </script>
 <script>
+  // Flexible weekly blocks are independent of set-by-set workout logging.
+const ROUTINE_WORKOUTS = [
+  { name: 'Pull - push - pull', moves: ['Lat pulldown', 'Bench press', 'Face pulls'], note: '5 rounds. Rest 1 minute after each superset.' },
+  { name: 'Core - leg - core', moves: ['Crunches', 'Barbell squat', 'Hollow hold'], note: '5 rounds. Rest 1 minute after each superset.' },
+  { name: 'Push - pull - push', moves: ['Tricep extensions', 'Pull-ups', 'Lateral raises'], note: 'Move through the three exercises as a superset.' },
+  { name: 'Leg - deadlift - leg', moves: ['Goblet squat', 'Deadlift', 'Bulgarian split squat'], note: '5 rounds. Rest 1 minute after each superset.' },
+  { name: 'Strength - mobility - strength', moves: ['Halos', 'Stretches', 'Forearm curls'], note: 'Combine strength and mobility in one block.' },
+];
+const ROUTINE_WEEKS = 8;
+const ROUTINE_WEEK_TOTAL = ROUTINE_WORKOUTS.length * 2;
+const ROUTINE_DAY_MS = 86400000;
+let routineViewWeek = null;
+
+function routineDateNumber(value) {
+  if (typeof value !== 'string' || !/^[1-9]\d{3}-\d{2}-\d{2}$/.test(value)) {
+    throw new Error('Choose a valid start date.');
+  }
+  const ms = Date.parse(value + 'T00:00:00Z');
+  if (!Number.isFinite(ms) || new Date(ms).toISOString().slice(0, 10) !== value) {
+    throw new Error('Choose a valid start date.');
+  }
+  return ms / ROUTINE_DAY_MS;
+}
+
+function routineLocalDate(now = new Date()) {
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
+function routineDateAt(startDate, offset) {
+  return new Date((routineDateNumber(startDate) + offset) * ROUTINE_DAY_MS).toISOString().slice(0, 10);
+}
+
+function routineDateLabel(date) {
+  return new Date(routineDateNumber(date) * ROUTINE_DAY_MS).toLocaleDateString(undefined, {
+    day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
+  });
+}
+
+function routineCurrentWeek(routine, date = routineLocalDate()) {
+  // Calendar-day arithmetic avoids DST and UTC/local midnight shifts.
+  return Math.floor((routineDateNumber(date) - routineDateNumber(routine.startDate)) / 7);
+}
+
+function validateRoutine(routine) {
+  if (!routine || typeof routine.id !== 'string' || !routine.id ||
+      !Number.isFinite(routine.updatedAt) || routine.updatedAt <= 0 ||
+      !Array.isArray(routine.completed) || routine.completed.length !== ROUTINE_WEEKS ||
+      !routine.completed.every(week => Array.isArray(week) && week.length === ROUTINE_WEEK_TOTAL &&
+        week.every(done => typeof done === 'boolean')) ||
+      !Array.isArray(routine.celebratedWeeks) ||
+      !routine.celebratedWeeks.every(week => Number.isInteger(week) && week >= 0 && week < ROUTINE_WEEKS)) {
+    throw new Error('Invalid routine data. Restore a valid backup.');
+  }
+  routineDateNumber(routine.startDate);
+  routineDateNumber(routineDateAt(routine.startDate, 55));
+}
+
+function getRoutine() {
+  const raw = localStorage.getItem(KEYS.ROUTINE);
+  const routine = raw ? JSON.parse(raw) : null;
+  if (routine !== null) validateRoutine(routine);
+  return routine;
+}
+
+function saveRoutine(routine) {
+  if (routine !== null) {
+    routine.updatedAt = Math.max(Date.now(), (routine.updatedAt || 0) + 1);
+    validateRoutine(routine);
+  }
+  const updatedAt = routine ? routine.updatedAt : Date.now();
+  localStorage.setItem(KEYS.ROUTINE, JSON.stringify(routine));
+  localStorage.setItem(KEYS.ROUTINE_TS, String(updatedAt));
+  if (typeof syncPushRoutine === 'function') {
+    syncPushRoutine(routine, updatedAt)?.catch(error => {
+      console.error('[Sync] pushRoutine failed:', error);
+      setSyncStatus('error');
+      toast('Routine saved on this device, but cloud sync failed. Try Sync now when online.', 'error');
+    });
+  }
+}
+
+function createRoutine(startDate) {
+  routineDateNumber(startDate);
+  const routine = {
+    id: uuid(), startDate, updatedAt: Date.now(),
+    completed: Array.from({ length: ROUTINE_WEEKS }, () => Array(ROUTINE_WEEK_TOTAL).fill(false)),
+    celebratedWeeks: [],
+  };
+  saveRoutine(routine);
+  return routine;
+}
+
+function setRoutineBlock(week, block, done, date = routineLocalDate()) {
+  const routine = getRoutine();
+  if (!routine || !Number.isInteger(week) || week < 0 || week >= ROUTINE_WEEKS ||
+      !Number.isInteger(block) || block < 0 || block >= ROUTINE_WEEK_TOTAL || typeof done !== 'boolean') {
+    throw new Error('That workout block could not be found.');
+  }
+  if (week > routineCurrentWeek(routine, date)) throw new Error('This week has not started yet.');
+  routine.completed[week][block] = done;
+  const celebrate = routine.completed[week].every(Boolean) && !routine.celebratedWeeks.includes(week);
+  if (celebrate) routine.celebratedWeeks.push(week);
+  saveRoutine(routine);
+  return { routine, celebrate };
+}
+
+function renderRoutineHome() {
+  const routine = getRoutine();
+  const title = document.getElementById('home-routine-title');
+  const detail = document.getElementById('home-routine-detail');
+  if (!routine) {
+    title.textContent = 'Your week. Your rhythm.';
+    detail.textContent = 'Commit to 8 weeks of flexible, 25-minute workout blocks.';
+    return;
+  }
+  const current = routineCurrentWeek(routine);
+  const week = Math.max(0, Math.min(7, current));
+  const total = routine.completed.flat().filter(Boolean).length;
+  title.textContent = current < 0 ? 'Your commitment is locked in' :
+    current >= 8 ? 'Eight weeks, your way' : `Week ${week + 1}: keep showing up`;
+  detail.textContent = current < 0 ? `Starts ${routineDateLabel(routine.startDate)}. No fixed workout days.` :
+    current >= 8 ? `${total} / 80 blocks completed. Review your journey.` :
+      `${routine.completed[week].filter(Boolean).length} / 10 blocks this week. Mix, match, make it yours.`;
+}
+
+function openRoutine() {
+  routineViewWeek = null;
+  document.getElementById('routine-setup').classList.toggle('hidden', !!getRoutine());
+  renderRoutine();
+  showScreen('routine');
+}
+
+function renderRoutine() {
+  const routine = getRoutine();
+  document.getElementById('routine-dashboard').classList.toggle('hidden', !routine);
+  document.getElementById('routine-cancel-setup').classList.toggle('hidden', !routine);
+  const preview = document.getElementById('routine-preview');
+  preview.replaceChildren();
+  ROUTINE_WORKOUTS.forEach(workout => {
+    const item = document.createElement('li');
+    const heading = document.createElement('strong');
+    heading.textContent = workout.name;
+    const moves = document.createElement('span');
+    moves.textContent = workout.moves.join(' / ');
+    item.append(heading, moves);
+    preview.appendChild(item);
+  });
+  if (!document.getElementById('routine-start-date').value) {
+    const now = new Date();
+    const untilMonday = 8 - (now.getDay() || 7);
+    document.getElementById('routine-start-date').value = routineDateAt(routineLocalDate(now), untilMonday);
+  }
+  if (!routine) return;
+  const current = routineCurrentWeek(routine);
+  if (routineViewWeek === null) routineViewWeek = Math.max(0, Math.min(7, current));
+  const week = routineViewWeek;
+  const count = routine.completed[week].filter(Boolean).length;
+  const total = routine.completed.flat().filter(Boolean).length;
+  const completedWeeks = routine.completed.filter(w => w.every(Boolean)).length;
+  document.getElementById('routine-journey').textContent = `${total} / 80 blocks · ${completedWeeks} / 8 weeks complete`;
+  document.getElementById('routine-dates').textContent =
+    `${routineDateLabel(routine.startDate)} - ${routineDateLabel(routineDateAt(routine.startDate, 55))}`;
+  document.getElementById('routine-week-title').textContent = `Week ${week + 1}`;
+  document.getElementById('routine-week-dates').textContent =
+    `${routineDateLabel(routineDateAt(routine.startDate, week * 7))} - ${routineDateLabel(routineDateAt(routine.startDate, week * 7 + 6))}`;
+  document.getElementById('routine-week-count').textContent = `${count} / 10`;
+  const progress = document.getElementById('routine-week-progress');
+  progress.value = count;
+  progress.textContent = `${count} of 10 blocks completed`;
+  document.getElementById('routine-week-message').textContent = week > current ?
+    'A little preview. Check-offs unlock when this week starts.' :
+    count === 10 ? 'Week complete! You made room for yourself.' :
+    week < current ? 'Review this week or catch up on check-offs you forgot to record.' :
+    'No fixed days. Stack blocks together or spread them out.';
+  const tabs = document.getElementById('routine-week-tabs');
+  tabs.replaceChildren();
+  routine.completed.forEach((blocks, index) => {
+    const done = blocks.filter(Boolean).length;
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'routine-week-tab' + (index === week ? ' selected' : '') + (done === 10 ? ' complete' : '');
+    tab.setAttribute('aria-pressed', String(index === week));
+    tab.setAttribute('aria-label', `Week ${index + 1}, ${done} of 10 complete${index === current ? ', current week' : ''}`);
+    tab.textContent = `${index + 1}${done === 10 ? ' ✓' : ''}`;
+    tab.addEventListener('click', () => { routineViewWeek = index; renderRoutine(); });
+    tabs.appendChild(tab);
+  });
+  const checklist = document.getElementById('routine-checklist');
+  checklist.replaceChildren();
+  ROUTINE_WORKOUTS.forEach((workout, index) => {
+    const card = document.createElement('article');
+    card.className = 'card routine-workout';
+    const heading = document.createElement('h3');
+    heading.textContent = workout.name;
+    const meta = document.createElement('p');
+    meta.className = 'routine-workout-meta';
+    meta.textContent = '~25 min per block · Twice this week';
+    const moves = document.createElement('ol');
+    workout.moves.forEach(move => {
+      const li = document.createElement('li');
+      li.textContent = move;
+      moves.appendChild(li);
+    });
+    const note = document.createElement('p');
+    note.className = 'routine-workout-meta';
+    note.textContent = workout.note;
+    const checks = document.createElement('div');
+    checks.className = 'routine-blocks';
+    for (let repeat = 0; repeat < 2; repeat++) {
+      const block = index * 2 + repeat;
+      const label = document.createElement('label');
+      label.className = 'routine-block';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.id = `routine-block-${block}`;
+      input.checked = routine.completed[week][block];
+      input.disabled = week > current;
+      input.setAttribute('aria-label', `${workout.name}, block ${repeat + 1}`);
+      input.addEventListener('change', () => {
+        try {
+          const result = setRoutineBlock(week, block, input.checked);
+          renderRoutine();
+          renderRoutineHome();
+          document.getElementById(input.id).focus();
+          if (result.celebrate) celebrateRoutineWeek(week, result.routine.completed.every(w => w.every(Boolean)));
+        } catch (error) {
+          input.checked = !input.checked;
+          console.error('[Routine] Check-off failed:', error);
+          toast(error.message, 'error');
+        }
+      });
+      const text = document.createElement('span');
+      text.textContent = `Block ${repeat + 1}`;
+      label.append(input, text);
+      checks.appendChild(label);
+    }
+    card.append(heading, meta, moves, note, checks);
+    checklist.appendChild(card);
+  });
+}
+
+function celebrateRoutineWeek(week, allDone) {
+  const dialog = document.getElementById('routine-celebration');
+  document.getElementById('routine-celebration-title').textContent = allDone ? 'All 8 weeks. You did it!' : `Week ${week + 1}, in the bag!`;
+  document.getElementById('routine-celebration-copy').textContent = allDone ?
+    '80 blocks. One commitment kept. Take a bow.' : 'Ten blocks complete. A busy week, a stronger you.';
+  const confetti = document.getElementById('routine-confetti');
+  confetti.replaceChildren();
+  for (let i = 0; i < 36; i++) {
+    const piece = document.createElement('i');
+    piece.style.setProperty('--x', `${(i * 37) % 100}%`);
+    piece.style.setProperty('--delay', `${(i % 7) * 0.07}s`);
+    piece.style.setProperty('--color', ['#b8b0ff', '#61d5b5', '#ffd86b'][i % 3]);
+    confetti.appendChild(piece);
+  }
+  dialog.showModal();
+}
+
+function initRoutine() {
+  document.querySelectorAll('[data-open-routine]').forEach(button => button.addEventListener('click', openRoutine));
+  document.getElementById('routine-form').addEventListener('submit', event => {
+    event.preventDefault();
+    try {
+      const date = document.getElementById('routine-start-date').value;
+      routineDateNumber(date);
+      if (getRoutine() && !confirm('Start a new 8-week commitment? This replaces your existing routine checklist. Logged workouts are kept.')) return;
+      createRoutine(date);
+      routineViewWeek = null;
+      document.getElementById('routine-setup').classList.add('hidden');
+      renderRoutine();
+      renderRoutineHome();
+      toast('You are committed. Eight weeks, your way!');
+    } catch (error) {
+      console.error('[Routine] Commitment failed:', error);
+      toast(error.message, 'error');
+    }
+  });
+  document.getElementById('routine-new').addEventListener('click', () => {
+    document.getElementById('routine-setup').classList.remove('hidden');
+    document.getElementById('routine-start-date').focus();
+  });
+  document.getElementById('routine-cancel-setup').addEventListener('click', () => {
+    document.getElementById('routine-setup').classList.add('hidden');
+  });
+  document.getElementById('routine-celebration-close').addEventListener('click', () => {
+    document.getElementById('routine-celebration').close();
+  });
+  let lastDate = routineLocalDate();
+  const refresh = () => {
+    const date = routineLocalDate();
+    if (date === lastDate) return;
+    lastDate = date;
+    routineViewWeek = null;
+    if (getProfile()) renderRoutineHome();
+    if (currentScreen === 'routine') renderRoutine();
+  };
+  window.addEventListener('focus', refresh);
+  document.addEventListener('visibilitychange', refresh);
+  setInterval(refresh, 60000);
+}
+
+</script>
+<script>
+  // =====================================================================
+// Strengthify Web — Cloud Sync (Firebase + Google Sign-In)
+// =====================================================================
+// SETUP (one-time, ~5 minutes):
+//
+//   1. Go to https://console.firebase.google.com
+//   2. Create a project → Add a Web App → copy the firebaseConfig below
+//   3. Authentication → Sign-in providers → Google → Enable
+//   4. Firestore Database → Create database → Production mode
+//   5. Firestore Rules → Edit rules → paste:
+//
+//        rules_version = '2';
+//        service cloud.firestore {
+//          match /databases/{database}/documents {
+//            match /users/{uid}/{document=**} {
+//              allow read, write: if request.auth != null
+//                                 && request.auth.uid == uid;
+//            }
+//          }
+//        }
+//
+//   6. Authentication → Settings → Authorized domains → add your
+//      deployed domain (e.g. yourapp.netlify.app)
+//
+// Then paste your project config into FIREBASE_CONFIG below.
+// =====================================================================
+
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyBOYpoz9UuNTnB0W8xTleCXZI0nsx8An5o",
+  authDomain:        "stregthify.firebaseapp.com",
+  projectId:         "stregthify",
+  storageBucket:     "stregthify.firebasestorage.app",
+  messagingSenderId: "301168890462",
+  appId:             "1:301168890462:web:ca2c3e587bd8ffcea61acf",
+};
+
+// ── Internal state ────────────────────────────────────────────────
+
+const SYNC_READY = FIREBASE_CONFIG.apiKey !== "";
+
+let _syncDb   = null;
+let _syncAuth = null;
+let _syncUser = null;
+
+// ── Initialise ────────────────────────────────────────────────────
+
+function syncInit() {
+  if (!SYNC_READY) {
+    console.log('[Sync] Not configured — cloud sync disabled.');
+    return;
+  }
+  if (typeof firebase === 'undefined') {
+    console.error('[Sync] Firebase SDK not loaded — check CDN scripts in index.html.');
+    return;
+  }
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    _syncAuth = firebase.auth();
+    _syncDb   = firebase.firestore();
+    console.log('[Sync] Firebase initialised. Project:', FIREBASE_CONFIG.projectId);
+  } catch (e) {
+    console.error('[Sync] Firebase init failed:', e);
+  }
+}
+
+function syncIsConfigured() { return SYNC_READY; }
+function syncCurrentUser()  { return _syncUser; }
+function syncIsSignedIn()   { return !!_syncUser; }
+
+// ── Auth ──────────────────────────────────────────────────────────
+
+function syncOnAuthChange(callback) {
+  if (!_syncAuth) { callback(null); return; }
+  _syncAuth.onAuthStateChanged(user => {
+    _syncUser = user;
+    if (user) {
+      console.log('[Sync] Signed in:', user.email, '| uid:', user.uid);
+    } else {
+      console.log('[Sync] Signed out.');
+    }
+    callback(user);
+  });
+}
+
+async function syncSignIn() {
+  if (!_syncAuth) return;
+  console.log('[Sync] Opening Google sign-in popup…');
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  return _syncAuth.signInWithPopup(provider);
+}
+
+async function syncSignOut() {
+  if (!_syncAuth) return;
+  console.log('[Sync] Signing out…');
+  return _syncAuth.signOut();
+}
+
+// ── Firestore path helpers ────────────────────────────────────────
+
+function _userDoc()       { return _syncDb.collection('users').doc(_syncUser.uid); }
+function _sessionDoc(id)  { return _userDoc().collection('sessions').doc(id); }
+function _planDoc(id)     { return _userDoc().collection('plans').doc(id); }
+
+// ── Fire-and-forget push (called after every local write) ─────────
+
+function syncPushProfile(profile) {
+  if (!_syncDb || !_syncUser) return;
+  console.log('[Sync] Pushing profile…');
+  _userDoc()
+    .set({ profile, profileUpdatedAt: profile._updatedAt }, { merge: true })
+    .then(() => console.log('[Sync] Profile pushed OK.'))
+    .catch(e => console.error('[Sync] pushProfile failed:', e));
+}
+
+function syncPushPBs(pbs) {
+  if (!_syncDb || !_syncUser) return;
+  const ts = parseInt(localStorage.getItem(KEYS.PBS_TS) || '0', 10);
+  console.log('[Sync] Pushing PBs…');
+  _userDoc()
+    .set({ pbs, pbsUpdatedAt: ts }, { merge: true })
+    .then(() => console.log('[Sync] PBs pushed OK.'))
+    .catch(e => console.error('[Sync] pushPBs failed:', e));
+}
+
+function syncPushRoutine(routine, updatedAt) {
+  if (!_syncDb || !_syncUser) return;
+  return _userDoc().set({ routine, routineUpdatedAt: updatedAt }, { merge: true });
+}
+
+function syncPushSession(session) {
+  if (!_syncDb || !_syncUser) return;
+  console.log('[Sync] Pushing session:', session.id, session.date);
+  _sessionDoc(session.id)
+    .set(session)
+    .then(() => console.log('[Sync] Session pushed OK:', session.id))
+    .catch(e => console.error('[Sync] pushSession failed:', e));
+}
+
+function syncDeleteSession(sessionId) {
+  if (!_syncDb || !_syncUser) return;
+  console.log('[Sync] Deleting session from cloud:', sessionId);
+  _sessionDoc(sessionId)
+    .delete()
+    .then(() => console.log('[Sync] Session deleted OK:', sessionId))
+    .catch(e => console.error('[Sync] deleteSession failed:', e));
+}
+
+function syncPushPlan(plan) {
+  if (!_syncDb || !_syncUser) return;
+  console.log('[Sync] Pushing plan:', plan.id, plan.name);
+  _planDoc(plan.id)
+    .set(plan)
+    .then(() => console.log('[Sync] Plan pushed OK:', plan.id))
+    .catch(e => console.error('[Sync] pushPlan failed:', e));
+}
+
+function syncDeletePlan(planId) {
+  if (!_syncDb || !_syncUser) return;
+  console.log('[Sync] Deleting plan from cloud:', planId);
+  _planDoc(planId)
+    .delete()
+    .then(() => console.log('[Sync] Plan deleted OK:', planId))
+    .catch(e => console.error('[Sync] deletePlan failed:', e));
+}
+
+// ── Merge on sign-in ──────────────────────────────────────────────
+// Pull cloud data, merge with local (last write wins for profile/PBs,
+// union merge for sessions), then push any local-only sessions up.
+
+async function syncMergeOnSignIn() {
+  if (!_syncDb || !_syncUser) return { newSessions: 0 };
+
+  console.group('[Sync] Merge on sign-in');
+  console.log('Pulling cloud data…');
+
+  // Pull cloud root doc, sessions, and plans subcollections in parallel
+  const [mainSnap, sessSnap, planSnap] = await Promise.all([
+    _userDoc().get(),
+    _userDoc().collection('sessions').get(),
+    _userDoc().collection('plans').get(),
+  ]);
+
+  const cloud       = mainSnap.exists ? mainSnap.data() : {};
+  const cloudSess   = sessSnap.docs.map(d => d.data());
+  const cloudPlans  = planSnap.docs.map(d => d.data());
+  const cloudProf   = cloud.profile  || null;
+  const cloudPbs    = cloud.pbs      || null;
+  const cloudProfTs = cloud.profileUpdatedAt || 0;
+  const cloudPbsTs  = cloud.pbsUpdatedAt     || 0;
+  const cloudRoutineTs = cloud.routineUpdatedAt || 0;
+  const localRoutine = getRoutine();
+  const localRoutineTs = Number(localStorage.getItem(KEYS.ROUTINE_TS) || localRoutine?.updatedAt || 0);
+
+  if (cloudRoutineTs > localRoutineTs) {
+    if (cloud.routine != null) validateRoutine(cloud.routine);
+    localStorage.setItem(KEYS.ROUTINE, JSON.stringify(cloud.routine || null));
+    localStorage.setItem(KEYS.ROUTINE_TS, String(cloudRoutineTs));
+  } else if (localRoutineTs > cloudRoutineTs) {
+    await syncPushRoutine(localRoutine, localRoutineTs);
+  }
+
+  const localProf   = getProfile();
+  const localPbs    = getPBs();
+  const localSess   = getSessions();
+  const localPlans  = getPlans();
+  const localIds    = new Set(localSess.map(s => s.id));
+  const cloudIds    = new Set(cloudSess.map(s => s.id));
+
+  console.log(`Cloud: ${cloudSess.length} sessions | Local: ${localSess.length} sessions`);
+
+  // ── Profile: last write wins ──────────────────────────────────
+  if (cloudProf && cloudProfTs > (localProf?._updatedAt || 0)) {
+    console.log('Profile: using cloud version (newer). ts:', cloudProfTs);
+    localStorage.setItem(KEYS.PROFILE, JSON.stringify(cloudProf));
+  } else if (localProf) {
+    console.log('Profile: using local version (newer or no cloud). Pushing up…');
+    _userDoc().set(
+      { profile: localProf, profileUpdatedAt: localProf._updatedAt || Date.now() },
+      { merge: true }
+    ).catch(e => console.error('[Sync] pushProfile (merge):', e));
+  }
+
+  // ── PBs: last write wins ──────────────────────────────────────
+  const localPbsTs = parseInt(localStorage.getItem(KEYS.PBS_TS) || '0', 10);
+  if (cloudPbs && cloudPbsTs > localPbsTs) {
+    console.log('PBs: using cloud version (newer). ts:', cloudPbsTs);
+    localStorage.setItem(KEYS.PBS, JSON.stringify(cloudPbs));
+    localStorage.setItem(KEYS.PBS_TS, String(cloudPbsTs));
+  } else if (Object.keys(localPbs).length > 0) {
+    console.log('PBs: using local version (newer or no cloud). Pushing up…');
+    _userDoc().set(
+      { pbs: localPbs, pbsUpdatedAt: localPbsTs || Date.now() },
+      { merge: true }
+    ).catch(e => console.error('[Sync] pushPBs (merge):', e));
+  }
+
+  // ── Sessions: union merge ─────────────────────────────────────
+  const newFromCloud = cloudSess.filter(s => !localIds.has(s.id));
+  const newFromLocal = localSess.filter(s => !cloudIds.has(s.id));
+
+  console.log(`Sessions: ${newFromCloud.length} new from cloud, ${newFromLocal.length} to push to cloud`);
+
+  if (newFromCloud.length > 0) {
+    const merged = [...localSess, ...newFromCloud];
+    merged.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
+    localStorage.setItem(KEYS.SESSIONS, JSON.stringify(merged));
+    console.log('Sessions merged into localStorage.');
+  }
+
+  // Push any local-only sessions to cloud (batched, max 400 per batch)
+  if (newFromLocal.length > 0) {
+    const batchSize = 400;
+    for (let i = 0; i < newFromLocal.length; i += batchSize) {
+      const batch = _syncDb.batch();
+      newFromLocal.slice(i, i + batchSize).forEach(s => batch.set(_sessionDoc(s.id), s));
+      batch.commit()
+        .then(() => console.log(`[Sync] Batch pushed ${Math.min(batchSize, newFromLocal.length - i)} sessions OK.`))
+        .catch(e => console.error('[Sync] Batch push failed:', e));
+    }
+  }
+
+  // ── Plans: merge by ID, updatedAt wins on conflict ───────────────
+  const localPlanMap = Object.fromEntries(localPlans.map(p => [p.id, p]));
+  const cloudPlanMap = Object.fromEntries(cloudPlans.map(p => [p.id, p]));
+  const allPlanIds   = new Set([...Object.keys(localPlanMap), ...Object.keys(cloudPlanMap)]);
+
+  let plansMerged = [];
+  const plansToCloud = [];
+
+  for (const id of allPlanIds) {
+    const local = localPlanMap[id];
+    const cloud = cloudPlanMap[id];
+    if (local && cloud) {
+      // Both exist — pick the one with the newer updatedAt
+      const winner = (cloud.updatedAt || 0) > (local.updatedAt || 0) ? cloud : local;
+      plansMerged.push(winner);
+      if (winner === local && (local.updatedAt || 0) > (cloud.updatedAt || 0)) {
+        plansToCloud.push(local);   // local is newer — push it up
+      }
+    } else if (local) {
+      plansMerged.push(local);
+      plansToCloud.push(local);     // cloud doesn't have it — push up
+    } else {
+      plansMerged.push(cloud);      // local doesn't have it — keep cloud copy
+    }
+  }
+
+  if (plansMerged.length > 0 || cloudPlans.length > 0) {
+    localStorage.setItem(KEYS.PLANS, JSON.stringify(plansMerged));
+    console.log(`Plans: merged ${plansMerged.length} plan(s) into localStorage.`);
+  }
+  if (plansToCloud.length > 0) {
+    plansToCloud.forEach(p => syncPushPlan(p));
+    console.log(`Plans: pushed ${plansToCloud.length} plan(s) to cloud.`);
+  }
+
+  console.log('Merge complete.');
+  console.groupEnd();
+  return { newSessions: newFromCloud.length };
+}
+
+</script>
+<script>
   // =====================================================================
 // Strengthify Web — UI / Application logic
 // =====================================================================
 
 // ── Screen registry ───────────────────────────────────────────────
 
-const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding'];
+const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder', 'mobility', 'routine'];
 let currentScreen = null;
+const KG_PER_LB = 0.45359237;
+const LB_PER_KG = 1 / KG_PER_LB;
+
+const THOUSAND_CLUB_LIFTS = ['Back Squat', 'Bench Press', 'Deadlift'];
 
 function showScreen(id) {
   SCREENS.forEach(s => {
     const el = document.getElementById(s + '-screen');
     if (el) el.classList.toggle('hidden', s !== id);
   });
-  document.getElementById('nav-bar').classList.toggle('hidden', id === 'onboarding');
+  document.getElementById('nav-bar').classList.toggle('hidden', id === 'onboarding' || id === 'signin' || id === 'plan-builder');
   // Update nav active state
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.screen === id);
@@ -1295,6 +3127,36 @@ function renderHome() {
   const nextLabel = nextTitle !== levelTitle(profile.level) ? ` → ${nextTitle}` : '';
   document.getElementById('xp-nums').textContent          = `${progress.current} / ${progress.needed} XP${nextLabel}`;
 
+  renderThousandClubCard(pbs);
+  renderRoutineHome();
+
+  // Plan next-workout card
+  const plan = getActivePlan();
+  const homePlanCard = document.getElementById('home-plan-card');
+  if (plan) {
+    let nextWeekNum = null, nextDayNum = null;
+    outer:
+    for (const week of plan.weeks) {
+      for (const day of week.days) {
+        if (!day.completedSessionId) { nextWeekNum = week.weekNum; nextDayNum = day.dayNum; break outer; }
+      }
+    }
+    if (nextWeekNum !== null) {
+      const nw = plan.weeks.find(w => w.weekNum === nextWeekNum);
+      const nd = nw?.days.find(d => d.dayNum === nextDayNum);
+      document.getElementById('home-plan-name').textContent = plan.name;
+      document.getElementById('home-plan-next').textContent =
+        `Week ${nextWeekNum} · ${nd ? nd.label : 'Next session'}`;
+      document.getElementById('home-plan-start-btn').onclick =
+        () => startPlanWorkout(plan.id, nextWeekNum, nextDayNum);
+      homePlanCard.classList.remove('hidden');
+    } else {
+      homePlanCard.classList.add('hidden');
+    }
+  } else {
+    homePlanCard.classList.add('hidden');
+  }
+
   // Recent sessions
   const list = document.getElementById('recent-sessions');
   list.innerHTML = '';
@@ -1305,10 +3167,10 @@ function renderHome() {
         <p>No workouts yet — start your first one!</p>
       </div>`;
   } else {
-    sessions.slice(0, 3).forEach(s => {
+    sessions.slice(0, 5).forEach(s => {
       const liftNames = [...new Set(s.sets.map(x => x.lift))].join(', ');
       const div = document.createElement('div');
-      div.className = 'session-item';
+      div.className = 'session-item session-item-link';
       div.innerHTML = `
         <div class="si-left">
           <div class="si-date">${formatDate(s.date)}</div>
@@ -1317,28 +3179,108 @@ function renderHome() {
         <div class="si-right">
           <div class="si-xp">+${s.xpEarned} XP</div>
           <div class="si-sets">${s.sets.length} sets</div>
+          <div class="si-arrow">›</div>
         </div>`;
+      div.addEventListener('click', () => renderSessionDetail(s.id));
       list.appendChild(div);
     });
   }
 
-  // Benchmark cards
+  // Benchmark cards — clickable to open progress for that lift
   const grid = document.getElementById('benchmark-grid');
   grid.innerHTML = '';
   LIFTS.forEach(lift => {
-    const pb          = pbs[lift];
-    const actual1RM   = (pb && typeof pb === 'object') ? (pb.oneRepKg || 0) : 0;
-    const percentile  = actual1RM > 0 ? getPercentile(lift, actual1RM, profile) : 0;
-    const tier        = tierFromPercentile(percentile);
-    const barClass    = tierBarClass(tier);
+    const pb = pbs[lift];
+    let percentile = 0;
+    let hasData = false;
+    if (REP_BASED_LIFTS.has(lift)) {
+      const maxReps = (pb && typeof pb === 'object') ? (pb.maxReps || 0) : 0;
+      if (maxReps > 0) { percentile = getRepPercentile(lift, maxReps, profile); hasData = true; }
+    } else {
+      const rankWeight  = (pb && typeof pb === 'object') ? (pb.oneRepKg || pb.maxWeightKg || 0) : 0;
+      if (rankWeight > 0) { percentile = getPercentile(lift, rankWeight, profile); hasData = true; }
+    }
+    const tier     = tierFromPercentile(percentile);
+    const barClass = tierBarClass(tier);
     const div = document.createElement('div');
-    div.className = 'bench-card';
+    div.className = 'bench-card bench-card-link';
     div.innerHTML = `
       <div class="bc-lift" title="${lift}">${lift}</div>
-      <span class="bc-tier ${tierCssClass(tier)}">${actual1RM > 0 ? tier : '—'}</span>
+      <span class="bc-tier ${tierCssClass(tier)}">${hasData ? tier : '—'}</span>
       <div class="bc-bar-track"><div class="bc-bar-fill ${barClass}" style="width:${percentile}%"></div></div>
-      <div class="bc-pct">${actual1RM > 0 ? ordinal(percentile) + ' percentile' : 'No 1RM yet'}</div>`;
+      <div class="bc-pct">${hasData ? ordinal(percentile) + ' percentile' : 'No data yet'}</div>`;
+    div.addEventListener('click', () => {
+      progressLift = lift;
+      renderProgress();
+      showScreen('progress');
+    });
     grid.appendChild(div);
+  });
+}
+
+function kgToLb(kg) {
+  return kg * LB_PER_KG;
+}
+
+function formatWeightPair(kg) {
+  const lb = kgToLb(kg);
+  return `${Math.round(lb)} lb (${kg.toFixed(1)} kg)`;
+}
+
+function getLiftEstimatedMaxKg(pb) {
+  if (!pb || typeof pb !== 'object') return 0;
+  return pb.orm || 0;
+}
+
+function getLiftTrueMaxKg(pb) {
+  if (!pb || typeof pb !== 'object') return 0;
+  return Math.max(pb.oneRepKg || 0, pb.maxWeightKg || 0);
+}
+
+function renderThousandClubCard(pbs) {
+  const profile = getProfile();
+  const clubTargetLb = profile?.sex === 'female' ? 600 : 1000;
+  const kickerEl = document.getElementById('club-kicker');
+  if (kickerEl) kickerEl.textContent = `${clubTargetLb} lb club progress`;
+
+  const liftValues = THOUSAND_CLUB_LIFTS.map(lift => ({
+    lift,
+    trueKg: getLiftTrueMaxKg(pbs[lift]),
+    estKg: getLiftEstimatedMaxKg(pbs[lift]),
+  }));
+
+  const totalTrueKg = liftValues.reduce((sum, x) => sum + x.trueKg, 0);
+  const totalEstKg = liftValues.reduce((sum, x) => sum + x.estKg, 0);
+  const totalLb = kgToLb(totalTrueKg);
+  const totalEstLb = kgToLb(totalEstKg);
+  const pct = Math.min((totalLb / clubTargetLb) * 100, 100);
+  const remainingLb = Math.max(0, clubTargetLb - totalLb);
+  const remainingKg = remainingLb * KG_PER_LB;
+
+  document.getElementById('club-total-lb').textContent = `${Math.round(totalLb)} lb (${totalTrueKg.toFixed(1)} kg)`;
+  document.getElementById('club-total-kg').textContent = `Estimated total: ${Math.round(totalEstLb)} lb (${totalEstKg.toFixed(1)} kg)`;
+  document.getElementById('club-progress-fill').style.width = `${pct.toFixed(1)}%`;
+  document.getElementById('club-progress-pct').textContent = `${pct.toFixed(1)}%`;
+  document.getElementById('club-remaining').textContent =
+    remainingLb > 0
+      ? `${Math.round(remainingLb)} lb (${remainingKg.toFixed(1)} kg) to go`
+      : 'Goal unlocked';
+
+  const achievementBadge = document.getElementById('club-achievement');
+  if (achievementBadge) {
+    achievementBadge.textContent = `${clubTargetLb} lb club achieved`;
+    achievementBadge.classList.toggle('hidden', totalLb < clubTargetLb);
+  }
+
+  const byLift = {
+    'Back Squat': 'club-squat',
+    'Bench Press': 'club-bench',
+    'Deadlift': 'club-deadlift',
+  };
+  liftValues.forEach(entry => {
+    const el = document.getElementById(byLift[entry.lift]);
+    if (!el) return;
+    el.textContent = entry.trueKg > 0 ? formatWeightPair(entry.trueKg) : 'No data yet';
   });
 }
 
@@ -1385,12 +3327,44 @@ function initWorkoutScreen() {
 
 let sessionSets = {}; // lift -> [{ weightKg, reps }]
 
+// ── Plan mode state ────────────────────────────────────────────────
+let activePlanMode    = false;
+let activePlanId      = null;
+let activePlanWeekNum = null;
+let activePlanDayNum  = null;
+let planAccessoryLifts = [];   // non-benchmark exercise names for current plan session
+let currentPlanViewWeek = null; // which week tab is selected on the plans screen
+
+// Plan builder state
+let planBuilderDays = [];
+
 function renderLoggingScreen() {
   sessionSets = {};
+  planAccessoryLifts = [];
   const container = document.getElementById('logging-lifts');
   container.innerHTML = '';
 
   const sessions = getSessions();
+
+  // Collect plan exercise data if launching from a plan day
+  const planBenchmarkMap = {}; // liftName -> exercise obj
+  let planAccessoryExs = [];
+  if (activePlanMode && activePlanId) {
+    const plans = getPlans();
+    const plan = plans.find(p => p.id === activePlanId);
+    const week = plan?.weeks.find(w => w.weekNum === activePlanWeekNum);
+    const day  = week?.days.find(d => d.dayNum  === activePlanDayNum);
+    if (day) {
+      day.exercises.forEach(ex => {
+        if (ex.isBenchmark) {
+          // Keep first occurrence if lift appears twice (shouldn't happen but guard it)
+          if (!planBenchmarkMap[ex.name]) planBenchmarkMap[ex.name] = ex;
+        } else {
+          planAccessoryExs.push(ex);
+        }
+      });
+    }
+  }
 
   selectedLifts.forEach(lift => {
     sessionSets[lift] = [];
@@ -1401,6 +3375,8 @@ function renderLoggingScreen() {
       const match = s.sets.filter(x => x.lift === lift);
       if (match.length > 0) { prevSets = match; break; }
     }
+
+    const planEx = planBenchmarkMap[lift] || null;
 
     const section = document.createElement('div');
     section.className = 'logging-lift';
@@ -1413,38 +3389,99 @@ function renderLoggingScreen() {
       : (lift === 'Dumbbell Press' || lift === 'Dumbbell Curl')
       ? ' (weight per dumbbell)'
       : '';
-    const prevHint = prevSets
-      ? `Previous: ${prevSets[0].weightKg}kg × ${prevSets[0].reps}${liftNote}`
-      : `No previous data${liftNote}`;
+
+    let hintText;
+    if (planEx) {
+      const wStr = planEx.targetWeightKg != null && planEx.targetWeightKg > 0
+        ? ` @ ${planEx.targetWeightKg} kg` : '';
+      const nStr = planEx.note ? ` — ${planEx.note}` : '';
+      hintText = `Plan: ${planEx.sets} × ${planEx.reps}${wStr}${nStr}${liftNote}`;
+    } else {
+      hintText = prevSets
+        ? `Previous: ${prevSets[0].weightKg}kg × ${prevSets[0].reps}${liftNote}`
+        : `No previous data${liftNote}`;
+    }
 
     section.innerHTML = `
       <h3>${lift}</h3>
-      <p class="prev-hint">${prevHint}</p>
+      <p class="prev-hint">${hintText}</p>
       <div class="set-row-header"><span>Weight (kg)</span><span>Reps</span><span></span></div>
       <div class="set-rows"></div>
       <button class="btn btn-ghost btn-sm add-set-btn" data-lift="${lift}">+ Add Set</button>
     `;
     container.appendChild(section);
 
-    // Add one blank row to start
-    addSetRow(lift, prevSets ? prevSets[0] : null);
+    if (planEx) {
+      // Pre-create all planned sets with target weight / reps pre-filled
+      for (let i = 0; i < planEx.sets; i++) {
+        addSetRow(lift, { weightKg: planEx.targetWeightKg || 0, reps: planEx.reps }, true);
+      }
+    } else {
+      addSetRow(lift, prevSets ? prevSets[0] : null);
+    }
 
     section.querySelector('.add-set-btn').addEventListener('click', () => addSetRow(lift, null));
   });
+
+  // Render accessory exercises for plan mode
+  if (planAccessoryExs.length > 0) {
+    const accHeader = document.createElement('div');
+    accHeader.className = 'section-label';
+    accHeader.style.cssText = 'margin-top:4px';
+    accHeader.textContent = 'Accessories';
+    container.appendChild(accHeader);
+
+    planAccessoryExs.forEach(ex => {
+      sessionSets[ex.name] = [];
+      planAccessoryLifts.push(ex.name);
+
+      const section = document.createElement('div');
+      section.className = 'logging-lift';
+      section.id = 'logging-lift-' + ex.name.replace(/[^a-z]/gi, '_');
+
+      const wStr = ex.targetWeightKg != null && ex.targetWeightKg > 0
+        ? ` @ ${ex.targetWeightKg} kg` : '';
+      const nStr = ex.note ? ` — ${ex.note}` : '';
+
+      section.innerHTML = `
+        <h3>${ex.name}</h3>
+        <p class="prev-hint">Plan: ${ex.sets} × ${ex.reps}${wStr}${nStr}</p>
+        <div class="set-row-header"><span>Weight (kg)</span><span>Reps</span><span></span></div>
+        <div class="set-rows"></div>
+        <button class="btn btn-ghost btn-sm add-set-btn" data-lift="${ex.name}">+ Add Set</button>
+      `;
+      container.appendChild(section);
+
+      for (let i = 0; i < ex.sets; i++) {
+        addSetRow(ex.name, { weightKg: ex.targetWeightKg || 0, reps: ex.reps }, true);
+      }
+
+      section.querySelector('.add-set-btn').addEventListener('click', () => addSetRow(ex.name, null));
+    });
+  }
 }
 
-function addSetRow(lift, suggest) {
+function addSetRow(lift, suggest, prefill = false) {
   const section  = document.getElementById('logging-lift-' + lift.replace(/[^a-z]/gi, '_'));
   const rowsDiv  = section.querySelector('.set-rows');
   const setIndex = rowsDiv.children.length;
 
-  sessionSets[lift].push({ weightKg: 0, reps: 0 });
+  const initWeight = prefill && suggest ? (suggest.weightKg || 0) : 0;
+  const initReps   = prefill && suggest ? (suggest.reps   || 0) : 0;
+  sessionSets[lift].push({ weightKg: initWeight, reps: initReps });
+
+  const weightAttr = prefill && suggest && suggest.weightKg != null
+    ? `value="${suggest.weightKg}"`
+    : `placeholder="${suggest ? suggest.weightKg : '0'}"`;
+  const repsAttr = prefill && suggest
+    ? `value="${suggest.reps}"`
+    : `placeholder="${suggest ? suggest.reps : '0'}"`;
 
   const row = document.createElement('div');
   row.className = 'set-row';
   row.innerHTML = `
-    <input type="number" min="0" step="0.5" placeholder="${suggest ? suggest.weightKg : '0'}" class="weight-input" data-lift="${lift}" data-idx="${setIndex}">
-    <input type="number" min="1" max="100" step="1" placeholder="${suggest ? suggest.reps : '0'}" class="reps-input" data-lift="${lift}" data-idx="${setIndex}">
+    <input type="number" min="0" step="0.5" ${weightAttr} class="weight-input" data-lift="${lift}" data-idx="${setIndex}">
+    <input type="number" min="1" max="100" step="1" ${repsAttr} class="reps-input" data-lift="${lift}" data-idx="${setIndex}">
     <button class="del-set-btn" title="Remove set">✕</button>
   `;
 
@@ -1476,10 +3513,11 @@ function finishWorkout() {
   const profile = getProfile();
   if (!profile) return;
 
-  // Flatten sets
+  // Flatten sets — benchmark lifts + plan accessories
+  const allLifts = [...selectedLifts, ...planAccessoryLifts];
   const allSets = [];
-  for (const lift of selectedLifts) {
-    for (const s of sessionSets[lift]) {
+  for (const lift of allLifts) {
+    for (const s of (sessionSets[lift] || [])) {
       if (s.reps > 0) {
         allSets.push({ lift, weightKg: s.weightKg || 0, reps: s.reps });
       }
@@ -1503,7 +3541,22 @@ function finishWorkout() {
     sets: allSets,
     xpEarned: xp,
   };
+  if (activePlanMode && activePlanId) {
+    session.planRef = { planId: activePlanId, weekNum: activePlanWeekNum, dayNum: activePlanDayNum };
+  }
   saveSession(session);
+
+  // Mark plan day complete
+  if (activePlanMode && activePlanId) {
+    markPlanDayComplete(activePlanId, activePlanWeekNum, activePlanDayNum, session.id);
+  }
+
+  // Reset plan mode
+  activePlanMode    = false;
+  activePlanId      = null;
+  activePlanWeekNum = null;
+  activePlanDayNum  = null;
+  planAccessoryLifts = [];
 
   // Show results
   renderResults(xp, newPBs, leveledUp, profile);
@@ -1551,11 +3604,347 @@ function renderResults(xp, newPBs, leveledUp, profile) {
   }
 }
 
+// ── Plans screen ──────────────────────────────────────────────────
+
+function startPlanWorkout(planId, weekNum, dayNum) {
+  const plans = getPlans();
+  const plan = plans.find(p => p.id === planId);
+  if (!plan) return;
+  const week = plan.weeks.find(w => w.weekNum === weekNum);
+  const day  = week?.days.find(d => d.dayNum  === dayNum);
+  if (!day) return;
+
+  activePlanMode    = true;
+  activePlanId      = planId;
+  activePlanWeekNum = weekNum;
+  activePlanDayNum  = dayNum;
+
+  // Build selectedLifts from benchmark exercises in this day (deduplicated, preserving order)
+  const seen = new Set();
+  selectedLifts = [];
+  day.exercises.forEach(ex => {
+    if (ex.isBenchmark && !seen.has(ex.name)) {
+      seen.add(ex.name);
+      selectedLifts.push(ex.name);
+    }
+  });
+
+  renderLoggingScreen();
+  showScreen('logging');
+}
+
+function renderPlans() {
+  const plan = getActivePlan();
+  const activeView = document.getElementById('plan-active-view');
+  const emptyState = document.getElementById('plan-empty-state');
+
+  if (!plan) {
+    activeView.classList.add('hidden');
+    emptyState.classList.remove('hidden');
+    return;
+  }
+  activeView.classList.remove('hidden');
+  emptyState.classList.add('hidden');
+
+  // Find next incomplete day (global next, not filtered by week tab)
+  let nextWeekNum = null, nextDayNum = null;
+  outer:
+  for (const week of plan.weeks) {
+    for (const day of week.days) {
+      if (!day.completedSessionId) {
+        nextWeekNum = week.weekNum;
+        nextDayNum  = day.dayNum;
+        break outer;
+      }
+    }
+  }
+
+  // Progress counts
+  const completedCount = plan.weeks.reduce((n, w) => n + w.days.filter(d => d.completedSessionId).length, 0);
+  const totalCount     = plan.weeks.reduce((n, w) => n + w.days.length, 0);
+  const pct = totalCount > 0 ? (completedCount / totalCount * 100).toFixed(1) : 0;
+
+  document.getElementById('plan-name').textContent = plan.name;
+  document.getElementById('plan-started').textContent = `Started ${formatDate(plan.startDate)}`;
+  document.getElementById('plan-progress-bar-fill').style.width = pct + '%';
+  document.getElementById('plan-progress-text').textContent =
+    completedCount < totalCount
+      ? `${completedCount} / ${totalCount} sessions complete`
+      : '🏆 Plan complete!';
+
+  // Default view week = the week containing the next session (or 1 if all done)
+  if (currentPlanViewWeek === null) {
+    currentPlanViewWeek = nextWeekNum || 1;
+  }
+
+  // Week tabs
+  const weekTabsEl = document.getElementById('plan-week-tabs');
+  weekTabsEl.innerHTML = '';
+  plan.weeks.forEach(week => {
+    const allDone = week.days.every(d => d.completedSessionId);
+    const tab = document.createElement('button');
+    tab.className = 'plan-week-tab' + (week.weekNum === currentPlanViewWeek ? ' active' : '') + (allDone ? ' done' : '');
+    tab.textContent = `W${week.weekNum}`;
+    tab.title = week.label;
+    tab.addEventListener('click', () => {
+      currentPlanViewWeek = week.weekNum;
+      renderPlans();
+    });
+    weekTabsEl.appendChild(tab);
+  });
+
+  // Days list for selected week
+  const selectedWeek = plan.weeks.find(w => w.weekNum === currentPlanViewWeek);
+  const daysListEl = document.getElementById('plan-days-list');
+  daysListEl.innerHTML = '';
+
+  if (selectedWeek) {
+    const weekLabelEl = document.createElement('div');
+    weekLabelEl.className = 'section-label';
+    weekLabelEl.textContent = selectedWeek.label;
+    daysListEl.appendChild(weekLabelEl);
+
+    selectedWeek.days.forEach(day => {
+      const isCompleted = !!day.completedSessionId;
+      const isNext      = day.dayNum === nextDayNum && selectedWeek.weekNum === nextWeekNum;
+
+      const card = document.createElement('div');
+      card.className = 'card plan-day-card' +
+        (isCompleted ? ' plan-day-done' : '') +
+        (isNext ? ' plan-day-next' : '');
+
+      const benchCount = day.exercises.filter(ex => ex.isBenchmark).length;
+      const totalEx    = day.exercises.length;
+
+      const exercisesHTML = day.exercises.map(ex => {
+        const wStr = ex.targetWeightKg != null && ex.targetWeightKg > 0 ? ` @ ${ex.targetWeightKg} kg` : '';
+        const noteStr = ex.note ? `<span class="plan-ex-note"> · ${ex.note}</span>` : '';
+        return `<div class="plan-exercise-row">
+          <span class="plan-ex-name${ex.isBenchmark ? '' : ' plan-ex-acc'}">${ex.name}</span>
+          <span class="plan-ex-prescription">${ex.sets}&thinsp;×&thinsp;${ex.reps}${wStr}</span>
+          ${noteStr}
+        </div>`;
+      }).join('');
+
+      const statusBadge = isCompleted
+        ? '<span class="plan-status-badge done">Done</span>'
+        : isNext
+        ? '<span class="plan-status-badge next">Next</span>'
+        : '';
+
+      const statusIcon = isCompleted ? '✓' : isNext ? '▶' : '○';
+      const metaStr = `${totalEx} exercises${benchCount < totalEx ? ` · ${totalEx - benchCount} accessory` : ''}`;
+
+      card.innerHTML = `
+        <div class="plan-day-header">
+          <div class="plan-day-status-icon">${statusIcon}</div>
+          <div class="plan-day-info">
+            <div class="plan-day-name">${day.label}</div>
+            <div class="plan-day-meta">${metaStr}</div>
+          </div>
+          ${statusBadge}
+        </div>
+        <div class="plan-day-exercises${isNext || isCompleted ? '' : ' hidden'}">
+          ${exercisesHTML}
+          ${isNext ? `<div style="margin-top:10px"><button class="btn btn-primary plan-day-start-btn" data-week="${selectedWeek.weekNum}" data-day="${day.dayNum}">Start this workout →</button></div>` : ''}
+        </div>
+      `;
+
+      // Toggle expand/collapse on header click
+      card.querySelector('.plan-day-header').addEventListener('click', () => {
+        card.querySelector('.plan-day-exercises').classList.toggle('hidden');
+      });
+
+      // Start button inside card
+      card.querySelector('.plan-day-start-btn')?.addEventListener('click', e => {
+        e.stopPropagation();
+        startPlanWorkout(plan.id, selectedWeek.weekNum, day.dayNum);
+      });
+
+      daysListEl.appendChild(card);
+    });
+  }
+
+  // Global "Start next workout" button
+  const startBtn = document.getElementById('start-next-plan-btn');
+  if (nextDayNum !== null) {
+    startBtn.disabled = false;
+    const nw = plan.weeks.find(w => w.weekNum === nextWeekNum);
+    const nd = nw?.days.find(d => d.dayNum === nextDayNum);
+    startBtn.textContent = `Start ${nd ? nd.label : 'next workout'} (W${nextWeekNum}) →`;
+    startBtn.onclick = () => startPlanWorkout(plan.id, nextWeekNum, nextDayNum);
+  } else {
+    startBtn.disabled = true;
+    startBtn.textContent = 'Plan Complete! 🏆';
+  }
+}
+
+// ── Plan builder ──────────────────────────────────────────────────
+
+function initPlanBuilder() {
+  planBuilderDays = [
+    { name: '', exercises: [{ name: '', sets: 3, reps: 10, weightKg: null }] },
+  ];
+  document.getElementById('pb-plan-name').value = '';
+  document.getElementById('pb-weeks').value     = '8';
+  renderPlanBuilderDays();
+}
+
+// Flush current DOM input values → planBuilderDays (safety before any re-render)
+function flushPlanBuilderInputs() {
+  document.querySelectorAll('#pb-days-container .pb-day-card').forEach((card, di) => {
+    if (!planBuilderDays[di]) return;
+    const n = card.querySelector('.pb-day-name');
+    if (n) planBuilderDays[di].name = n.value;
+    card.querySelectorAll('.pb-ex-row').forEach((row, ei) => {
+      const ex = planBuilderDays[di].exercises[ei];
+      if (!ex) return;
+      const nE = row.querySelector('.pb-ex-name');
+      const sE = row.querySelector('.pb-ex-sets');
+      const rE = row.querySelector('.pb-ex-reps');
+      const wE = row.querySelector('.pb-ex-weight');
+      if (nE) ex.name     = nE.value;
+      if (sE) ex.sets     = parseInt(sE.value) || 0;
+      if (rE) ex.reps     = parseInt(rE.value) || 0;
+      if (wE) ex.weightKg = wE.value !== '' ? parseFloat(wE.value) : null;
+    });
+  });
+}
+
+function renderPlanBuilderDays() {
+  const container = document.getElementById('pb-days-container');
+  container.innerHTML = '';
+
+  planBuilderDays.forEach((day, di) => {
+    const card = document.createElement('div');
+    card.className = 'card pb-day-card';
+    card.style.marginBottom = '10px';
+
+    const exRowsHTML = day.exercises.map((ex, ei) => `
+      <div class="pb-ex-row" data-di="${di}" data-ei="${ei}">
+        <input class="form-input pb-ex-name"   placeholder="Exercise name" value="${ex.name || ''}">
+        <input class="form-input pb-ex-sets"   type="number" min="1" max="20"  placeholder="Sets"  value="${ex.sets  || ''}">
+        <input class="form-input pb-ex-reps"   type="number" min="1" max="100" placeholder="Reps"  value="${ex.reps  || ''}">
+        <input class="form-input pb-ex-weight" type="number" min="0" step="0.5" placeholder="kg"   value="${ex.weightKg != null ? ex.weightKg : ''}">
+        <button class="del-set-btn pb-rm-ex" data-di="${di}" data-ei="${ei}" title="Remove">✕</button>
+      </div>`).join('');
+
+    card.innerHTML = `
+      <div class="pb-day-header">
+        <input class="form-input pb-day-name" placeholder="Day name e.g. Squat" value="${day.name || ''}">
+        <button class="btn btn-ghost btn-sm pb-rm-day" data-di="${di}" style="color:var(--muted);flex-shrink:0">Remove</button>
+      </div>
+      <div class="pb-ex-header">
+        <span>Exercise</span><span>Sets</span><span>Reps</span><span>kg</span><span></span>
+      </div>
+      <div class="pb-ex-list">
+        ${exRowsHTML || '<p style="font-size:12px;color:var(--muted);margin:4px 0 4px">No exercises yet</p>'}
+      </div>
+      <button class="btn btn-ghost btn-sm pb-add-ex" data-di="${di}" style="margin-top:6px">+ Add exercise</button>
+    `;
+
+    // Day name — direct mutation
+    card.querySelector('.pb-day-name').addEventListener('input', e => {
+      planBuilderDays[di].name = e.target.value;
+    });
+
+    // Remove day
+    card.querySelector('.pb-rm-day').addEventListener('click', () => {
+      flushPlanBuilderInputs();
+      planBuilderDays.splice(di, 1);
+      renderPlanBuilderDays();
+    });
+
+    // Add exercise
+    card.querySelector('.pb-add-ex').addEventListener('click', () => {
+      flushPlanBuilderInputs();
+      planBuilderDays[di].exercises.push({ name: '', sets: 3, reps: 10, weightKg: null });
+      renderPlanBuilderDays();
+      // Focus the new exercise name input
+      const rows = container.querySelectorAll(`.pb-day-card:nth-child(${di + 1}) .pb-ex-name`);
+      if (rows.length) rows[rows.length - 1].focus();
+    });
+
+    // Remove exercise
+    card.querySelectorAll('.pb-rm-ex').forEach(btn => {
+      btn.addEventListener('click', () => {
+        flushPlanBuilderInputs();
+        planBuilderDays[parseInt(btn.dataset.di)].exercises.splice(parseInt(btn.dataset.ei), 1);
+        renderPlanBuilderDays();
+      });
+    });
+
+    // Exercise field changes — direct mutation (no re-render)
+    card.querySelectorAll('.pb-ex-row').forEach(row => {
+      const d = parseInt(row.dataset.di), e = parseInt(row.dataset.ei);
+      row.querySelector('.pb-ex-name').addEventListener('input',   ev => { planBuilderDays[d].exercises[e].name     = ev.target.value; });
+      row.querySelector('.pb-ex-sets').addEventListener('input',   ev => { planBuilderDays[d].exercises[e].sets     = parseInt(ev.target.value) || 0; });
+      row.querySelector('.pb-ex-reps').addEventListener('input',   ev => { planBuilderDays[d].exercises[e].reps     = parseInt(ev.target.value) || 0; });
+      row.querySelector('.pb-ex-weight').addEventListener('input', ev => { planBuilderDays[d].exercises[e].weightKg = ev.target.value !== '' ? parseFloat(ev.target.value) : null; });
+    });
+
+    container.appendChild(card);
+  });
+}
+
+function savePlanFromBuilder() {
+  flushPlanBuilderInputs();
+
+  const name     = document.getElementById('pb-plan-name').value.trim();
+  const numWeeks = Math.max(1, Math.min(24, parseInt(document.getElementById('pb-weeks').value) || 8));
+
+  if (!name) { toast('Please enter a plan name.', 'error'); return; }
+  if (planBuilderDays.length === 0) { toast('Add at least one training day.', 'error'); return; }
+  for (const d of planBuilderDays) {
+    if (!d.name.trim())           { toast('All days need a name.', 'error'); return; }
+    if (d.exercises.length === 0) { toast(`Day "${d.name}" has no exercises.`, 'error'); return; }
+    for (const ex of d.exercises) {
+      if (!ex.name.trim()) { toast('All exercises need a name.', 'error'); return; }
+      if (!(ex.sets  > 0)) { toast(`Invalid sets for "${ex.name}".`, 'error'); return; }
+      if (!(ex.reps  > 0)) { toast(`Invalid reps for "${ex.name}".`, 'error'); return; }
+    }
+  }
+
+  const LIFTS_SET = new Set(LIFTS);
+  const weeks = [];
+  for (let w = 1; w <= numWeeks; w++) {
+    weeks.push({
+      weekNum: w, label: `Week ${w}`, type: 'volume',
+      days: planBuilderDays.map((d, i) => ({
+        dayNum: i + 1, label: d.name.trim(), completedSessionId: null,
+        exercises: d.exercises.map(ex => ({
+          name: ex.name.trim(), sets: ex.sets, reps: ex.reps,
+          targetWeightKg: ex.weightKg,
+          isBenchmark: LIFTS_SET.has(ex.name.trim()),
+          note: '',
+        })),
+      })),
+    });
+  }
+
+  const existing = getActivePlan();
+  if (existing) {
+    if (!confirm(`Replace current plan "${existing.name}"?\nYour completed sessions are kept.`)) return;
+    deletePlan(existing.id);
+  }
+
+  const newPlan = { id: uuid(), name, startDate: today(), active: true, weeks };
+  savePlan(newPlan);
+  currentPlanViewWeek = 1;
+  toast(`Plan "${name}" saved!`);
+  renderHome();
+  renderPlans();
+  showScreen('plans');
+}
+
 // ── Progress screen ───────────────────────────────────────────────
 
 let progressLift = LIFTS[0];
 
 function renderProgress() {
+  const profile = getProfile();
+  if (!profile) return;
+
   // Guard: if a previously selected lift was removed from LIFTS, reset gracefully
   if (!LIFTS.includes(progressLift)) progressLift = LIFTS[0];
 
@@ -1573,44 +3962,65 @@ function renderProgress() {
     tabRow.appendChild(btn);
   });
 
-  // Gather data points for chosen lift
+  const pbs = getPBs();
+  const rawPB = pbs[progressLift];
+  const pb = (rawPB && typeof rawPB === 'object') ? rawPB : { orm: rawPB || 0, oneRepKg: 0, maxReps: 0, maxRepsKg: 0, maxWeightKg: 0 };
   const sessions = getSessions().slice().reverse(); // oldest first
+  const isRepBased = REP_BASED_LIFTS.has(progressLift);
+
+  // Gather data points
   const points = [];
   sessions.forEach(s => {
     const liftSets = s.sets.filter(x => x.lift === progressLift);
     if (liftSets.length > 0) {
-      const bestORM = Math.max(...liftSets.map(x => epley1RM(x.weightKg, x.reps)));
-      points.push({ x: s.date, y: parseFloat(bestORM.toFixed(2)) });
+      if (isRepBased) {
+        const bestReps = Math.max(...liftSets.map(x => x.reps));
+        points.push({ x: s.date, y: bestReps });
+      } else {
+        const bestORM = Math.max(...liftSets.map(x => epley1RM(effectiveWeight(progressLift, x.weightKg, profile), x.reps)));
+        points.push({ x: s.date, y: parseFloat(bestORM.toFixed(2)) });
+      }
     }
   });
 
   const canvas = document.getElementById('progress-chart');
+  canvas.closest('.chart-container').querySelector('h3').textContent =
+    isRepBased ? 'Max reps over time' : 'Estimated 1RM over time';
   drawLineChart(canvas, points, { height: 200 });
 
-  // Benchmark info
-  const profile = getProfile();
-  const pbs = getPBs();
-  const benchmark = getBenchmark(progressLift, profile);
-  const rawPB     = pbs[progressLift];
-  const pb        = (rawPB && typeof rawPB === 'object') ? rawPB : { orm: rawPB || 0, oneRepKg: 0, maxReps: 0, maxRepsKg: 0 };
-  const orm       = pb.orm || 0;
-  const actual1RM = pb.oneRepKg || 0;
-  const percentile = actual1RM > 0 ? getPercentile(progressLift, actual1RM, profile) : 0;
-  const tier      = tierFromPercentile(percentile);
-
-  const oneRepStr = actual1RM > 0 ? `${actual1RM} kg` : '—';
-  const repPRStr  = pb.maxReps > 0
-    ? (pb.maxRepsKg > 0 ? `${pb.maxReps} reps @ ${pb.maxRepsKg} kg` : `${pb.maxReps} reps (bodyweight)`)
-    : '—';
-
-  document.getElementById('progress-tier').innerHTML = `
-    <div class="result-row"><span class="rr-label">Best est. 1RM</span><span class="rr-val">${orm > 0 ? orm.toFixed(1) + ' kg' : '—'}</span></div>
-    <div class="result-row"><span class="rr-label">Best actual 1-rep</span><span class="rr-val">${oneRepStr}</span></div>
-    <div class="result-row"><span class="rr-label">Best rep set</span><span class="rr-val">${repPRStr}</span></div>
-    <div class="result-row"><span class="rr-label">50th pct reference</span><span class="rr-val">${benchmark ? benchmark.toFixed(1) + ' kg' : '—'}</span></div>
-    <div class="result-row"><span class="rr-label">Percentile</span><span class="rr-val">${actual1RM > 0 ? ordinal(percentile) : '— (no 1RM)'}</span></div>
-    <div class="result-row"><span class="rr-label">Tier</span><span class="rr-val">${actual1RM > 0 ? `<span class="bc-tier ${tierCssClass(tier)}">${tier}</span>` : '— (no 1RM)'}</span></div>
-  `;
+  // Stats panel
+  let statsHTML = '';
+  if (isRepBased) {
+    const repBenchmark = getRepBenchmark(progressLift, profile);
+    const percentile   = pb.maxReps > 0 ? getRepPercentile(progressLift, pb.maxReps, profile) : 0;
+    const tier         = tierFromPercentile(percentile);
+    statsHTML = `
+      <div class="result-row"><span class="rr-label">Best set</span><span class="rr-val">${pb.maxReps > 0 ? pb.maxReps + ' reps' : '—'}</span></div>
+      <div class="result-row"><span class="rr-label">50th pct reference</span><span class="rr-val">${repBenchmark ? repBenchmark + ' reps' : '—'}</span></div>
+      <div class="result-row"><span class="rr-label">Percentile</span><span class="rr-val">${pb.maxReps > 0 ? ordinal(percentile) : '—'}</span></div>
+      <div class="result-row"><span class="rr-label">Tier</span><span class="rr-val">${pb.maxReps > 0 ? '<span class="bc-tier ' + tierCssClass(tier) + '">' + tier + '</span>' : '—'}</span></div>
+    `;
+  } else {
+    const benchmark  = getBenchmark(progressLift, profile);
+    const orm        = pb.orm || 0;
+    const rankWeight = pb.oneRepKg || pb.maxWeightKg || 0;
+    const isTrue1RM  = pb.oneRepKg > 0;
+    const percentile = rankWeight > 0 ? getPercentile(progressLift, rankWeight, profile) : 0;
+    const tier       = tierFromPercentile(percentile);
+    const weightLabel = isTrue1RM ? `${rankWeight} kg (1-rep)` : (rankWeight > 0 ? `${rankWeight} kg (best weight)` : '—');
+    const repPRStr = pb.maxReps > 0
+      ? (pb.maxRepsKg > 0 ? `${pb.maxReps} reps @ ${pb.maxRepsKg} kg` : `${pb.maxReps} reps (bodyweight)`)
+      : '—';
+    statsHTML = `
+      <div class="result-row"><span class="rr-label">Best est. 1RM</span><span class="rr-val">${orm > 0 ? orm.toFixed(1) + ' kg' : '—'}</span></div>
+      <div class="result-row"><span class="rr-label">Ranking weight</span><span class="rr-val">${weightLabel}</span></div>
+      <div class="result-row"><span class="rr-label">Best rep set</span><span class="rr-val">${repPRStr}</span></div>
+      <div class="result-row"><span class="rr-label">50th pct reference</span><span class="rr-val">${benchmark ? benchmark.toFixed(1) + ' kg' : '—'}</span></div>
+      <div class="result-row"><span class="rr-label">Percentile</span><span class="rr-val">${rankWeight > 0 ? ordinal(percentile) : '—'}</span></div>
+      <div class="result-row"><span class="rr-label">Tier</span><span class="rr-val">${rankWeight > 0 ? '<span class="bc-tier ' + tierCssClass(tier) + '">' + tier + '</span>' : '—'}</span></div>
+    `;
+  }
+  document.getElementById('progress-tier').innerHTML = statsHTML;
 }
 
 // ── Standards screen ─────────────────────────────────────────────
@@ -1638,25 +4048,64 @@ function renderStandards() {
   container.innerHTML = '';
 
   LIFTS.forEach(lift => {
+    const rawPB = pbs[lift];
+
+    if (REP_BASED_LIFTS.has(lift)) {
+      const repStd = REP_STANDARDS[lift];
+      if (!repStd) return;
+      const myReps = (rawPB && typeof rawPB === 'object') ? (rawPB.maxReps || 0) : 0;
+      const myPct  = myReps > 0 ? getRepPercentile(lift, myReps, profile) : null;
+      const myTier = myPct !== null ? tierFromPercentile(myPct) : null;
+
+      const myRow = myReps > 0
+        ? `<div class="std-my-row">
+             <span class="bc-tier ${tierCssClass(myTier)}">${myTier}</span>
+             <span style="margin-left:8px;font-size:13px;color:var(--muted)">${myReps} reps &mdash; ${ordinal(myPct)} percentile</span>
+           </div>`
+        : `<div style="font-size:12px;color:var(--muted);margin-bottom:10px">No sets logged yet</div>`;
+
+      const rows = tiers.map(t => {
+        const refReps    = interpRatio(repStd[sex], t.pct);
+        const scaledReps = Math.round(refReps * Math.sqrt(repStd.refBW[sex] / bw) * af);
+        const active     = myTier === t.label;
+        return `<div class="std-row${active ? ' std-row-me' : ''}">
+          <span class="bc-tier ${tierCssClass(t.label)}" style="min-width:108px">${t.label}</span>
+          <span class="std-pct">${ordinal(t.pct)}+</span>
+          <span class="std-kg">&ge;${scaledReps} reps</span>
+        </div>`;
+      }).join('');
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.marginBottom = '12px';
+      card.innerHTML = `
+        <div class="card-title">${lift}</div>
+        ${myRow}
+        <div class="std-table">${rows}</div>
+      `;
+      container.appendChild(card);
+      return;
+    }
+
     const std = STRENGTH_STANDARDS[lift];
     if (!std) return;
     const bp  = sex === 'female' ? std.female : std.male;
 
-    const rawPB      = pbs[lift];
-    const myActual1RM = (rawPB && typeof rawPB === 'object') ? (rawPB.oneRepKg || 0) : 0;
-    const myPct      = myActual1RM > 0 ? getPercentile(lift, myActual1RM, profile) : null;
-    const myTier     = myPct !== null ? tierFromPercentile(myPct) : null;
+    const myRankWeight = (rawPB && typeof rawPB === 'object') ? (rawPB.oneRepKg || rawPB.maxWeightKg || 0) : 0;
+    const myIsTrue1RM  = (rawPB && typeof rawPB === 'object') && rawPB.oneRepKg > 0;
+    const myPct       = myRankWeight > 0 ? getPercentile(lift, myRankWeight, profile) : null;
+    const myTier      = myPct !== null ? tierFromPercentile(myPct) : null;
 
     const card = document.createElement('div');
     card.className = 'card';
     card.style.marginBottom = '12px';
 
-    const myRow = myActual1RM > 0
+    const myRow = myRankWeight > 0
       ? `<div class="std-my-row">
            <span class="bc-tier ${tierCssClass(myTier)}">${myTier}</span>
-           <span style="margin-left:8px;font-size:13px;color:var(--muted)">${myActual1RM.toFixed(1)} kg actual 1RM &mdash; ${ordinal(myPct)} percentile</span>
+           <span style="margin-left:8px;font-size:13px;color:var(--muted)">${myRankWeight.toFixed(1)} kg ${myIsTrue1RM ? '(1-rep)' : '(best weight)'} &mdash; ${ordinal(myPct)} percentile</span>
          </div>`
-      : `<div style="font-size:12px;color:var(--muted);margin-bottom:10px">No 1-rep max recorded yet</div>`;
+      : `<div style="font-size:12px;color:var(--muted);margin-bottom:10px">No weight logged yet</div>`;
 
     const rows = tiers.map(t => {
       const ratio = interpRatio(bp, t.pct);
@@ -1693,6 +4142,8 @@ function renderProfile() {
   document.getElementById('prof-level').textContent    = profile.level;
   document.getElementById('prof-title').textContent    = levelTitle(profile.level);
   document.getElementById('prof-sessions').textContent = getSessions().length;
+
+  renderSyncCard(syncCurrentUser());
 }
 
 function saveProfileForm() {
@@ -1743,6 +4194,619 @@ function handleImport(file) {
   reader.readAsText(file);
 }
 
+// ── Session detail & edit ─────────────────────────────────────────
+
+let detailSessionId = null;
+
+function renderSessionDetail(sessionId) {
+  const sessions = getSessions();
+  const session  = sessions.find(s => s.id === sessionId);
+  if (!session) return;
+  detailSessionId = sessionId;
+
+  document.getElementById('sd-title').textContent = formatDate(session.date);
+  document.getElementById('sd-meta').textContent  = `${session.sets.length} sets · +${session.xpEarned} XP`;
+
+  // Group sets by lift
+  const byLift = {};
+  for (const set of session.sets) {
+    if (!byLift[set.lift]) byLift[set.lift] = [];
+    byLift[set.lift].push(set);
+  }
+
+  const container = document.getElementById('sd-sets-container');
+  container.innerHTML = '';
+  for (const [lift, sets] of Object.entries(byLift)) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.marginBottom = '12px';
+    const rows = sets.map((s, i) => {
+      const isBodyweight = BODYWEIGHT_LIFTS.has(lift);
+      const weightDisplay = isBodyweight && s.weightKg === 0
+        ? 'Bodyweight'
+        : `${s.weightKg} kg${isBodyweight ? ' + BW' : ''}`;
+      return `<div class="result-row">
+        <span class="rr-label">Set ${i + 1}</span>
+        <span class="rr-val">${weightDisplay} × ${s.reps}</span>
+      </div>`;
+    }).join('');
+    card.innerHTML = `<div class="card-title">${lift}</div>${rows}`;
+    container.appendChild(card);
+  }
+
+  showScreen('session-detail');
+}
+
+let editSessionId  = null;
+let editSessionSets = {};
+
+function renderSessionEdit(sessionId) {
+  const sessions = getSessions();
+  const session  = sessions.find(s => s.id === sessionId);
+  if (!session) return;
+  editSessionId   = sessionId;
+  editSessionSets = {};
+
+  document.getElementById('se-meta').textContent = formatDate(session.date);
+
+  // Group sets by lift
+  const byLift = {};
+  for (const set of session.sets) {
+    if (!byLift[set.lift]) byLift[set.lift] = [];
+    byLift[set.lift].push({ ...set });
+  }
+
+  const container = document.getElementById('se-lifts-container');
+  container.innerHTML = '';
+
+  for (const [lift, sets] of Object.entries(byLift)) {
+    editSessionSets[lift] = sets.map(s => ({ ...s }));
+    const isBodyweight = BODYWEIGHT_LIFTS.has(lift);
+    const liftNote = isBodyweight ? ' (added weight; 0 = bodyweight only)' : '';
+
+    const section = document.createElement('div');
+    section.className = 'logging-lift';
+    section.id = 'edit-lift-' + lift.replace(/[^a-z]/gi, '_');
+    section.innerHTML = `
+      <h3>${lift}</h3>
+      <p class="prev-hint" style="margin-bottom:8px">${liftNote}</p>
+      <div class="set-row-header"><span>Weight (kg)</span><span>Reps</span><span></span></div>
+      <div class="set-rows"></div>
+      <button class="btn btn-ghost btn-sm add-edit-set-btn" data-lift="${lift}">+ Add Set</button>
+    `;
+    container.appendChild(section);
+
+    const rowsDiv = section.querySelector('.set-rows');
+    sets.forEach((s, idx) => addEditSetRow(lift, s, idx, rowsDiv));
+
+    section.querySelector('.add-edit-set-btn').addEventListener('click', () => {
+      const newIdx = editSessionSets[lift].length;
+      editSessionSets[lift].push({ lift, weightKg: 0, reps: 0 });
+      addEditSetRow(lift, { lift, weightKg: 0, reps: 0 }, newIdx, rowsDiv);
+    });
+  }
+
+  showScreen('session-edit');
+}
+
+function addEditSetRow(lift, setData, idx, rowsDiv) {
+  const row = document.createElement('div');
+  row.className = 'set-row';
+  row.innerHTML = `
+    <input type="number" min="0" step="0.5" value="${setData.weightKg}" class="weight-input">
+    <input type="number" min="1" max="999" step="1" value="${setData.reps}" class="reps-input">
+    <button class="del-set-btn" title="Remove set">✕</button>
+  `;
+  row.querySelector('.weight-input').addEventListener('input', e => {
+    const v = parseFloat(e.target.value);
+    editSessionSets[lift][Array.from(rowsDiv.children).indexOf(row)].weightKg = isNaN(v) ? 0 : v;
+  });
+  row.querySelector('.reps-input').addEventListener('input', e => {
+    const v = parseInt(e.target.value);
+    editSessionSets[lift][Array.from(rowsDiv.children).indexOf(row)].reps = isNaN(v) ? 0 : v;
+  });
+  row.querySelector('.del-set-btn').addEventListener('click', () => {
+    const rowIdx = Array.from(rowsDiv.children).indexOf(row);
+    editSessionSets[lift].splice(rowIdx, 1);
+    row.remove();
+  });
+  rowsDiv.appendChild(row);
+}
+
+function saveEditSession() {
+  if (!editSessionId) return;
+
+  // Flatten sets, filter invalid
+  const allSets = [];
+  for (const [lift, sets] of Object.entries(editSessionSets)) {
+    for (const s of sets) {
+      if (s.reps > 0) allSets.push({ lift, weightKg: s.weightKg || 0, reps: s.reps });
+    }
+  }
+  if (allSets.length === 0) { toast('At least one valid set is required.', 'error'); return; }
+
+  // Update the session sets
+  updateSession(editSessionId, allSets);
+
+  // Recalculate everything from scratch
+  const { profile } = recalculateAllPBsAndXP();
+  toast('Workout saved! XP recalculated.');
+
+  renderHome();
+  renderSessionDetail(editSessionId);
+}
+
+function deleteSession(sessionId) {
+  if (!confirm('Delete this workout? XP will be recalculated.')) return;
+  syncDeleteSession(sessionId);
+  const sessions = getSessions().filter(s => s.id !== sessionId);
+  localStorage.setItem(KEYS.SESSIONS, JSON.stringify(sessions));
+  recalculateAllPBsAndXP();
+  toast('Workout deleted.');
+  renderHome();
+  showScreen('home');
+}
+
+// ── Share card ────────────────────────────────────────────────────
+
+const TIER_COLORS = {
+  'Untrained':    '#c04040',
+  'Beginner':     '#e07840',
+  'Novice':       '#f5a623',
+  'Intermediate': '#4caf7d',
+  'Advanced':     '#4a9fe0',
+  'Elite':        '#7c6af7',
+  'World Class':  '#ffd700',
+};
+
+function drawShareCard() {
+  const profile  = getProfile();
+  const pbs      = getPBs();
+  const sessions = getSessions();
+  if (!profile) return;
+
+  // Collect only lifts with data
+  const rows = [];
+  LIFTS.forEach(lift => {
+    const pb = pbs[lift];
+    if (!pb || typeof pb !== 'object') return;
+    if (REP_BASED_LIFTS.has(lift)) {
+      if (!pb.maxReps) return;
+      const pct  = getRepPercentile(lift, pb.maxReps, profile);
+      const tier = tierFromPercentile(pct);
+      rows.push({ lift, value: `${pb.maxReps} reps`, tier, pct });
+    } else {
+      const rw = pb.oneRepKg || pb.maxWeightKg || 0;
+      if (!rw) return;
+      const pct  = getPercentile(lift, rw, profile);
+      const tier = tierFromPercentile(pct);
+      rows.push({ lift, value: `${rw} kg`, tier, pct });
+    }
+  });
+
+  // Card dimensions
+  const W   = 600;
+  const PAD = 28;
+  const HEADER_H = 100;
+  const META_H   = 64;
+  const ROW_H    = 52;
+  const FOOTER_H = 50;
+  const H = HEADER_H + META_H + (rows.length || 1) * ROW_H + FOOTER_H + PAD;
+
+  const canvas = document.getElementById('share-canvas');
+  canvas.width  = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#0f0f12';
+  ctx.fillRect(0, 0, W, H);
+
+  // Accent gradient bar at top
+  const grad = ctx.createLinearGradient(0, 0, W, 0);
+  grad.addColorStop(0, '#7c6af7');
+  grad.addColorStop(1, '#5b4ecf');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, 5);
+
+  // ── Header (dumbbell icon + app name) ────────────────────────────
+  let y = 28;
+  // Dumbbell icon (simple canvas draw)
+  const drawDumbbell = (cx, cy, sz) => {
+    ctx.fillStyle = '#7c6af7';
+    // bar
+    ctx.beginPath(); ctx.roundRect(cx - sz * 0.7, cy - sz * 0.09, sz * 1.4, sz * 0.18, sz * 0.09); ctx.fill();
+    // left plate
+    ctx.beginPath(); ctx.roundRect(cx - sz * 0.9, cy - sz * 0.38, sz * 0.25, sz * 0.76, sz * 0.1); ctx.fill();
+    // left collar
+    ctx.beginPath(); ctx.roundRect(cx - sz * 0.7, cy - sz * 0.28, sz * 0.15, sz * 0.56, sz * 0.07); ctx.fill();
+    // right plate
+    ctx.beginPath(); ctx.roundRect(cx + sz * 0.65, cy - sz * 0.38, sz * 0.25, sz * 0.76, sz * 0.1); ctx.fill();
+    // right collar
+    ctx.beginPath(); ctx.roundRect(cx + sz * 0.55, cy - sz * 0.28, sz * 0.15, sz * 0.56, sz * 0.07); ctx.fill();
+  };
+  drawDumbbell(PAD + 22, y + 22, 26);
+
+  ctx.fillStyle = '#e8e8f0';
+  ctx.font = 'bold 26px system-ui, sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Strengthify', PAD + 58, y + 22);
+
+  ctx.fillStyle = '#8888aa';
+  ctx.font = '14px system-ui, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('Benchmark Report', W - PAD, y + 22);
+  ctx.textAlign = 'left';
+
+  // Divider
+  y = HEADER_H - 14;
+  ctx.strokeStyle = '#2e2e40';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(W - PAD, y); ctx.stroke();
+
+  // ── Meta (name + level) ───────────────────────────────────────────
+  y = HEADER_H + 2;
+  ctx.fillStyle = '#e8e8f0';
+  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(profile.name, PAD, y + 22);
+
+  ctx.fillStyle = '#7c6af7';
+  ctx.font = 'bold 14px system-ui, sans-serif';
+  const lvlTitle = levelTitle(profile.level);
+  ctx.fillText(`Lv${profile.level}  ${lvlTitle}`, PAD, y + 42);
+
+  ctx.fillStyle = '#8888aa';
+  ctx.font = '13px system-ui, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText(`${sessions.length} workouts`, W - PAD, y + 32);
+  ctx.textAlign = 'left';
+
+  // Divider
+  y = HEADER_H + META_H - 2;
+  ctx.strokeStyle = '#2e2e40';
+  ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(W - PAD, y); ctx.stroke();
+
+  // ── Lift rows ─────────────────────────────────────────────────────
+  if (rows.length === 0) {
+    y = HEADER_H + META_H + ROW_H / 2;
+    ctx.fillStyle = '#8888aa';
+    ctx.font = '15px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('No benchmarks logged yet', W / 2, y + ROW_H / 2);
+    ctx.textAlign = 'left';
+  } else {
+    rows.forEach((row, i) => {
+      const ry = HEADER_H + META_H + i * ROW_H;
+      const midY = ry + ROW_H / 2;
+
+      // Lift name
+      ctx.fillStyle = '#e8e8f0';
+      ctx.font = '14px system-ui, sans-serif';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(row.lift, PAD, midY);
+
+      // Value (weight / reps)
+      ctx.fillStyle = '#8888aa';
+      ctx.font = '13px system-ui, sans-serif';
+      ctx.fillText(row.value, PAD + 200, midY);
+
+      // Tier pill
+      const tierColor = TIER_COLORS[row.tier] || '#8888aa';
+      const pillText = row.tier.toUpperCase();
+      ctx.font = 'bold 10px system-ui, sans-serif';
+      const pillW = ctx.measureText(pillText).width + 20;
+      const pillX = W - PAD - pillW;
+      const pillY = midY - 11;
+      ctx.fillStyle = tierColor + '33'; // 20% opacity bg
+      ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, 22, 11); ctx.fill();
+      ctx.fillStyle = tierColor;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(pillText, pillX + pillW / 2, midY);
+      ctx.textAlign = 'left';
+
+      // Progress bar (behind tier pill, to the right of value)
+      const barX = PAD + 275;
+      const barW = W - PAD - pillW - 16 - barX;
+      const barH = 5;
+      const barY = midY - barH / 2;
+      ctx.fillStyle = '#22222e';
+      ctx.beginPath(); ctx.roundRect(barX, barY, barW, barH, barH / 2); ctx.fill();
+      ctx.fillStyle = tierColor;
+      ctx.beginPath(); ctx.roundRect(barX, barY, barW * (row.pct / 100), barH, barH / 2); ctx.fill();
+
+      // Row separator
+      if (i < rows.length - 1) {
+        ctx.strokeStyle = '#1e1e28';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(PAD, ry + ROW_H); ctx.lineTo(W - PAD, ry + ROW_H); ctx.stroke();
+      }
+    });
+  }
+
+  // ── Footer ────────────────────────────────────────────────────────
+  const footerY = H - FOOTER_H;
+  ctx.strokeStyle = '#2e2e40';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD, footerY + 12); ctx.lineTo(W - PAD, footerY + 12); ctx.stroke();
+  ctx.fillStyle = '#8888aa';
+  ctx.font = '12px system-ui, sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }), PAD, footerY + 32);
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#7c6af7';
+  ctx.font = 'bold 12px system-ui, sans-serif';
+  ctx.fillText('strengthify', W - PAD, footerY + 32);
+  ctx.textAlign = 'left';
+}
+
+function openShareModal() {
+  const modal = document.getElementById('share-modal');
+  modal.classList.remove('hidden');
+  // Show native share button if available
+  if (navigator.share) {
+    document.getElementById('share-native-btn').style.display = '';
+  }
+  // Draw after a tick so canvas is visible and has layout
+  requestAnimationFrame(() => drawShareCard());
+}
+
+function closeShareModal() {
+  document.getElementById('share-modal').classList.add('hidden');
+}
+
+function shareDownload() {
+  const canvas = document.getElementById('share-canvas');
+  const a = document.createElement('a');
+  a.download = 'strengthify-benchmarks.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+async function shareNative() {
+  const canvas = document.getElementById('share-canvas');
+  canvas.toBlob(async blob => {
+    try {
+      const file = new File([blob], 'strengthify-benchmarks.png', { type: 'image/png' });
+      await navigator.share({ files: [file], title: 'My Strengthify Benchmarks' });
+    } catch {
+      // User cancelled or share failed — silent
+    }
+  }, 'image/png');
+}
+
+function shareCopyText() {
+  const profile = getProfile();
+  const pbs     = getPBs();
+  if (!profile) return;
+  const lines = [
+    `💪 ${profile.name} — Lv${profile.level} ${levelTitle(profile.level)}`,
+    `Strengthify Benchmark Report`,
+    '',
+  ];
+  LIFTS.forEach(lift => {
+    const pb = pbs[lift];
+    if (!pb || typeof pb !== 'object') return;
+    if (REP_BASED_LIFTS.has(lift)) {
+      if (!pb.maxReps) return;
+      const tier = tierFromPercentile(getRepPercentile(lift, pb.maxReps, profile));
+      lines.push(`${lift}: ${pb.maxReps} reps — ${tier}`);
+    } else {
+      const rw = pb.oneRepKg || pb.maxWeightKg || 0;
+      if (!rw) return;
+      const tier = tierFromPercentile(getPercentile(lift, rw, profile));
+      lines.push(`${lift}: ${rw} kg — ${tier}`);
+    }
+  });
+  navigator.clipboard.writeText(lines.join('\n'))
+    .then(() => toast('Copied to clipboard!'))
+    .catch(() => toast('Copy failed', 'error'));
+}
+
+// ── Cloud Sync UI ─────────────────────────────────────────────────
+
+function renderSyncCard(user) {
+  const elUnconfigured = document.getElementById('sync-state-unconfigured');
+  const elSignedOut    = document.getElementById('sync-state-signedout');
+  const elSignedIn     = document.getElementById('sync-state-signedin');
+  if (!elUnconfigured) return;
+
+  if (!syncIsConfigured()) {
+    elUnconfigured.classList.remove('hidden');
+    elSignedOut.classList.add('hidden');
+    elSignedIn.classList.add('hidden');
+    return;
+  }
+  if (!user) {
+    elUnconfigured.classList.add('hidden');
+    elSignedOut.classList.remove('hidden');
+    elSignedIn.classList.add('hidden');
+  } else {
+    elUnconfigured.classList.add('hidden');
+    elSignedOut.classList.add('hidden');
+    elSignedIn.classList.remove('hidden');
+    document.getElementById('sync-user-name').textContent  = user.displayName || '';
+    document.getElementById('sync-user-email').textContent = user.email || '';
+    const avatar = document.getElementById('sync-avatar');
+    if (user.photoURL) {
+      avatar.src = user.photoURL;
+      avatar.style.display = '';
+    } else {
+      avatar.style.display = 'none';
+    }
+  }
+}
+
+function setSyncStatus(status) {
+  const badge = document.getElementById('sync-status-badge');
+  if (!badge) return;
+  if (status === 'syncing') {
+    badge.innerHTML = '<span style="font-size:11px;color:var(--muted)">Syncing…</span>';
+  } else if (status === 'synced') {
+    badge.innerHTML = '<span style="font-size:11px;color:#4caf7d">● Synced</span>';
+  } else if (status === 'error') {
+    badge.innerHTML = '<span style="font-size:11px;color:var(--red)">● Error</span>';
+  }
+}
+
+function initSync() {
+  syncInit();
+
+  let isFirstAuth = true;
+
+  syncOnAuthChange(async user => {
+    renderSyncCard(user);
+    if (user) {
+      if (isFirstAuth) {
+        isFirstAuth = false;
+        setSyncStatus('syncing');
+        let newSessions = 0;
+        try {
+          const result = await syncMergeOnSignIn();
+          setSyncStatus('synced');
+          newSessions = result.newSessions;
+        } catch (e) {
+          console.error('[Sync] Merge on sign-in failed:', e);
+          setSyncStatus('error');
+        }
+        // Route after merge so a cloud profile is available before deciding
+        const profile = getProfile();
+        if (!profile) {
+          showScreen('onboarding');
+        } else {
+          renderHome();
+          showScreen('home');
+          if (newSessions > 0) {
+            toast(`Synced ${newSessions} new workout${newSessions > 1 ? 's' : ''} from cloud.`);
+          }
+        }
+      }
+    } else {
+      isFirstAuth = true;
+      if (syncIsConfigured()) showScreen('signin');
+    }
+  });
+
+  // Welcome screen sign-in button
+  document.getElementById('welcome-signin-btn')?.addEventListener('click', async () => {
+    try {
+      await syncSignIn();
+    } catch (e) {
+      if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
+        toast('Sign-in failed. Check your Firebase config.', 'error');
+      }
+    }
+  });
+
+  // Continue without sync — use local storage only
+  document.getElementById('continue-local-btn')?.addEventListener('click', () => {
+    const profile = getProfile();
+    if (!profile) {
+      showScreen('onboarding');
+    } else {
+      renderHome();
+      showScreen('home');
+    }
+  });
+
+  // Profile screen sign-in button (same handler)
+  document.getElementById('sync-signin-btn')?.addEventListener('click', async () => {
+    try {
+      await syncSignIn();
+    } catch (e) {
+      if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
+        toast('Sign-in failed. Check your Firebase config.', 'error');
+      }
+    }
+  });
+
+  document.getElementById('sync-signout-btn')?.addEventListener('click', async () => {
+    await syncSignOut();
+    toast('Signed out from sync. Local data kept.');
+  });
+
+  document.getElementById('sync-now-btn')?.addEventListener('click', async () => {
+    setSyncStatus('syncing');
+    try {
+      const result = await syncMergeOnSignIn();
+      setSyncStatus('synced');
+      renderHome();
+      if (result.newSessions > 0) {
+        toast(`Synced ${result.newSessions} new workout${result.newSessions > 1 ? 's' : ''}.`);
+      } else {
+        toast('Already up to date.');
+      }
+    } catch (e) {
+      setSyncStatus('error');
+      toast('Sync failed.', 'error');
+    }
+  });
+}
+
+// ── Mobility routine ──────────────────────────────────────────────
+
+let mobilityBlockIdx = 0;
+let mobilityExerciseIdx = 0;
+const MOBILITY_DOT_COLORS = { orange: 'var(--mob-orange)', blue: 'var(--mob-blue)', green: 'var(--mob-green)', purple: 'var(--mob-purple)' };
+
+// Random index into block.exercises, avoiding an immediate repeat when possible
+function randomMobilityExerciseIdx(block, excludeIdx) {
+  if (block.exercises.length === 1) return 0;
+  let idx;
+  do { idx = Math.floor(Math.random() * block.exercises.length); } while (idx === excludeIdx);
+  return idx;
+}
+
+function startMobility() {
+  mobilityBlockIdx = 0;
+  mobilityExerciseIdx = randomMobilityExerciseIdx(MOBILITY_ROUTINE.blocks[0], -1);
+  renderMobilityExercise();
+  showScreen('mobility');
+}
+
+function renderMobilityExercise() {
+  const block    = MOBILITY_ROUTINE.blocks[mobilityBlockIdx];
+  const exercise = block.exercises[mobilityExerciseIdx];
+  const dotColor = MOBILITY_DOT_COLORS[block.color] || 'var(--accent)';
+  const isLastBlock = mobilityBlockIdx === MOBILITY_ROUTINE.blocks.length - 1;
+
+  document.getElementById('mobility-card').style.borderTopColor = dotColor;
+  document.getElementById('mobility-block-label').textContent = `Block ${mobilityBlockIdx + 1} of ${MOBILITY_ROUTINE.blocks.length} \u00b7 ${block.name}`;
+  document.getElementById('mobility-exercise-name').textContent = exercise.name;
+  document.getElementById('mobility-exercise-desc').textContent = exercise.description;
+
+  document.getElementById('mobility-next-block-btn').classList.toggle('hidden', isLastBlock);
+
+  const dotsWrap = document.getElementById('mobility-block-dots');
+  dotsWrap.innerHTML = '';
+  MOBILITY_ROUTINE.blocks.forEach((b, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'mobility-dot';
+    if (i <= mobilityBlockIdx) dot.style.background = MOBILITY_DOT_COLORS[b.color] || 'var(--accent)';
+    dotsWrap.appendChild(dot);
+  });
+}
+
+function nextMobilityExercise() {
+  const block = MOBILITY_ROUTINE.blocks[mobilityBlockIdx];
+  mobilityExerciseIdx = randomMobilityExerciseIdx(block, mobilityExerciseIdx);
+  renderMobilityExercise();
+}
+
+function nextMobilityBlock() {
+  if (mobilityBlockIdx >= MOBILITY_ROUTINE.blocks.length - 1) return;
+  mobilityBlockIdx++;
+  mobilityExerciseIdx = randomMobilityExerciseIdx(MOBILITY_ROUTINE.blocks[mobilityBlockIdx], -1);
+  renderMobilityExercise();
+}
+
+function finishMobility() {
+  toast('Mobility routine complete!');
+  showScreen('home');
+}
+
 // ── App init ──────────────────────────────────────────────────────
 
 function init() {
@@ -1750,17 +4814,32 @@ function init() {
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const screen = btn.dataset.screen;
+      if (screen === 'home')      { renderHome(); }
       if (screen === 'workout')   { initWorkoutScreen(); }
       if (screen === 'progress')   { renderProgress(); }
       if (screen === 'standards')  { renderStandards(); }
       if (screen === 'profile')    { renderProfile(); }
+      if (screen === 'plans')      { currentPlanViewWeek = null; renderPlans(); }
       showScreen(screen);
     });
   });
 
-  // Back buttons
+  // Back buttons — reset plan mode when leaving the logging screen
   document.querySelectorAll('.back-btn').forEach(btn => {
-    btn.addEventListener('click', () => showScreen(btn.dataset.to));
+    btn.addEventListener('click', () => {
+      if (btn.dataset.to === 'workout' && activePlanMode) {
+        activePlanMode    = false;
+        activePlanId      = null;
+        activePlanWeekNum = null;
+        activePlanDayNum  = null;
+        planAccessoryLifts = [];
+        currentPlanViewWeek = null;
+        renderPlans();
+        showScreen('plans');
+        return;
+      }
+      showScreen(btn.dataset.to);
+    });
   });
 
   // Finish workout
@@ -1793,16 +4872,91 @@ function init() {
     }
   });
 
+  // Session detail / edit buttons
+  document.getElementById('sd-edit-btn')?.addEventListener('click', () => {
+    if (detailSessionId) renderSessionEdit(detailSessionId);
+  });
+  document.getElementById('sd-delete-btn')?.addEventListener('click', () => {
+    if (detailSessionId) deleteSession(detailSessionId);
+  });
+  document.getElementById('se-save-btn')?.addEventListener('click', saveEditSession);
+  document.getElementById('se-cancel-btn')?.addEventListener('click', () => {
+    if (detailSessionId) renderSessionDetail(detailSessionId);
+  });
+
+  // Share modal
+  document.getElementById('share-benchmarks-btn')?.addEventListener('click', openShareModal);
+  document.getElementById('share-modal-close')?.addEventListener('click', closeShareModal);
+  document.getElementById('share-modal')?.addEventListener('click', e => {
+    if (e.target === document.getElementById('share-modal')) closeShareModal();
+  });
+  document.getElementById('share-download-btn')?.addEventListener('click', shareDownload);
+  document.getElementById('share-native-btn')?.addEventListener('click', shareNative);
+  document.getElementById('share-copy-btn')?.addEventListener('click', shareCopyText);
+
+  // Plans screen
+  document.getElementById('load-gvt-plan-btn')?.addEventListener('click', () => {
+    if (getActivePlan()) {
+      if (!confirm('Replace your current plan with the GVT template?\nCompleted sessions are kept.')) return;
+      deletePlan(getActivePlan().id);
+    }
+    const plan = createGVTPlan();
+    savePlan(plan);
+    toast('8-Week GVT plan loaded! Weights calculated from your PBs.');
+    currentPlanViewWeek = 1;
+    renderPlans();
+    renderHome();
+  });
+
+  document.getElementById('delete-plan-btn')?.addEventListener('click', () => {
+    if (!confirm('Remove this training plan? Your completed sessions are kept.')) return;
+    const plan = getActivePlan();
+    if (plan) { deletePlan(plan.id); }
+    currentPlanViewWeek = null;
+    renderPlans();
+    renderHome();
+    toast('Plan removed.');
+  });
+
+  // Plan builder
+  document.getElementById('build-custom-plan-btn')?.addEventListener('click', () => {
+    initPlanBuilder();
+    showScreen('plan-builder');
+  });
+  document.getElementById('pb-cancel-btn')?.addEventListener('click', () => showScreen('plans'));
+  document.getElementById('pb-add-day-btn')?.addEventListener('click', () => {
+    flushPlanBuilderInputs();
+    planBuilderDays.push({ name: '', exercises: [{ name: '', sets: 3, reps: 10, weightKg: null }] });
+    renderPlanBuilderDays();
+  });
+  document.getElementById('pb-save-btn')?.addEventListener('click', savePlanFromBuilder);
+
+  // Mobility
+  document.getElementById('home-start-mobility-btn')?.addEventListener('click', startMobility);
+  document.getElementById('mobility-exit-btn')?.addEventListener('click', () => showScreen('home'));
+  document.getElementById('mobility-next-exercise-btn')?.addEventListener('click', nextMobilityExercise);
+  document.getElementById('mobility-next-block-btn')?.addEventListener('click', nextMobilityBlock);
+  document.getElementById('mobility-finish-btn')?.addEventListener('click', finishMobility);
+
   // Onboarding
   initOnboarding();
+  initRoutine();
+
+  // Cloud sync
+  initSync();
 
   // Route to first screen
-  const profile = getProfile();
-  if (!profile) {
-    showScreen('onboarding');
+  if (syncIsConfigured()) {
+    // Show signin gate — auth state callback will redirect once Firebase resolves
+    showScreen('signin');
   } else {
-    renderHome();
-    showScreen('home');
+    const profile = getProfile();
+    if (!profile) {
+      showScreen('onboarding');
+    } else {
+      renderHome();
+      showScreen('home');
+    }
   }
 }
 

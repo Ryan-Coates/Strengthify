@@ -132,6 +132,13 @@
     </div>
 
     <!-- 1000 lb club progress -->
+    <div class="card routine-home">
+      <div class="routine-kicker">The 8-week commitment</div>
+      <h2 id="home-routine-title">Your week. Your rhythm.</h2>
+      <p id="home-routine-detail"></p>
+      <button class="btn btn-primary" data-open-routine>My weekly blocks <span aria-hidden="true">→</span></button>
+    </div>
+
     <div class="club-wrap">
       <div class="club-card" id="club-card">
         <div class="club-kicker" id="club-kicker">1000 lb club progress</div>
@@ -302,6 +309,13 @@
     <div class="page-header">
       <h1>Training Plan</h1>
       <button class="btn btn-ghost btn-sm" id="build-custom-plan-btn" style="font-size:12px">+ New plan</button>
+    </div>
+
+    <div class="card routine-home">
+      <div class="routine-kicker">Prefer a flexible week?</div>
+      <h2>Build a rhythm, not a timetable.</h2>
+      <p>Five workout types. Two of each. Any days you like.</p>
+      <button class="btn btn-secondary" data-open-routine>Open my 8-week commitment</button>
     </div>
 
     <!-- No plan state -->
@@ -602,7 +616,62 @@
 
   </section>
 
+  <section id="routine-screen" class="hidden" aria-labelledby="routine-heading">
+    <div class="page-header">
+      <h1 id="routine-heading">Weekly blocks</h1>
+      <button class="btn btn-ghost btn-sm back-btn" data-to="home">← Home</button>
+    </div>
+    <div id="routine-setup" class="card routine-home">
+      <div class="routine-kicker">Make a little room for you</div>
+      <h2>8 weeks. No fixed days.</h2>
+      <p>Do each of these five workouts twice a week. Each block takes about 25 minutes.
+        Stack a few together or spread them out around your week.</p>
+      <ul id="routine-preview" class="routine-preview"></ul>
+      <p>Each week is seven days from your chosen start date, not a Monday-to-Sunday timetable.
+        That's 10 blocks per week, 80 across your commitment.</p>
+      <form id="routine-form">
+        <div class="form-group">
+          <label class="form-label" for="routine-start-date">My start date</label>
+          <input class="form-input" id="routine-start-date" type="date" min="1000-01-01" max="9999-11-06" required>
+        </div>
+        <button class="btn btn-primary" type="submit">I'm in for 8 weeks</button>
+        <button class="btn btn-ghost hidden" type="button" id="routine-cancel-setup">Keep my current commitment</button>
+      </form>
+    </div>
+    <div id="routine-dashboard" class="hidden">
+      <div class="card routine-home">
+        <div class="routine-kicker">My 8-week commitment</div>
+        <h2>Your week. Your rhythm.</h2>
+        <p id="routine-dates"></p>
+        <div id="routine-journey" class="routine-journey"></div>
+        <button class="btn btn-ghost btn-sm" id="routine-new">Start a new commitment</button>
+      </div>
+      <div id="routine-week-tabs" class="routine-week-tabs" role="group" aria-label="Choose a routine week"></div>
+      <div class="card routine-week-summary">
+        <div class="routine-week-heading">
+          <h2 id="routine-week-title"></h2>
+          <strong id="routine-week-count"></strong>
+        </div>
+        <p id="routine-week-dates"></p>
+        <progress id="routine-week-progress" max="10" value="0" aria-label="Weekly workout blocks"></progress>
+        <p id="routine-week-message" role="status"></p>
+      </div>
+      <div id="routine-checklist"></div>
+      <p class="routine-footnote">Tick a block after you finish it. Untick to undo. Check-offs track your commitment;
+        use Workout separately if you want to log sets and earn XP.</p>
+    </div>
+  </section>
+
 </div><!-- /#app -->
+
+<dialog id="routine-celebration" class="routine-celebration" aria-labelledby="routine-celebration-title" aria-describedby="routine-celebration-copy">
+  <div id="routine-confetti" class="routine-confetti" aria-hidden="true"></div>
+  <div class="routine-trophy" aria-hidden="true">🏆</div>
+  <div class="routine-kicker">Commitment looks good on you</div>
+  <h2 id="routine-celebration-title"></h2>
+  <p id="routine-celebration-copy"></p>
+  <button id="routine-celebration-close" class="btn btn-primary">Enjoy the win</button>
+</dialog>
 
 <!-- ══════════════════════════════════════════
      SHARE MODAL
@@ -671,6 +740,9 @@
 </script>
 <script>
   /* __CHART_JS__ */
+</script>
+<script>
+  /* __ROUTINE_JS__ */
 </script>
 <script>
   /* __SYNC_JS__ */
