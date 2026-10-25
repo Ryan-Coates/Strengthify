@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<!-- Built: 2026-10-23 11:47:25 -->
+<!-- Built: 2026-10-25 11:20:25 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -95,6 +95,10 @@ body {
   background: radial-gradient(ellipse at top right, #36305c 0%, transparent 70%), var(--surface);
   border-color: #514785;
 }
+.routine-top-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-bottom: 8px;
+}
 .routine-kicker {
   color: #b8b0ff; font-size: 10px; font-weight: 800;
   letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px;
@@ -135,12 +139,144 @@ body {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 9px;
   min-height: 48px; border: 1px solid var(--border); border-radius: var(--radius-sm);
   font-size: 13px; cursor: pointer; background: var(--surface2);
+  transition: transform 0.15s, background 0.2s, border-color 0.2s;
 }
-.routine-block:has(input:checked) { background: #193b31; border-color: var(--green); color: #a3f0d3; }
+/* Fun check-off: a confetti-coloured stripe, a wiggle and a star. */
+.routine-block:has(input:checked) {
+  background: repeating-linear-gradient(-45deg, #1e3d36 0 10px, #24324f 10px 20px, #3b2f58 20px 30px);
+  border-color: #ffd86b; color: #fff3b8; font-weight: 700; transform: rotate(-1.2deg);
+  box-shadow: 0 0 0 1px #ffd86b55, 0 6px 16px #61d5b533;
+}
+.routine-block:has(input:checked) span::after { content: ' \2605'; color: #ffd86b; }
+.routine-block.just-ticked { animation: chaos-pop 0.55s cubic-bezier(0.2, 1.6, 0.4, 1); }
+@keyframes chaos-pop {
+  0% { transform: scale(0.85) rotate(4deg); }
+  50% { transform: scale(1.1) rotate(-4deg); }
+  100% { transform: scale(1) rotate(-1.2deg); }
+}
 .routine-block:has(input:disabled) { opacity: 0.5; cursor: not-allowed; }
+.is-locked .routine-workout { border-style: dashed; }
+.lock-banner {
+  margin: 0 16px 12px; padding: 12px 14px; border-radius: var(--radius-sm);
+  background: #2a2640; border: 1px dashed #8d83e6; color: #d9d4ff; font-size: 13px;
+}
+.lock-banner::before { content: '\1F512  '; }
+.chaos-card { border-color: #7c6af7; }
+.chaos-progress, .glowup-progress-bar {
+  display: block; appearance: none; width: 100%; height: 14px; border: none;
+  border-radius: 99px; overflow: hidden; background: #14141c; margin: 10px 0 12px;
+}
+.chaos-progress::-webkit-progress-bar { background: #14141c; }
+.chaos-progress::-webkit-progress-value {
+  background: repeating-linear-gradient(-45deg, #9c8fff 0 8px, #61d5b5 8px 16px, #ffd86b 16px 24px);
+  transition: width 0.4s;
+}
+.chaos-progress::-moz-progress-bar {
+  background: repeating-linear-gradient(-45deg, #9c8fff 0 8px, #61d5b5 8px 16px, #ffd86b 16px 24px);
+}
 .routine-block input { width: 19px; height: 19px; accent-color: #61d5b5; }
 .routine-block:focus-within, .routine-week-tab:focus-visible { outline: 2px solid #b8b0ff; outline-offset: 3px; }
 .routine-footnote { margin: 0 16px 20px; color: #b7b7cf; font-size: 12px; }
+
+/* ── Glow-Up: glam, girly, a little bit sparkly ─────────────────── */
+.glowup-home, .glowup-hero {
+  background:
+    radial-gradient(circle at 90% 0%, #ff8fc855 0, transparent 55%),
+    radial-gradient(circle at 0% 100%, #c9a8ff44 0, transparent 55%),
+    linear-gradient(145deg, #3a1f3d, #2a1a35 60%, #34203a);
+  border: 1px solid #ff9fd0; box-shadow: 0 8px 30px #ff7ab81f, inset 0 1px 0 #ffffff26;
+}
+.glowup-home h2, .glowup-hero h2 {
+  font-size: 22px; line-height: 1.25; margin-bottom: 10px;
+  background: linear-gradient(90deg, #ffd1ea, #ffe9a8 50%, #e6c8ff); -webkit-background-clip: text;
+  background-clip: text; color: transparent;
+}
+.glowup-home p, .glowup-hero p { color: #f2d4ea; font-size: 13px; margin-bottom: 14px; }
+.glowup-kicker { color: #ff9fd0; }
+.glowup-hero .routine-preview li { border-color: #ff9fd033; }
+.glowup-hero .routine-preview span { color: #f2d4ea; }
+.glowup-btn {
+  width: 100%; min-height: 48px; border: none; border-radius: 99px; cursor: pointer;
+  font: inherit; font-weight: 800; color: #3a1230;
+  background: linear-gradient(90deg, #ff9fd0, #ffd986 55%, #e0b8ff);
+  box-shadow: 0 6px 20px #ff7ab855;
+}
+.glowup-btn:hover { filter: brightness(1.06); }
+.glowup-progress-bar::-webkit-progress-bar { background: #1d1022; }
+.glowup-progress-bar::-webkit-progress-value {
+  background: linear-gradient(90deg, #ff7ab8, #ffd986, #d8a8ff); transition: width 0.4s;
+}
+.glowup-progress-bar::-moz-progress-bar { background: linear-gradient(90deg, #ff7ab8, #ffd986, #d8a8ff); }
+.glowup-journey { font-size: 14px; font-weight: 700; color: #ffd986; margin-bottom: 10px; }
+.glowup-count { color: #ffd986; font-size: 22px; }
+.glowup-hero .routine-week-heading strong { color: #ffd986; }
+.glowup-week-tabs { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; margin: 0 16px 12px; }
+.glowup-week-tab {
+  min-height: 44px; padding: 8px 0; border: 1px solid #ff9fd044; background: #2a1a35;
+  border-radius: 99px; color: #ffe3f3; font: inherit; font-size: 13px; cursor: pointer;
+}
+.glowup-week-tab.complete { border-color: #ffd986; color: #ffd986; }
+.glowup-week-tab.selected { background: linear-gradient(135deg, #ff7ab8, #c88aff); color: #fff; border-color: #ffd1ea; }
+.glowup-day-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin: 0 16px 12px; }
+.glowup-day {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0;
+  min-height: 52px; border: 1px solid #ff9fd033; background: #2a1a35; border-radius: 16px;
+  color: #ffe3f3; font: inherit; cursor: pointer;
+}
+.glowup-day span { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #e2b9d3; }
+.glowup-day strong { font-size: 15px; }
+.glowup-day.today { border-color: #ffd986; }
+.glowup-day.future { opacity: 0.65; }
+.glowup-day.perfect { background: linear-gradient(135deg, #5a2a55, #6b3f70); border-color: #ffd986; }
+.glowup-day.selected { background: linear-gradient(135deg, #ff7ab8, #c88aff); color: #fff; border-color: #ffd1ea; }
+.glowup-day.selected span { color: #fff; }
+.glowup-panel { background: #2a1a35; border: 1px solid #ff9fd044; }
+.glowup-panel h3 { font-size: 18px; color: #ffe3f3; }
+.glowup-section-title {
+  font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #ff9fd0; margin: 8px 0 10px;
+}
+.glowup-lock { background: #3a2147; border-color: #ff9fd0; color: #ffe3f3; margin: 0 0 12px; }
+.glowup-ticks { display: grid; gap: 8px; }
+.glowup-tick {
+  display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 8px 14px;
+  border-radius: 99px; background: #34203f; border: 1px solid #ff9fd02e; color: #ffeaf6;
+  font-size: 14px; cursor: pointer; transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+.glowup-tick input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.glowup-heart {
+  flex: none; width: 26px; height: 26px; border-radius: 50%; border: 2px solid #ff9fd0;
+  display: grid; place-items: center; font-size: 14px; color: transparent; background: transparent;
+}
+.glowup-tick:has(input:checked) {
+  background: linear-gradient(90deg, #6b2f63, #7d3f78); border-color: #ffd986;
+  box-shadow: 0 4px 16px #ff7ab833;
+}
+.glowup-tick:has(input:checked) .glowup-heart {
+  background: linear-gradient(135deg, #ff7ab8, #ffd986); border-color: #ffd986; color: #3a1230;
+}
+.glowup-tick:has(input:checked) .glowup-heart::before { content: '\2665'; }
+.glowup-tick:has(input:checked) .glowup-tick-label { color: #ffe9a8; }
+.glowup-tick.just-ticked { animation: glow-pop 0.6s ease-out; }
+.glowup-tick.rest { opacity: 0.5; border-style: dashed; }
+.glowup-tick:has(input:disabled) { cursor: not-allowed; }
+.glowup-tick:has(input:disabled:not(:checked)) { opacity: 0.6; }
+.glowup-tick:focus-within, .glowup-day:focus-visible, .glowup-week-tab:focus-visible {
+  outline: 2px solid #ffd986; outline-offset: 3px;
+}
+@keyframes glow-pop {
+  0% { transform: scale(0.96); box-shadow: 0 0 0 0 #ffd986aa; }
+  50% { transform: scale(1.03); box-shadow: 0 0 22px 6px #ff7ab888; }
+  100% { transform: scale(1); box-shadow: 0 4px 16px #ff7ab833; }
+}
+.glowup-weekly-group { margin-bottom: 16px; }
+.glowup-weekly-group h4 {
+  font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #ff9fd0; margin-bottom: 10px;
+}
+.glowup-weekly-item { margin-bottom: 12px; }
+.glowup-weekly-label { font-size: 13px; font-weight: 700; color: #ffe3f3; margin-bottom: 6px; }
+.glowup-weekly-ticks { display: grid; gap: 8px; }
 .routine-celebration {
   margin: auto; width: calc(100% - 32px); max-width: 400px; padding: 32px 24px 24px;
   background: radial-gradient(ellipse at top, #39305e, var(--surface) 75%);
@@ -169,6 +305,9 @@ body {
   100% { transform: translateY(550px) rotate(540deg); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .routine-block.just-ticked, .glowup-tick.just-ticked { animation: none; }
+  .routine-block:has(input:checked) { transform: none; }
+  .chaos-progress::-webkit-progress-value, .glowup-progress-bar::-webkit-progress-value { transition: none; }
   .routine-celebration[open] .routine-trophy, .routine-celebration[open] .routine-confetti i { animation: none; }
   .routine-confetti { display: none; }
   #routine-week-progress::-webkit-progress-value { transition: none; }
@@ -815,12 +954,21 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
       </div>
     </div>
 
-    <!-- 1000 lb club progress -->
-    <div class="card routine-home">
-      <div class="routine-kicker">The 8-week commitment</div>
-      <h2 id="home-routine-title">Your week. Your rhythm.</h2>
+    <!-- 8-week commitments -->
+    <div class="card routine-home chaos-card">
+      <div class="routine-kicker">Composable Chaos &middot; 8 weeks</div>
+      <h2 id="home-routine-title">Five workouts. Twice each. Zero rules.</h2>
+      <progress id="home-routine-progress" class="chaos-progress" max="80" value="0" aria-label="Composable Chaos progress"></progress>
       <p id="home-routine-detail"></p>
-      <button class="btn btn-primary" data-open-routine>My weekly blocks <span aria-hidden="true">→</span></button>
+      <button class="btn btn-primary" data-open-routine>Open Composable Chaos <span aria-hidden="true">→</span></button>
+    </div>
+
+    <div class="card glowup-home">
+      <div class="routine-kicker glowup-kicker">Glow-Up &middot; 8 weeks</div>
+      <h2 id="home-glowup-title">Soft life. Strong habits. Absolutely glowing.</h2>
+      <progress id="home-glowup-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Glow-Up progress"></progress>
+      <p id="home-glowup-detail"></p>
+      <button class="btn glowup-btn" data-open-glowup>Open Glow-Up <span aria-hidden="true">✨</span></button>
     </div>
 
     <div class="club-wrap">
@@ -999,7 +1147,13 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
       <div class="routine-kicker">Prefer a flexible week?</div>
       <h2>Build a rhythm, not a timetable.</h2>
       <p>Five workout types. Two of each. Any days you like.</p>
-      <button class="btn btn-secondary" data-open-routine>Open my 8-week commitment</button>
+      <button class="btn btn-secondary" data-open-routine>Open Composable Chaos</button>
+    </div>
+
+    <div class="card glowup-home">
+      <div class="routine-kicker glowup-kicker">Want a full glow-up?</div>
+      <h2>Daily habits, weekly goals, lovely little rituals.</h2>
+      <button class="btn glowup-btn" data-open-glowup>Open Glow-Up ✨</button>
     </div>
 
     <!-- No plan state -->
@@ -1305,14 +1459,15 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
       <h1 id="routine-heading">Weekly blocks</h1>
       <button class="btn btn-ghost btn-sm back-btn" data-to="home">← Home</button>
     </div>
-    <div id="routine-setup" class="card routine-home">
-      <div class="routine-kicker">Make a little room for you</div>
-      <h2>8 weeks. No fixed days.</h2>
+    <div id="routine-setup" class="card routine-home chaos-card">
+      <div class="routine-kicker">Composable Chaos &middot; 8 weeks</div>
+      <h2>Five workouts. Twice each. Zero rules.</h2>
       <p>Do each of these five workouts twice a week. Each block takes about 25 minutes.
         Stack a few together or spread them out around your week.</p>
       <ul id="routine-preview" class="routine-preview"></ul>
       <p>Each week is seven days from your chosen start date, not a Monday-to-Sunday timetable.
-        That's 10 blocks per week, 80 across your commitment.</p>
+        That's 10 blocks per week, 80 across your commitment. If you start in the future, check-offs stay
+        locked until your start date: that is by design, not a fault.</p>
       <form id="routine-form">
         <div class="form-group">
           <label class="form-label" for="routine-start-date">My start date</label>
@@ -1323,11 +1478,12 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
       </form>
     </div>
     <div id="routine-dashboard" class="hidden">
-      <div class="card routine-home">
-        <div class="routine-kicker">My 8-week commitment</div>
-        <h2>Your week. Your rhythm.</h2>
-        <p id="routine-dates"></p>
+      <div class="card routine-home chaos-card">
+        <div class="routine-kicker">Composable Chaos &middot; 8 weeks</div>
+        <h2>Five workouts. Twice each. Zero rules.</h2>
+        <progress id="routine-overall-progress" class="chaos-progress" max="80" value="0" aria-label="Overall Composable Chaos progress"></progress>
         <div id="routine-journey" class="routine-journey"></div>
+        <p id="routine-dates"></p>
         <button class="btn btn-ghost btn-sm" id="routine-new">Start a new commitment</button>
       </div>
       <div id="routine-week-tabs" class="routine-week-tabs" role="group" aria-label="Choose a routine week"></div>
@@ -1340,9 +1496,67 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
         <progress id="routine-week-progress" max="10" value="0" aria-label="Weekly workout blocks"></progress>
         <p id="routine-week-message" role="status"></p>
       </div>
+      <div id="routine-lock-banner" class="lock-banner hidden" role="status"></div>
       <div id="routine-checklist"></div>
       <p class="routine-footnote">Tick a block after you finish it. Untick to undo. Check-offs track your commitment;
         use Workout separately if you want to log sets and earn XP.</p>
+    </div>
+  </section>
+
+  <!-- GLOW-UP -->
+  <section id="glowup-screen" class="hidden glowup-screen" aria-labelledby="glowup-heading">
+    <div class="page-header">
+      <h1 id="glowup-heading">Glow-Up ✨</h1>
+      <button class="btn btn-ghost btn-sm back-btn" data-to="home">← Home</button>
+    </div>
+    <div id="glowup-setup" class="card glowup-hero">
+      <div class="routine-kicker glowup-kicker">Glow-Up &middot; 8 weeks</div>
+      <h2>Soft life. Strong habits. Absolutely glowing.</h2>
+      <p>Eight weeks of daily non-negotiables, weekly movement goals and the little things that make life lovely.</p>
+      <ul id="glowup-preview" class="routine-preview"></ul>
+      <p>If you start in the future, check-offs stay locked until your start date: that is by design, not a fault.</p>
+      <form id="glowup-form">
+        <div class="form-group">
+          <label class="form-label" for="glowup-start-date">My start date</label>
+          <input class="form-input" id="glowup-start-date" type="date" min="1000-01-01" max="9999-11-06" required>
+        </div>
+        <button class="btn glowup-btn" type="submit">I'm in for my Glow-Up</button>
+        <button class="btn btn-ghost hidden" type="button" id="glowup-cancel-setup">Keep my current Glow-Up</button>
+      </form>
+    </div>
+    <div id="glowup-dashboard" class="hidden">
+      <div class="card glowup-hero">
+        <div class="routine-kicker glowup-kicker">Glow-Up &middot; 8 weeks</div>
+        <h2>Soft life. Strong habits. Absolutely glowing.</h2>
+        <progress id="glowup-overall-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Overall Glow-Up progress"></progress>
+        <div id="glowup-journey" class="glowup-journey"></div>
+        <p id="glowup-dates"></p>
+        <button class="btn btn-ghost btn-sm" id="glowup-new">Start a new Glow-Up</button>
+      </div>
+      <div id="glowup-week-tabs" class="glowup-week-tabs" role="group" aria-label="Choose a Glow-Up week"></div>
+      <div class="card glowup-hero">
+        <div class="routine-week-heading">
+          <h2 id="glowup-week-title"></h2>
+          <strong id="glowup-week-count"></strong>
+        </div>
+        <progress id="glowup-week-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Weekly Glow-Up progress"></progress>
+      </div>
+      <div id="glowup-day-strip" class="glowup-day-strip" role="group" aria-label="Choose a day"></div>
+      <div class="card glowup-panel">
+        <div class="routine-week-heading">
+          <h3 id="glowup-day-title"></h3>
+          <strong id="glowup-day-count" class="glowup-count"></strong>
+        </div>
+        <progress id="glowup-day-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Daily Glow-Up progress"></progress>
+        <div id="glowup-day-lock" class="lock-banner glowup-lock hidden" role="status"></div>
+        <div class="glowup-section-title">Daily non-negotiables</div>
+        <div id="glowup-daily-list" class="glowup-ticks"></div>
+      </div>
+      <div class="card glowup-panel">
+        <div id="glowup-week-lock" class="lock-banner glowup-lock hidden" role="status"></div>
+        <div id="glowup-weekly-list"></div>
+      </div>
+      <p class="routine-footnote">Tick a goal when it is done. Untick to undo. Future days and weeks unlock as they arrive.</p>
     </div>
   </section>
 
@@ -1432,6 +1646,8 @@ const KEYS = {
   PLANS:    'sf_plans',
   ROUTINE:  'sf_routine',
   ROUTINE_TS: 'sf_routine_ts',
+  GLOWUP:   'sf_glowup',
+  GLOWUP_TS: 'sf_glowup_ts',
 };
 
 // ── Default / helpers ─────────────────────────────────────────────
@@ -1897,6 +2113,7 @@ function exportData() {
     sessions: getSessions(),
     pbs:      getPBs(),
     routine:  getRoutine(),
+    glowup:   getGlowup(),
     exportedAt: new Date().toISOString(),
   }, null, 2);
 }
@@ -1904,6 +2121,7 @@ function exportData() {
 function importData(jsonStr) {
   const data = JSON.parse(jsonStr);
   if (data.routine != null) validateRoutine(data.routine);
+  if (data.glowup != null) validateGlowup(data.glowup);
   if (data.profile)  saveProfile(data.profile);
   if (data.sessions) {
     localStorage.setItem(KEYS.SESSIONS, JSON.stringify(data.sessions));
@@ -1913,6 +2131,7 @@ function importData(jsonStr) {
   }
   if (data.pbs)      savePBs(data.pbs);
   if (Object.hasOwn(data, 'routine')) saveRoutine(data.routine);
+  if (Object.hasOwn(data, 'glowup')) saveGlowup(data.glowup);
 }
 
 // ── Session update (for editing) ──────────────────────────────────
@@ -2452,7 +2671,10 @@ const ROUTINE_WORKOUTS = [
 const ROUTINE_WEEKS = 8;
 const ROUTINE_WEEK_TOTAL = ROUTINE_WORKOUTS.length * 2;
 const ROUTINE_DAY_MS = 86400000;
+const CHAOS_NAME = 'Composable Chaos';
+const CHAOS_TAGLINE = 'Five workouts. Twice each. Zero rules.';
 let routineViewWeek = null;
+let routineJustTicked = null;
 
 function routineDateNumber(value) {
   if (typeof value !== 'string' || !/^[1-9]\d{3}-\d{2}-\d{2}$/.test(value)) {
@@ -2482,6 +2704,26 @@ function routineDateLabel(date) {
 function routineCurrentWeek(routine, date = routineLocalDate()) {
   // Calendar-day arithmetic avoids DST and UTC/local midnight shifts.
   return Math.floor((routineDateNumber(date) - routineDateNumber(routine.startDate)) / 7);
+}
+
+// Explains why check-offs are locked. Returns '' when the week is open.
+// Locked boxes are expected: a week can only be ticked once it has started.
+function routineLockMessage(routine, week, date = routineLocalDate()) {
+  const current = routineCurrentWeek(routine, date);
+  if (week <= current) return '';
+  const unlocks = routineDateAt(routine.startDate, week * 7);
+  const days = routineDateNumber(unlocks) - routineDateNumber(date);
+  const when = days === 1 ? 'tomorrow' : `in ${days} days`;
+  return current < 0 ?
+    `Not live yet. ${CHAOS_NAME} starts ${routineDateLabel(unlocks)} (${when}). Boxes are locked until then, nothing is broken.` :
+    `Week ${week + 1} unlocks ${routineDateLabel(unlocks)} (${when}). Boxes are locked until the week starts.`;
+}
+
+function routineProgress(routine) {
+  return {
+    done: routine.completed.flat().filter(Boolean).length,
+    total: ROUTINE_WEEKS * ROUTINE_WEEK_TOTAL,
+  };
 }
 
 function validateRoutine(routine) {
@@ -2551,17 +2793,21 @@ function renderRoutineHome() {
   const routine = getRoutine();
   const title = document.getElementById('home-routine-title');
   const detail = document.getElementById('home-routine-detail');
+  const bar = document.getElementById('home-routine-progress');
   if (!routine) {
-    title.textContent = 'Your week. Your rhythm.';
+    title.textContent = CHAOS_TAGLINE;
     detail.textContent = 'Commit to 8 weeks of flexible, 25-minute workout blocks.';
+    bar.value = 0;
     return;
   }
   const current = routineCurrentWeek(routine);
   const week = Math.max(0, Math.min(7, current));
-  const total = routine.completed.flat().filter(Boolean).length;
-  title.textContent = current < 0 ? 'Your commitment is locked in' :
+  const { done: total } = routineProgress(routine);
+  bar.value = total;
+  bar.textContent = `${total} of 80 blocks completed`;
+  title.textContent = current < 0 ? 'You are in. Not live yet.' :
     current >= 8 ? 'Eight weeks, your way' : `Week ${week + 1}: keep showing up`;
-  detail.textContent = current < 0 ? `Starts ${routineDateLabel(routine.startDate)}. No fixed workout days.` :
+  detail.textContent = current < 0 ? `Starts ${routineDateLabel(routine.startDate)}. Check-offs unlock then.` :
     current >= 8 ? `${total} / 80 blocks completed. Review your journey.` :
       `${routine.completed[week].filter(Boolean).length} / 10 blocks this week. Mix, match, make it yours.`;
 }
@@ -2598,9 +2844,13 @@ function renderRoutine() {
   if (routineViewWeek === null) routineViewWeek = Math.max(0, Math.min(7, current));
   const week = routineViewWeek;
   const count = routine.completed[week].filter(Boolean).length;
-  const total = routine.completed.flat().filter(Boolean).length;
+  const { done: total } = routineProgress(routine);
   const completedWeeks = routine.completed.filter(w => w.every(Boolean)).length;
   document.getElementById('routine-journey').textContent = `${total} / 80 blocks · ${completedWeeks} / 8 weeks complete`;
+  const overall = document.getElementById('routine-overall-progress');
+  overall.max = 80;
+  overall.value = total;
+  overall.textContent = `${total} of 80 blocks completed`;
   document.getElementById('routine-dates').textContent =
     `${routineDateLabel(routine.startDate)} - ${routineDateLabel(routineDateAt(routine.startDate, 55))}`;
   document.getElementById('routine-week-title').textContent = `Week ${week + 1}`;
@@ -2610,11 +2860,15 @@ function renderRoutine() {
   const progress = document.getElementById('routine-week-progress');
   progress.value = count;
   progress.textContent = `${count} of 10 blocks completed`;
-  document.getElementById('routine-week-message').textContent = week > current ?
-    'A little preview. Check-offs unlock when this week starts.' :
-    count === 10 ? 'Week complete! You made room for yourself.' :
+  const lockMessage = routineLockMessage(routine, week);
+  document.getElementById('routine-week-message').textContent = lockMessage ||
+    (count === 10 ? 'Week complete! You made room for yourself.' :
     week < current ? 'Review this week or catch up on check-offs you forgot to record.' :
-    'No fixed days. Stack blocks together or spread them out.';
+    'No fixed days. Stack blocks together or spread them out.');
+  const lockBanner = document.getElementById('routine-lock-banner');
+  lockBanner.textContent = lockMessage;
+  lockBanner.classList.toggle('hidden', !lockMessage);
+  document.getElementById('routine-checklist').classList.toggle('is-locked', !!lockMessage);
   const tabs = document.getElementById('routine-week-tabs');
   tabs.replaceChildren();
   routine.completed.forEach((blocks, index) => {
@@ -2658,10 +2912,12 @@ function renderRoutine() {
       input.id = `routine-block-${block}`;
       input.checked = routine.completed[week][block];
       input.disabled = week > current;
-      input.setAttribute('aria-label', `${workout.name}, block ${repeat + 1}`);
+      input.setAttribute('aria-label', `${workout.name}, block ${repeat + 1}${week > current ? ', locked until this week starts' : ''}`);
+      if (routineJustTicked === block) { label.classList.add('just-ticked'); routineJustTicked = null; }
       input.addEventListener('change', () => {
         try {
           const result = setRoutineBlock(week, block, input.checked);
+          routineJustTicked = input.checked ? block : null;
           renderRoutine();
           renderRoutineHome();
           document.getElementById(input.id).focus();
@@ -2736,6 +2992,479 @@ function initRoutine() {
     routineViewWeek = null;
     if (getProfile()) renderRoutineHome();
     if (currentScreen === 'routine') renderRoutine();
+  };
+  window.addEventListener('focus', refresh);
+  document.addEventListener('visibilitychange', refresh);
+  setInterval(refresh, 60000);
+}
+
+</script>
+<script>
+  // Glow-Up: an 8-week lifestyle commitment with daily non-negotiables,
+// weekly movement goals and "little things that make life lovely".
+const GLOWUP_NAME = 'Glow-Up';
+const GLOWUP_TAGLINE = 'Soft life. Strong habits. Absolutely glowing.';
+const GLOWUP_WEEKS = 8;
+const GLOWUP_DAYS = GLOWUP_WEEKS * 7;
+
+const GLOWUP_DAILY = [
+  { id: 'wake', label: '5:30am wake up', note: 'Monday to Friday', weekdaysOnly: true, icon: '\u23F0' },
+  { id: 'water', label: '2 litres of water', icon: '\uD83D\uDCA7' },
+  { id: 'steps', label: '10,000 steps', icon: '\uD83D\uDC5F' },
+  { id: 'protein', label: '100g+ protein', icon: '\uD83C\uDF73' },
+  { id: 'homework', label: '30 minute homework', icon: '\uD83D\uDCDA' },
+  { id: 'skin', label: 'Morning face care and teeth', icon: '\uD83E\uDDF4' },
+  { id: 'meditate', label: 'Meditation', icon: '\uD83E\uDDD8\u200D\u2640\uFE0F' },
+  { id: 'journal', label: 'Journaling', icon: '\uD83D\uDCD3' },
+];
+const GLOWUP_MOVEMENT = [
+  { id: 'runs', label: 'Runs', count: 2, icon: '\uD83C\uDFC3\u200D\u2640\uFE0F' },
+  { id: 'weights', label: 'Weight sessions', count: 3, icon: '\uD83C\uDFCB\uFE0F\u200D\u2640\uFE0F' },
+  { id: 'abs', label: 'Abs sessions', count: 5, icon: '\uD83D\uDD25' },
+];
+const GLOWUP_LOVELY = [
+  { id: 'date', label: 'Tuesday date night', icon: '\uD83C\uDF77' },
+  { id: 'craft', label: 'Friday craft night', icon: '\uD83C\uDFA8' },
+  { id: 'dylan', label: 'Me and Dylan time', icon: '\uD83D\uDC96' },
+];
+const GLOWUP_WEEKLY_GROUPS = [...GLOWUP_MOVEMENT.map(g => ({ id: g.id, count: g.count })),
+  { id: 'lovely', count: GLOWUP_LOVELY.length }];
+const GLOWUP_WEEKLY_TOTAL = GLOWUP_WEEKLY_GROUPS.reduce((sum, g) => sum + g.count, 0);
+
+let glowupViewWeek = null;
+let glowupViewDay = null;
+let glowupJustTicked = null;
+
+// Day of week for a YYYY-MM-DD date. 0 = Sunday. 1970-01-01 was a Thursday.
+function glowupWeekday(date) {
+  return (routineDateNumber(date) + 4) % 7;
+}
+
+function glowupGoalApplies(goal, date) {
+  const dow = glowupWeekday(date);
+  return !goal.weekdaysOnly || (dow >= 1 && dow <= 5);
+}
+
+// 0-based day index of `date` within the commitment (negative before the start).
+function glowupDayIndex(glowup, date = routineLocalDate()) {
+  return routineDateNumber(date) - routineDateNumber(glowup.startDate);
+}
+
+function glowupEmptyWeek() {
+  const week = {};
+  GLOWUP_WEEKLY_GROUPS.forEach(g => { week[g.id] = Array(g.count).fill(false); });
+  return week;
+}
+
+function validateGlowup(glowup) {
+  const boolArray = (value, length) => Array.isArray(value) && value.length === length &&
+    value.every(v => typeof v === 'boolean');
+  if (!glowup || typeof glowup.id !== 'string' || !glowup.id ||
+      !Number.isFinite(glowup.updatedAt) || glowup.updatedAt <= 0 ||
+      !Array.isArray(glowup.days) || glowup.days.length !== GLOWUP_DAYS ||
+      !glowup.days.every(day => day && boolArray(day.done, GLOWUP_DAILY.length)) ||
+      !Array.isArray(glowup.weeks) || glowup.weeks.length !== GLOWUP_WEEKS ||
+      !glowup.weeks.every(week => week && GLOWUP_WEEKLY_GROUPS.every(g => boolArray(week[g.id], g.count)))) {
+    throw new Error('Invalid Glow-Up data. Restore a valid backup.');
+  }
+  routineDateNumber(glowup.startDate);
+  routineDateNumber(routineDateAt(glowup.startDate, GLOWUP_DAYS - 1));
+}
+
+function getGlowup() {
+  const raw = localStorage.getItem(KEYS.GLOWUP);
+  const glowup = raw ? JSON.parse(raw) : null;
+  if (glowup !== null) validateGlowup(glowup);
+  return glowup;
+}
+
+function saveGlowup(glowup) {
+  if (glowup !== null) {
+    glowup.updatedAt = Math.max(Date.now(), (glowup.updatedAt || 0) + 1);
+    validateGlowup(glowup);
+  }
+  const updatedAt = glowup ? glowup.updatedAt : Date.now();
+  localStorage.setItem(KEYS.GLOWUP, JSON.stringify(glowup));
+  localStorage.setItem(KEYS.GLOWUP_TS, String(updatedAt));
+  if (typeof syncPushGlowup === 'function') {
+    syncPushGlowup(glowup, updatedAt)?.catch(error => {
+      console.error('[Sync] pushGlowup failed:', error);
+      setSyncStatus('error');
+      toast('Glow-Up saved on this device, but cloud sync failed. Try Sync now when online.', 'error');
+    });
+  }
+}
+
+function createGlowup(startDate) {
+  routineDateNumber(startDate);
+  const glowup = {
+    id: uuid(), startDate, updatedAt: Date.now(),
+    days: Array.from({ length: GLOWUP_DAYS }, () => ({ done: Array(GLOWUP_DAILY.length).fill(false) })),
+    weeks: Array.from({ length: GLOWUP_WEEKS }, glowupEmptyWeek),
+  };
+  saveGlowup(glowup);
+  return glowup;
+}
+
+// Applicable daily goals for a day: done / total. Weekend wake-ups do not count.
+function glowupDayStats(glowup, day) {
+  const date = routineDateAt(glowup.startDate, day);
+  let done = 0, total = 0;
+  GLOWUP_DAILY.forEach((goal, i) => {
+    if (!glowupGoalApplies(goal, date)) return;
+    total++;
+    if (glowup.days[day].done[i]) done++;
+  });
+  return { done, total };
+}
+
+function glowupWeeklyStats(glowup, week) {
+  let done = 0;
+  GLOWUP_WEEKLY_GROUPS.forEach(g => { done += glowup.weeks[week][g.id].filter(Boolean).length; });
+  return { done, total: GLOWUP_WEEKLY_TOTAL };
+}
+
+function glowupWeekStats(glowup, week) {
+  let done = 0, total = 0;
+  for (let d = week * 7; d < week * 7 + 7; d++) {
+    const stats = glowupDayStats(glowup, d);
+    done += stats.done; total += stats.total;
+  }
+  const weekly = glowupWeeklyStats(glowup, week);
+  return { done: done + weekly.done, total: total + weekly.total };
+}
+
+function glowupProgress(glowup) {
+  let done = 0, total = 0;
+  for (let w = 0; w < GLOWUP_WEEKS; w++) {
+    const stats = glowupWeekStats(glowup, w);
+    done += stats.done; total += stats.total;
+  }
+  return { done, total };
+}
+
+function glowupDayLockMessage(glowup, day, date = routineLocalDate()) {
+  const today = glowupDayIndex(glowup, date);
+  if (day <= today) return '';
+  const unlocks = routineDateAt(glowup.startDate, day);
+  const inDays = n => n === 1 ? 'tomorrow' : `in ${n} days`;
+  return today < 0 ?
+    `Not live yet. ${GLOWUP_NAME} starts ${routineDateLabel(glowup.startDate)} (${inDays(-today)}). Boxes are locked until then, nothing is broken.` :
+    `${routineDateLabel(unlocks)} unlocks ${inDays(day - today)}. Future days stay locked so every tick is earned.`;
+}
+
+function glowupWeekLockMessage(glowup, week, date = routineLocalDate()) {
+  const today = glowupDayIndex(glowup, date);
+  if (week * 7 <= today) return '';
+  return today < 0 ?
+    `Not live yet. ${GLOWUP_NAME} starts ${routineDateLabel(glowup.startDate)}. Weekly goals are locked until then, nothing is broken.` :
+    `Week ${week + 1} unlocks ${routineDateLabel(routineDateAt(glowup.startDate, week * 7))}.`;
+}
+
+function setGlowupDaily(day, goal, done, date = routineLocalDate()) {
+  const glowup = getGlowup();
+  if (!glowup || !Number.isInteger(day) || day < 0 || day >= GLOWUP_DAYS ||
+      !Number.isInteger(goal) || goal < 0 || goal >= GLOWUP_DAILY.length || typeof done !== 'boolean') {
+    throw new Error('That Glow-Up goal could not be found.');
+  }
+  if (day > glowupDayIndex(glowup, date)) throw new Error('This day has not started yet.');
+  if (!glowupGoalApplies(GLOWUP_DAILY[goal], routineDateAt(glowup.startDate, day))) {
+    throw new Error('That goal does not apply on this day.');
+  }
+  const before = glowupDayStats(glowup, day);
+  glowup.days[day].done[goal] = done;
+  const after = glowupDayStats(glowup, day);
+  saveGlowup(glowup);
+  return { glowup, perfectDay: done && after.done === after.total && before.done < before.total };
+}
+
+function setGlowupWeekly(week, group, index, done, date = routineLocalDate()) {
+  const glowup = getGlowup();
+  const spec = GLOWUP_WEEKLY_GROUPS.find(g => g.id === group);
+  if (!glowup || !spec || !Number.isInteger(week) || week < 0 || week >= GLOWUP_WEEKS ||
+      !Number.isInteger(index) || index < 0 || index >= spec.count || typeof done !== 'boolean') {
+    throw new Error('That Glow-Up goal could not be found.');
+  }
+  if (week * 7 > glowupDayIndex(glowup, date)) throw new Error('This week has not started yet.');
+  const before = glowupWeekStats(glowup, week);
+  glowup.weeks[week][group][index] = done;
+  const after = glowupWeekStats(glowup, week);
+  saveGlowup(glowup);
+  return { glowup, perfectWeek: done && after.done === after.total && before.done < before.total };
+}
+
+// ── Home card ─────────────────────────────────────────────────────
+
+function renderGlowupHome() {
+  const glowup = getGlowup();
+  const title = document.getElementById('home-glowup-title');
+  const detail = document.getElementById('home-glowup-detail');
+  const bar = document.getElementById('home-glowup-progress');
+  if (!glowup) {
+    title.textContent = GLOWUP_TAGLINE;
+    detail.textContent = '8 weeks of daily non-negotiables, movement goals and the little things that make life lovely.';
+    bar.value = 0; bar.max = 1;
+    return;
+  }
+  const progress = glowupProgress(glowup);
+  bar.max = progress.total; bar.value = progress.done;
+  bar.textContent = `${progress.done} of ${progress.total} goals completed`;
+  const today = glowupDayIndex(glowup);
+  if (today < 0) {
+    title.textContent = 'You are in. Not live yet.';
+    detail.textContent = `Starts ${routineDateLabel(glowup.startDate)}. Check-offs unlock then.`;
+  } else if (today >= GLOWUP_DAYS) {
+    title.textContent = 'Eight weeks. Glowed up.';
+    detail.textContent = `${progress.done} / ${progress.total} goals completed. Review your journey.`;
+  } else {
+    const stats = glowupDayStats(glowup, today);
+    title.textContent = `Day ${today + 1}: keep glowing`;
+    detail.textContent = `${stats.done} / ${stats.total} daily goals today.`;
+  }
+}
+
+// ── Glow-Up screen ────────────────────────────────────────────────
+
+function openGlowup() {
+  glowupViewWeek = null;
+  glowupViewDay = null;
+  document.getElementById('glowup-setup').classList.toggle('hidden', !!getGlowup());
+  renderGlowup();
+  showScreen('glowup');
+}
+
+function glowupTickRow(id, label, icon, checked, disabled, ariaLabel, onChange, justTicked) {
+  const row = document.createElement('label');
+  row.className = 'glowup-tick' + (justTicked ? ' just-ticked' : '');
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.id = id;
+  input.checked = checked;
+  input.disabled = disabled;
+  input.setAttribute('aria-label', ariaLabel);
+  input.addEventListener('change', () => onChange(input));
+  const mark = document.createElement('span');
+  mark.className = 'glowup-heart';
+  mark.setAttribute('aria-hidden', 'true');
+  const text = document.createElement('span');
+  text.className = 'glowup-tick-label';
+  text.textContent = `${icon} ${label}`;
+  row.append(input, mark, text);
+  return row;
+}
+
+function glowupHandleError(input, error) {
+  input.checked = !input.checked;
+  console.error('[Glow-Up] Check-off failed:', error);
+  toast(error.message, 'error');
+}
+
+function renderGlowup() {
+  const glowup = getGlowup();
+  document.getElementById('glowup-dashboard').classList.toggle('hidden', !glowup);
+  document.getElementById('glowup-cancel-setup').classList.toggle('hidden', !glowup);
+
+  const preview = document.getElementById('glowup-preview');
+  preview.replaceChildren();
+  [['Daily non-negotiables', GLOWUP_DAILY.map(g => `${g.label}${g.note ? ` (${g.note})` : ''}`)],
+   ['Weekly movement', GLOWUP_MOVEMENT.map(g => `${g.count}x ${g.label.toLowerCase()}`)],
+   ['Little things that make life lovely', GLOWUP_LOVELY.map(g => g.label)]].forEach(([heading, items]) => {
+    const li = document.createElement('li');
+    const strong = document.createElement('strong');
+    strong.textContent = heading;
+    const span = document.createElement('span');
+    span.textContent = items.join(' \u00b7 ');
+    li.append(strong, span);
+    preview.appendChild(li);
+  });
+  const startInput = document.getElementById('glowup-start-date');
+  if (!startInput.value) {
+    const now = new Date();
+    startInput.value = routineDateAt(routineLocalDate(now), 8 - (now.getDay() || 7));
+  }
+  if (!glowup) return;
+
+  const todayIdx = glowupDayIndex(glowup);
+  const currentWeek = Math.floor(todayIdx / 7);
+  if (glowupViewWeek === null) glowupViewWeek = Math.max(0, Math.min(GLOWUP_WEEKS - 1, currentWeek));
+  const week = glowupViewWeek;
+  if (glowupViewDay === null || Math.floor(glowupViewDay / 7) !== week) {
+    glowupViewDay = week === currentWeek && todayIdx >= 0 && todayIdx < GLOWUP_DAYS ? todayIdx : week * 7;
+  }
+  const day = glowupViewDay;
+
+  const overall = glowupProgress(glowup);
+  const bar = document.getElementById('glowup-overall-progress');
+  bar.max = overall.total; bar.value = overall.done;
+  bar.textContent = `${overall.done} of ${overall.total} goals completed`;
+  document.getElementById('glowup-journey').textContent =
+    `${overall.done} / ${overall.total} goals \u00b7 ${Math.round(overall.total ? overall.done / overall.total * 100 : 0)}% glowing`;
+  document.getElementById('glowup-dates').textContent =
+    `${routineDateLabel(glowup.startDate)} - ${routineDateLabel(routineDateAt(glowup.startDate, GLOWUP_DAYS - 1))}`;
+
+  const tabs = document.getElementById('glowup-week-tabs');
+  tabs.replaceChildren();
+  for (let w = 0; w < GLOWUP_WEEKS; w++) {
+    const stats = glowupWeekStats(glowup, w);
+    const complete = stats.total > 0 && stats.done === stats.total;
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'glowup-week-tab' + (w === week ? ' selected' : '') + (complete ? ' complete' : '');
+    tab.setAttribute('aria-pressed', String(w === week));
+    tab.setAttribute('aria-label', `Week ${w + 1}, ${stats.done} of ${stats.total} complete${w === currentWeek ? ', current week' : ''}`);
+    tab.textContent = `${w + 1}${complete ? ' \u2728' : ''}`;
+    tab.addEventListener('click', () => { glowupViewWeek = w; glowupViewDay = null; renderGlowup(); });
+    tabs.appendChild(tab);
+  }
+
+  const weekStats = glowupWeekStats(glowup, week);
+  document.getElementById('glowup-week-title').textContent = `Week ${week + 1}`;
+  document.getElementById('glowup-week-count').textContent = `${weekStats.done} / ${weekStats.total}`;
+  const weekBar = document.getElementById('glowup-week-progress');
+  weekBar.max = weekStats.total; weekBar.value = weekStats.done;
+  weekBar.textContent = `${weekStats.done} of ${weekStats.total} goals completed`;
+
+  const strip = document.getElementById('glowup-day-strip');
+  strip.replaceChildren();
+  for (let d = week * 7; d < week * 7 + 7; d++) {
+    const date = routineDateAt(glowup.startDate, d);
+    const stats = glowupDayStats(glowup, d);
+    const perfect = stats.total > 0 && stats.done === stats.total;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'glowup-day' + (d === day ? ' selected' : '') + (perfect ? ' perfect' : '') +
+      (d === todayIdx ? ' today' : '') + (d > todayIdx ? ' future' : '');
+    button.setAttribute('aria-pressed', String(d === day));
+    button.setAttribute('aria-label', `${routineDateLabel(date)}, ${stats.done} of ${stats.total} daily goals${d === todayIdx ? ', today' : ''}`);
+    const name = document.createElement('span');
+    name.textContent = new Date(routineDateNumber(date) * ROUTINE_DAY_MS)
+      .toLocaleDateString(undefined, { weekday: 'short', timeZone: 'UTC' });
+    const dateNum = document.createElement('strong');
+    dateNum.textContent = perfect ? '\u2728' : String(new Date(routineDateNumber(date) * ROUTINE_DAY_MS).getUTCDate());
+    button.append(name, dateNum);
+    button.addEventListener('click', () => { glowupViewDay = d; renderGlowup(); });
+    strip.appendChild(button);
+  }
+
+  // Daily goals for the selected day.
+  const dayDate = routineDateAt(glowup.startDate, day);
+  const dayStats = glowupDayStats(glowup, day);
+  document.getElementById('glowup-day-title').textContent = routineDateLabel(dayDate);
+  document.getElementById('glowup-day-count').textContent = `${dayStats.done} / ${dayStats.total}`;
+  const dayBar = document.getElementById('glowup-day-progress');
+  dayBar.max = dayStats.total; dayBar.value = dayStats.done;
+  dayBar.textContent = `${dayStats.done} of ${dayStats.total} daily goals completed`;
+  const dayLock = glowupDayLockMessage(glowup, day);
+  const dayBanner = document.getElementById('glowup-day-lock');
+  dayBanner.textContent = dayLock;
+  dayBanner.classList.toggle('hidden', !dayLock);
+  const dailyList = document.getElementById('glowup-daily-list');
+  dailyList.replaceChildren();
+  GLOWUP_DAILY.forEach((goal, i) => {
+    const applies = glowupGoalApplies(goal, dayDate);
+    const id = `glowup-daily-${i}`;
+    const row = glowupTickRow(id, goal.label + (goal.note ? ` (${goal.note})` : ''), goal.icon,
+      glowup.days[day].done[i], !!dayLock || !applies,
+      `${goal.label}${!applies ? ', not needed at weekends' : dayLock ? ', locked until this day starts' : ''}`,
+      input => {
+        try {
+          const result = setGlowupDaily(day, i, input.checked);
+          glowupJustTicked = input.checked ? id : null;
+          renderGlowup(); renderGlowupHome();
+          document.getElementById(id).focus();
+          if (result.perfectDay) toast('Perfect day! You are glowing \u2728');
+        } catch (error) { glowupHandleError(input, error); }
+      }, glowupJustTicked === id);
+    if (!applies) row.classList.add('rest');
+    if (glowupJustTicked === id) glowupJustTicked = null;
+    dailyList.appendChild(row);
+  });
+
+  // Weekly goals.
+  const weekLock = glowupWeekLockMessage(glowup, week);
+  const weekBanner = document.getElementById('glowup-week-lock');
+  weekBanner.textContent = weekLock;
+  weekBanner.classList.toggle('hidden', !weekLock);
+  const weeklyList = document.getElementById('glowup-weekly-list');
+  weeklyList.replaceChildren();
+  const weeklySection = (heading, groups) => {
+    const section = document.createElement('section');
+    section.className = 'glowup-weekly-group';
+    const h = document.createElement('h4');
+    h.textContent = heading;
+    section.appendChild(h);
+    groups.forEach(spec => {
+      const wrap = document.createElement('div');
+      wrap.className = 'glowup-weekly-item';
+      const items = glowup.weeks[week][spec.id];
+      const label = document.createElement('div');
+      label.className = 'glowup-weekly-label';
+      label.textContent = spec.count > 1 && spec.id !== 'lovely' ?
+        `${spec.icon} ${spec.label} \u00b7 ${items.filter(Boolean).length}/${spec.count}` : '';
+      if (label.textContent) wrap.appendChild(label);
+      const ticks = document.createElement('div');
+      ticks.className = 'glowup-weekly-ticks';
+      items.forEach((checked, i) => {
+        const id = `glowup-${spec.id}-${i}`;
+        const text = spec.id === 'lovely' ? GLOWUP_LOVELY[i].label : `${spec.label.replace(/s$/, '')} ${i + 1}`;
+        const icon = spec.id === 'lovely' ? GLOWUP_LOVELY[i].icon : spec.icon;
+        ticks.appendChild(glowupTickRow(id, text, icon, checked, !!weekLock,
+          `${text}${weekLock ? ', locked until this week starts' : ''}`,
+          input => {
+            try {
+              const result = setGlowupWeekly(week, spec.id, i, input.checked);
+              glowupJustTicked = input.checked ? id : null;
+              renderGlowup(); renderGlowupHome();
+              document.getElementById(id).focus();
+              if (result.perfectWeek) toast(`Week ${week + 1} complete. Absolutely glowing \u2728`);
+            } catch (error) { glowupHandleError(input, error); }
+          }, glowupJustTicked === id));
+        if (glowupJustTicked === id) glowupJustTicked = null;
+      });
+      wrap.appendChild(ticks);
+      section.appendChild(wrap);
+    });
+    return section;
+  };
+  weeklyList.append(
+    weeklySection('Weekly movement', GLOWUP_MOVEMENT),
+    weeklySection('Little things that make life lovely', [GLOWUP_WEEKLY_GROUPS.find(g => g.id === 'lovely')].map(g => ({ ...g, label: 'Lovely', icon: '' }))),
+  );
+}
+
+function initGlowup() {
+  document.querySelectorAll('[data-open-glowup]').forEach(button => button.addEventListener('click', openGlowup));
+  document.getElementById('glowup-form').addEventListener('submit', event => {
+    event.preventDefault();
+    try {
+      const date = document.getElementById('glowup-start-date').value;
+      routineDateNumber(date);
+      if (getGlowup() && !confirm('Start a new Glow-Up? This replaces your existing Glow-Up checklist.')) return;
+      createGlowup(date);
+      glowupViewWeek = null; glowupViewDay = null;
+      document.getElementById('glowup-setup').classList.add('hidden');
+      renderGlowup(); renderGlowupHome();
+      toast('Glow-Up is on. Eight weeks of lovely!');
+    } catch (error) {
+      console.error('[Glow-Up] Commitment failed:', error);
+      toast(error.message, 'error');
+    }
+  });
+  document.getElementById('glowup-new').addEventListener('click', () => {
+    document.getElementById('glowup-setup').classList.remove('hidden');
+    document.getElementById('glowup-start-date').focus();
+  });
+  document.getElementById('glowup-cancel-setup').addEventListener('click', () => {
+    document.getElementById('glowup-setup').classList.add('hidden');
+  });
+  let lastDate = routineLocalDate();
+  const refresh = () => {
+    const date = routineLocalDate();
+    if (date === lastDate) return;
+    lastDate = date;
+    glowupViewWeek = null; glowupViewDay = null;
+    if (getProfile()) renderGlowupHome();
+    if (currentScreen === 'glowup') renderGlowup();
   };
   window.addEventListener('focus', refresh);
   document.addEventListener('visibilitychange', refresh);
@@ -2892,6 +3621,12 @@ async function syncPushRoutine(routine, updatedAt) {
   return _userDoc().set({ routine: routineToCloud(routine), routineUpdatedAt: updatedAt }, { merge: true });
 }
 
+async function syncPushGlowup(glowup, updatedAt) {
+  if (!_syncDb || !_syncUser) return;
+  if (glowup !== null) validateGlowup(glowup);
+  return _userDoc().set({ glowup, glowupUpdatedAt: updatedAt }, { merge: true });
+}
+
 function syncPushSession(session) {
   if (!_syncDb || !_syncUser) return;
   console.log('[Sync] Pushing session:', session.id, session.date);
@@ -2962,6 +3697,18 @@ async function syncMergeOnSignIn() {
     localStorage.setItem(KEYS.ROUTINE_TS, String(cloudRoutineTs));
   } else if (localRoutineTs > cloudRoutineTs) {
     await syncPushRoutine(localRoutine, localRoutineTs);
+  }
+
+  const cloudGlowupTs = cloud.glowupUpdatedAt || 0;
+  const localGlowup = getGlowup();
+  const localGlowupTs = Number(localStorage.getItem(KEYS.GLOWUP_TS) || localGlowup?.updatedAt || 0);
+  if (cloudGlowupTs > localGlowupTs) {
+    const glowup = cloud.glowup ?? null;
+    if (glowup !== null) validateGlowup(glowup);
+    localStorage.setItem(KEYS.GLOWUP, JSON.stringify(glowup));
+    localStorage.setItem(KEYS.GLOWUP_TS, String(cloudGlowupTs));
+  } else if (localGlowupTs > cloudGlowupTs) {
+    await syncPushGlowup(localGlowup, localGlowupTs);
   }
 
   const localProf   = getProfile();
@@ -3072,7 +3819,7 @@ async function syncMergeOnSignIn() {
 
 // ── Screen registry ───────────────────────────────────────────────
 
-const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder', 'mobility', 'routine'];
+const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder', 'mobility', 'routine', 'glowup'];
 let currentScreen = null;
 const KG_PER_LB = 0.45359237;
 const LB_PER_KG = 1 / KG_PER_LB;
@@ -3147,6 +3894,7 @@ function renderHome() {
 
   renderThousandClubCard(pbs);
   renderRoutineHome();
+  renderGlowupHome();
 
   // Plan next-workout card
   const plan = getActivePlan();
@@ -4959,6 +5707,7 @@ function init() {
   // Onboarding
   initOnboarding();
   initRoutine();
+  initGlowup();
 
   // Cloud sync
   initSync();

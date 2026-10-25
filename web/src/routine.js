@@ -9,7 +9,10 @@ const ROUTINE_WORKOUTS = [
 const ROUTINE_WEEKS = 8;
 const ROUTINE_WEEK_TOTAL = ROUTINE_WORKOUTS.length * 2;
 const ROUTINE_DAY_MS = 86400000;
+const CHAOS_NAME = 'Composable Chaos';
+const CHAOS_TAGLINE = 'Five workouts. Twice each. Zero rules.';
 let routineViewWeek = null;
+let routineJustTicked = null;
 
 function routineDateNumber(value) {
   if (typeof value !== 'string' || !/^[1-9]\d{3}-\d{2}-\d{2}$/.test(value)) {
@@ -39,6 +42,26 @@ function routineDateLabel(date) {
 function routineCurrentWeek(routine, date = routineLocalDate()) {
   // Calendar-day arithmetic avoids DST and UTC/local midnight shifts.
   return Math.floor((routineDateNumber(date) - routineDateNumber(routine.startDate)) / 7);
+}
+
+// Explains why check-offs are locked. Returns '' when the week is open.
+// Locked boxes are expected: a week can only be ticked once it has started.
+function routineLockMessage(routine, week, date = routineLocalDate()) {
+  const current = routineCurrentWeek(routine, date);
+  if (week <= current) return '';
+  const unlocks = routineDateAt(routine.startDate, week * 7);
+  const days = routineDateNumber(unlocks) - routineDateNumber(date);
+  const when = days === 1 ? 'tomorrow' : `in ${days} days`;
+  return current < 0 ?
+    `Not live yet. ${CHAOS_NAME} starts ${routineDateLabel(unlocks)} (${when}). Boxes are locked until then, nothing is broken.` :
+    `Week ${week + 1} unlocks ${routineDateLabel(unlocks)} (${when}). Boxes are locked until the week starts.`;
+}
+
+function routineProgress(routine) {
+  return {
+    done: routine.completed.flat().filter(Boolean).length,
+    total: ROUTINE_WEEKS * ROUTINE_WEEK_TOTAL,
+  };
 }
 
 function validateRoutine(routine) {
@@ -108,17 +131,21 @@ function renderRoutineHome() {
   const routine = getRoutine();
   const title = document.getElementById('home-routine-title');
   const detail = document.getElementById('home-routine-detail');
+  const bar = document.getElementById('home-routine-progress');
   if (!routine) {
-    title.textContent = 'Your week. Your rhythm.';
+    title.textContent = CHAOS_TAGLINE;
     detail.textContent = 'Commit to 8 weeks of flexible, 25-minute workout blocks.';
+    bar.value = 0;
     return;
   }
   const current = routineCurrentWeek(routine);
   const week = Math.max(0, Math.min(7, current));
-  const total = routine.completed.flat().filter(Boolean).length;
-  title.textContent = current < 0 ? 'Your commitment is locked in' :
+  const { done: total } = routineProgress(routine);
+  bar.value = total;
+  bar.textContent = `${total} of 80 blocks completed`;
+  title.textContent = current < 0 ? 'You are in. Not live yet.' :
     current >= 8 ? 'Eight weeks, your way' : `Week ${week + 1}: keep showing up`;
-  detail.textContent = current < 0 ? `Starts ${routineDateLabel(routine.startDate)}. No fixed workout days.` :
+  detail.textContent = current < 0 ? `Starts ${routineDateLabel(routine.startDate)}. Check-offs unlock then.` :
     current >= 8 ? `${total} / 80 blocks completed. Review your journey.` :
       `${routine.completed[week].filter(Boolean).length} / 10 blocks this week. Mix, match, make it yours.`;
 }
@@ -155,9 +182,13 @@ function renderRoutine() {
   if (routineViewWeek === null) routineViewWeek = Math.max(0, Math.min(7, current));
   const week = routineViewWeek;
   const count = routine.completed[week].filter(Boolean).length;
-  const total = routine.completed.flat().filter(Boolean).length;
+  const { done: total } = routineProgress(routine);
   const completedWeeks = routine.completed.filter(w => w.every(Boolean)).length;
   document.getElementById('routine-journey').textContent = `${total} / 80 blocks · ${completedWeeks} / 8 weeks complete`;
+  const overall = document.getElementById('routine-overall-progress');
+  overall.max = 80;
+  overall.value = total;
+  overall.textContent = `${total} of 80 blocks completed`;
   document.getElementById('routine-dates').textContent =
     `${routineDateLabel(routine.startDate)} - ${routineDateLabel(routineDateAt(routine.startDate, 55))}`;
   document.getElementById('routine-week-title').textContent = `Week ${week + 1}`;
@@ -167,11 +198,15 @@ function renderRoutine() {
   const progress = document.getElementById('routine-week-progress');
   progress.value = count;
   progress.textContent = `${count} of 10 blocks completed`;
-  document.getElementById('routine-week-message').textContent = week > current ?
-    'A little preview. Check-offs unlock when this week starts.' :
-    count === 10 ? 'Week complete! You made room for yourself.' :
+  const lockMessage = routineLockMessage(routine, week);
+  document.getElementById('routine-week-message').textContent = lockMessage ||
+    (count === 10 ? 'Week complete! You made room for yourself.' :
     week < current ? 'Review this week or catch up on check-offs you forgot to record.' :
-    'No fixed days. Stack blocks together or spread them out.';
+    'No fixed days. Stack blocks together or spread them out.');
+  const lockBanner = document.getElementById('routine-lock-banner');
+  lockBanner.textContent = lockMessage;
+  lockBanner.classList.toggle('hidden', !lockMessage);
+  document.getElementById('routine-checklist').classList.toggle('is-locked', !!lockMessage);
   const tabs = document.getElementById('routine-week-tabs');
   tabs.replaceChildren();
   routine.completed.forEach((blocks, index) => {
@@ -215,10 +250,12 @@ function renderRoutine() {
       input.id = `routine-block-${block}`;
       input.checked = routine.completed[week][block];
       input.disabled = week > current;
-      input.setAttribute('aria-label', `${workout.name}, block ${repeat + 1}`);
+      input.setAttribute('aria-label', `${workout.name}, block ${repeat + 1}${week > current ? ', locked until this week starts' : ''}`);
+      if (routineJustTicked === block) { label.classList.add('just-ticked'); routineJustTicked = null; }
       input.addEventListener('change', () => {
         try {
           const result = setRoutineBlock(week, block, input.checked);
+          routineJustTicked = input.checked ? block : null;
           renderRoutine();
           renderRoutineHome();
           document.getElementById(input.id).focus();

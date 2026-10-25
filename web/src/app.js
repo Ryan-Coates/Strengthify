@@ -4,7 +4,7 @@
 
 // ── Screen registry ───────────────────────────────────────────────
 
-const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder', 'mobility', 'routine'];
+const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder', 'mobility', 'routine', 'glowup'];
 let currentScreen = null;
 const KG_PER_LB = 0.45359237;
 const LB_PER_KG = 1 / KG_PER_LB;
@@ -79,6 +79,7 @@ function renderHome() {
 
   renderThousandClubCard(pbs);
   renderRoutineHome();
+  renderGlowupHome();
 
   // Plan next-workout card
   const plan = getActivePlan();
@@ -1891,6 +1892,7 @@ function init() {
   // Onboarding
   initOnboarding();
   initRoutine();
+  initGlowup();
 
   // Cloud sync
   initSync();

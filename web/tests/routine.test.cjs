@@ -18,7 +18,7 @@ function app() {
     setSyncStatus() {},
     toast() {},
   });
-  for (const name of ['data.js', 'routine.js', 'sync.js']) {
+  for (const name of ['data.js', 'routine.js', 'glowup.js', 'sync.js']) {
     vm.runInContext(readFileSync(join(__dirname, '..', 'src', name), 'utf8'), context);
   }
   return {
@@ -27,6 +27,21 @@ function app() {
     data: code => JSON.parse(vm.runInContext(`JSON.stringify(${code})`, context)),
   };
 }
+
+test('future-dated commitment can be started, and its locked boxes explain why', () => {
+  const a = app();
+  a.run("createRoutine('2026-10-26')");
+  const message = a.run("routineLockMessage(getRoutine(), 0, '2026-10-25')");
+  assert.match(message, /Not live yet/);
+  assert.match(message, /tomorrow/);
+  assert.match(message, /nothing is broken/);
+  assert.equal(a.run("routineLockMessage(getRoutine(), 0, '2026-10-26')"), '');
+  assert.match(a.run("routineLockMessage(getRoutine(), 1, '2026-10-27')"), /Week 2 unlocks/);
+  assert.equal(a.run("routineLockMessage(getRoutine(), 0, '2026-11-20')"), '');
+  assert.deepEqual(a.data("routineProgress(getRoutine())"), { done: 0, total: 80 });
+  a.run("setRoutineBlock(0, 0, true, '2026-10-26')");
+  assert.equal(a.run('routineProgress(getRoutine()).done'), 1);
+});
 
 test('a commitment persists eight independent weeks with exactly two blocks per workout', () => {
   const a = app();

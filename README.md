@@ -18,9 +18,24 @@ entry point with the same app for existing bookmarks.
 GitHub Actions builds and deploys this page to GitHub Pages on pushes to `main`.
 Google sign-in and cloud sync require internet access; local-only mode does not.
 
-## Eight-week commitment
+## Eight-week commitments
 
-Open **My weekly blocks** on Home, or access it from Plans. Choose a start date
+There are two opt-in commitments: **Composable Chaos** and **Glow-Up**. See
+[COMMITMENT_PLAN.md](COMMITMENT_PLAN.md) for the full Glow-Up goal list.
+
+Check-offs are locked until the week (Composable Chaos) or day (Glow-Up) has
+started. If you opt in with a future start date, the boxes are disabled and a
+"Not live yet" banner explains when they unlock. This is expected, not a fault.
+
+### Glow-Up
+
+Open **Glow-Up** on Home or Plans, choose a start date and opt in. Tick daily
+non-negotiables per day, weekly movement goals (2 runs, 3 weights, 5 abs) and weekly
+"little things" per week. The 5:30am wake-up applies Monday to Friday only.
+
+### Composable Chaos
+
+Open **Composable Chaos** on Home, or access it from Plans. Choose a start date
 (defaults to next Monday) and select **I'm in for 8 weeks**.
 
 - Eight seven-day weeks begin on your chosen date, with no assigned workout days.

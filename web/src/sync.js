@@ -146,6 +146,12 @@ async function syncPushRoutine(routine, updatedAt) {
   return _userDoc().set({ routine: routineToCloud(routine), routineUpdatedAt: updatedAt }, { merge: true });
 }
 
+async function syncPushGlowup(glowup, updatedAt) {
+  if (!_syncDb || !_syncUser) return;
+  if (glowup !== null) validateGlowup(glowup);
+  return _userDoc().set({ glowup, glowupUpdatedAt: updatedAt }, { merge: true });
+}
+
 function syncPushSession(session) {
   if (!_syncDb || !_syncUser) return;
   console.log('[Sync] Pushing session:', session.id, session.date);
@@ -216,6 +222,18 @@ async function syncMergeOnSignIn() {
     localStorage.setItem(KEYS.ROUTINE_TS, String(cloudRoutineTs));
   } else if (localRoutineTs > cloudRoutineTs) {
     await syncPushRoutine(localRoutine, localRoutineTs);
+  }
+
+  const cloudGlowupTs = cloud.glowupUpdatedAt || 0;
+  const localGlowup = getGlowup();
+  const localGlowupTs = Number(localStorage.getItem(KEYS.GLOWUP_TS) || localGlowup?.updatedAt || 0);
+  if (cloudGlowupTs > localGlowupTs) {
+    const glowup = cloud.glowup ?? null;
+    if (glowup !== null) validateGlowup(glowup);
+    localStorage.setItem(KEYS.GLOWUP, JSON.stringify(glowup));
+    localStorage.setItem(KEYS.GLOWUP_TS, String(cloudGlowupTs));
+  } else if (localGlowupTs > cloudGlowupTs) {
+    await syncPushGlowup(localGlowup, localGlowupTs);
   }
 
   const localProf   = getProfile();

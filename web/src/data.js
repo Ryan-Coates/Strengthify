@@ -10,6 +10,8 @@ const KEYS = {
   PLANS:    'sf_plans',
   ROUTINE:  'sf_routine',
   ROUTINE_TS: 'sf_routine_ts',
+  GLOWUP:   'sf_glowup',
+  GLOWUP_TS: 'sf_glowup_ts',
 };
 
 // ── Default / helpers ─────────────────────────────────────────────
@@ -475,6 +477,7 @@ function exportData() {
     sessions: getSessions(),
     pbs:      getPBs(),
     routine:  getRoutine(),
+    glowup:   getGlowup(),
     exportedAt: new Date().toISOString(),
   }, null, 2);
 }
@@ -482,6 +485,7 @@ function exportData() {
 function importData(jsonStr) {
   const data = JSON.parse(jsonStr);
   if (data.routine != null) validateRoutine(data.routine);
+  if (data.glowup != null) validateGlowup(data.glowup);
   if (data.profile)  saveProfile(data.profile);
   if (data.sessions) {
     localStorage.setItem(KEYS.SESSIONS, JSON.stringify(data.sessions));
@@ -491,6 +495,7 @@ function importData(jsonStr) {
   }
   if (data.pbs)      savePBs(data.pbs);
   if (Object.hasOwn(data, 'routine')) saveRoutine(data.routine);
+  if (Object.hasOwn(data, 'glowup')) saveGlowup(data.glowup);
 }
 
 // ── Session update (for editing) ──────────────────────────────────

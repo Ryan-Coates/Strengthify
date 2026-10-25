@@ -16,7 +16,7 @@ Push-Location $projectRoot
 
 try {
     Write-Host "`n[Strengthify] Running web tests..." -ForegroundColor Cyan
-    node --test web\tests\routine.test.cjs
+    node --test web\tests
     if ($LASTEXITCODE -ne 0) { throw "Web tests failed (exit $LASTEXITCODE)." }
 } finally {
     Pop-Location

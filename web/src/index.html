@@ -131,12 +131,21 @@
       </div>
     </div>
 
-    <!-- 1000 lb club progress -->
-    <div class="card routine-home">
-      <div class="routine-kicker">The 8-week commitment</div>
-      <h2 id="home-routine-title">Your week. Your rhythm.</h2>
+    <!-- 8-week commitments -->
+    <div class="card routine-home chaos-card">
+      <div class="routine-kicker">Composable Chaos &middot; 8 weeks</div>
+      <h2 id="home-routine-title">Five workouts. Twice each. Zero rules.</h2>
+      <progress id="home-routine-progress" class="chaos-progress" max="80" value="0" aria-label="Composable Chaos progress"></progress>
       <p id="home-routine-detail"></p>
-      <button class="btn btn-primary" data-open-routine>My weekly blocks <span aria-hidden="true">→</span></button>
+      <button class="btn btn-primary" data-open-routine>Open Composable Chaos <span aria-hidden="true">→</span></button>
+    </div>
+
+    <div class="card glowup-home">
+      <div class="routine-kicker glowup-kicker">Glow-Up &middot; 8 weeks</div>
+      <h2 id="home-glowup-title">Soft life. Strong habits. Absolutely glowing.</h2>
+      <progress id="home-glowup-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Glow-Up progress"></progress>
+      <p id="home-glowup-detail"></p>
+      <button class="btn glowup-btn" data-open-glowup>Open Glow-Up <span aria-hidden="true">✨</span></button>
     </div>
 
     <div class="club-wrap">
@@ -315,7 +324,13 @@
       <div class="routine-kicker">Prefer a flexible week?</div>
       <h2>Build a rhythm, not a timetable.</h2>
       <p>Five workout types. Two of each. Any days you like.</p>
-      <button class="btn btn-secondary" data-open-routine>Open my 8-week commitment</button>
+      <button class="btn btn-secondary" data-open-routine>Open Composable Chaos</button>
+    </div>
+
+    <div class="card glowup-home">
+      <div class="routine-kicker glowup-kicker">Want a full glow-up?</div>
+      <h2>Daily habits, weekly goals, lovely little rituals.</h2>
+      <button class="btn glowup-btn" data-open-glowup>Open Glow-Up ✨</button>
     </div>
 
     <!-- No plan state -->
@@ -621,14 +636,15 @@
       <h1 id="routine-heading">Weekly blocks</h1>
       <button class="btn btn-ghost btn-sm back-btn" data-to="home">← Home</button>
     </div>
-    <div id="routine-setup" class="card routine-home">
-      <div class="routine-kicker">Make a little room for you</div>
-      <h2>8 weeks. No fixed days.</h2>
+    <div id="routine-setup" class="card routine-home chaos-card">
+      <div class="routine-kicker">Composable Chaos &middot; 8 weeks</div>
+      <h2>Five workouts. Twice each. Zero rules.</h2>
       <p>Do each of these five workouts twice a week. Each block takes about 25 minutes.
         Stack a few together or spread them out around your week.</p>
       <ul id="routine-preview" class="routine-preview"></ul>
       <p>Each week is seven days from your chosen start date, not a Monday-to-Sunday timetable.
-        That's 10 blocks per week, 80 across your commitment.</p>
+        That's 10 blocks per week, 80 across your commitment. If you start in the future, check-offs stay
+        locked until your start date: that is by design, not a fault.</p>
       <form id="routine-form">
         <div class="form-group">
           <label class="form-label" for="routine-start-date">My start date</label>
@@ -639,11 +655,12 @@
       </form>
     </div>
     <div id="routine-dashboard" class="hidden">
-      <div class="card routine-home">
-        <div class="routine-kicker">My 8-week commitment</div>
-        <h2>Your week. Your rhythm.</h2>
-        <p id="routine-dates"></p>
+      <div class="card routine-home chaos-card">
+        <div class="routine-kicker">Composable Chaos &middot; 8 weeks</div>
+        <h2>Five workouts. Twice each. Zero rules.</h2>
+        <progress id="routine-overall-progress" class="chaos-progress" max="80" value="0" aria-label="Overall Composable Chaos progress"></progress>
         <div id="routine-journey" class="routine-journey"></div>
+        <p id="routine-dates"></p>
         <button class="btn btn-ghost btn-sm" id="routine-new">Start a new commitment</button>
       </div>
       <div id="routine-week-tabs" class="routine-week-tabs" role="group" aria-label="Choose a routine week"></div>
@@ -656,9 +673,67 @@
         <progress id="routine-week-progress" max="10" value="0" aria-label="Weekly workout blocks"></progress>
         <p id="routine-week-message" role="status"></p>
       </div>
+      <div id="routine-lock-banner" class="lock-banner hidden" role="status"></div>
       <div id="routine-checklist"></div>
       <p class="routine-footnote">Tick a block after you finish it. Untick to undo. Check-offs track your commitment;
         use Workout separately if you want to log sets and earn XP.</p>
+    </div>
+  </section>
+
+  <!-- GLOW-UP -->
+  <section id="glowup-screen" class="hidden glowup-screen" aria-labelledby="glowup-heading">
+    <div class="page-header">
+      <h1 id="glowup-heading">Glow-Up ✨</h1>
+      <button class="btn btn-ghost btn-sm back-btn" data-to="home">← Home</button>
+    </div>
+    <div id="glowup-setup" class="card glowup-hero">
+      <div class="routine-kicker glowup-kicker">Glow-Up &middot; 8 weeks</div>
+      <h2>Soft life. Strong habits. Absolutely glowing.</h2>
+      <p>Eight weeks of daily non-negotiables, weekly movement goals and the little things that make life lovely.</p>
+      <ul id="glowup-preview" class="routine-preview"></ul>
+      <p>If you start in the future, check-offs stay locked until your start date: that is by design, not a fault.</p>
+      <form id="glowup-form">
+        <div class="form-group">
+          <label class="form-label" for="glowup-start-date">My start date</label>
+          <input class="form-input" id="glowup-start-date" type="date" min="1000-01-01" max="9999-11-06" required>
+        </div>
+        <button class="btn glowup-btn" type="submit">I'm in for my Glow-Up</button>
+        <button class="btn btn-ghost hidden" type="button" id="glowup-cancel-setup">Keep my current Glow-Up</button>
+      </form>
+    </div>
+    <div id="glowup-dashboard" class="hidden">
+      <div class="card glowup-hero">
+        <div class="routine-kicker glowup-kicker">Glow-Up &middot; 8 weeks</div>
+        <h2>Soft life. Strong habits. Absolutely glowing.</h2>
+        <progress id="glowup-overall-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Overall Glow-Up progress"></progress>
+        <div id="glowup-journey" class="glowup-journey"></div>
+        <p id="glowup-dates"></p>
+        <button class="btn btn-ghost btn-sm" id="glowup-new">Start a new Glow-Up</button>
+      </div>
+      <div id="glowup-week-tabs" class="glowup-week-tabs" role="group" aria-label="Choose a Glow-Up week"></div>
+      <div class="card glowup-hero">
+        <div class="routine-week-heading">
+          <h2 id="glowup-week-title"></h2>
+          <strong id="glowup-week-count"></strong>
+        </div>
+        <progress id="glowup-week-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Weekly Glow-Up progress"></progress>
+      </div>
+      <div id="glowup-day-strip" class="glowup-day-strip" role="group" aria-label="Choose a day"></div>
+      <div class="card glowup-panel">
+        <div class="routine-week-heading">
+          <h3 id="glowup-day-title"></h3>
+          <strong id="glowup-day-count" class="glowup-count"></strong>
+        </div>
+        <progress id="glowup-day-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Daily Glow-Up progress"></progress>
+        <div id="glowup-day-lock" class="lock-banner glowup-lock hidden" role="status"></div>
+        <div class="glowup-section-title">Daily non-negotiables</div>
+        <div id="glowup-daily-list" class="glowup-ticks"></div>
+      </div>
+      <div class="card glowup-panel">
+        <div id="glowup-week-lock" class="lock-banner glowup-lock hidden" role="status"></div>
+        <div id="glowup-weekly-list"></div>
+      </div>
+      <p class="routine-footnote">Tick a goal when it is done. Untick to undo. Future days and weeks unlock as they arrive.</p>
     </div>
   </section>
 
@@ -743,6 +818,9 @@
 </script>
 <script>
   /* __ROUTINE_JS__ */
+</script>
+<script>
+  /* __GLOWUP_JS__ */
 </script>
 <script>
   /* __SYNC_JS__ */
