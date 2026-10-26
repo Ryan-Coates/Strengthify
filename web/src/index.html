@@ -133,11 +133,11 @@
 
     <!-- 8-week commitments -->
     <div class="card routine-home chaos-card">
-      <div class="routine-kicker">Composable Chaos &middot; 8 weeks</div>
-      <h2 id="home-routine-title">Five workouts. Twice each. Zero rules.</h2>
-      <progress id="home-routine-progress" class="chaos-progress" max="80" value="0" aria-label="Composable Chaos progress"></progress>
+      <div class="routine-kicker">Composible Chaos &middot; 8 weeks</div>
+      <h2 id="home-routine-title">Flexible workouts. Daily habits. Your rhythm.</h2>
+      <progress id="home-routine-progress" class="chaos-progress" max="192" value="0" aria-label="Composible Chaos progress"></progress>
       <p id="home-routine-detail"></p>
-      <button class="btn btn-primary" data-open-routine>Open Composable Chaos <span aria-hidden="true">→</span></button>
+      <button class="btn btn-primary" data-open-routine>Open Composible Chaos <span aria-hidden="true">→</span></button>
     </div>
 
     <div class="card glowup-home">
@@ -324,7 +324,7 @@
       <div class="routine-kicker">Prefer a flexible week?</div>
       <h2>Build a rhythm, not a timetable.</h2>
       <p>Five workout types. Two of each. Any days you like.</p>
-      <button class="btn btn-secondary" data-open-routine>Open Composable Chaos</button>
+      <button class="btn btn-secondary" data-open-routine>Open Composible Chaos</button>
     </div>
 
     <div class="card glowup-home">
@@ -633,15 +633,17 @@
 
   <section id="routine-screen" class="hidden" aria-labelledby="routine-heading">
     <div class="page-header">
-      <h1 id="routine-heading">Weekly blocks</h1>
+      <h1 id="routine-heading">Composible Chaos</h1>
       <button class="btn btn-ghost btn-sm back-btn" data-to="home">← Home</button>
     </div>
     <div id="routine-setup" class="card routine-home chaos-card">
-      <div class="routine-kicker">Composable Chaos &middot; 8 weeks</div>
-      <h2>Five workouts. Twice each. Zero rules.</h2>
+      <div class="routine-kicker">Composible Chaos &middot; 8 weeks</div>
+      <h2>Flexible workouts. Daily habits. Your rhythm.</h2>
       <p>Do each of these five workouts twice a week. Each block takes about 25 minutes.
         Stack a few together or spread them out around your week.</p>
       <ul id="routine-preview" class="routine-preview"></ul>
+      <p>Two daily habits: cardio, and nutrition (225g protein + calories tracked).
+        Complete all 10 workouts and all 14 daily habits to celebrate each week.</p>
       <p>Each week is seven days from your chosen start date, not a Monday-to-Sunday timetable.
         That's 10 blocks per week, 80 across your commitment. If you start in the future, check-offs stay
         locked until your start date: that is by design, not a fault.</p>
@@ -656,9 +658,9 @@
     </div>
     <div id="routine-dashboard" class="hidden">
       <div class="card routine-home chaos-card">
-        <div class="routine-kicker">Composable Chaos &middot; 8 weeks</div>
-        <h2>Five workouts. Twice each. Zero rules.</h2>
-        <progress id="routine-overall-progress" class="chaos-progress" max="80" value="0" aria-label="Overall Composable Chaos progress"></progress>
+        <div class="routine-kicker">Composible Chaos &middot; 8 weeks</div>
+        <h2>Flexible workouts. Daily habits. Your rhythm.</h2>
+        <progress id="routine-overall-progress" class="chaos-progress" max="192" value="0" aria-label="Overall Composible Chaos progress"></progress>
         <div id="routine-journey" class="routine-journey"></div>
         <p id="routine-dates"></p>
         <button class="btn btn-ghost btn-sm" id="routine-new">Start a new commitment</button>
@@ -674,6 +676,17 @@
         <p id="routine-week-message" role="status"></p>
       </div>
       <div id="routine-lock-banner" class="lock-banner hidden" role="status"></div>
+      <div class="card">
+        <div class="routine-week-heading">
+          <h2>Daily habits</h2>
+          <strong id="routine-habit-count"></strong>
+        </div>
+        <p class="routine-workout-meta">Cardio every day. Nutrition: 225g protein + calories tracked.</p>
+        <progress id="routine-habit-progress" class="chaos-progress" max="14" value="0" aria-label="Weekly daily habits"></progress>
+        <p class="routine-workout-meta">Future days unlock on their date. Workouts stay flexible throughout the week.
+          Your weekly celebration needs all 10 workouts and all 14 habits.</p>
+        <div id="routine-habits"></div>
+      </div>
       <div id="routine-checklist"></div>
       <p class="routine-footnote">Tick a block after you finish it. Untick to undo. Check-offs track your commitment;
         use Workout separately if you want to log sets and earn XP.</p>

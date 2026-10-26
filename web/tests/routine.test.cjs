@@ -38,7 +38,7 @@ test('future-dated commitment can be started, and its locked boxes explain why',
   assert.equal(a.run("routineLockMessage(getRoutine(), 0, '2026-10-26')"), '');
   assert.match(a.run("routineLockMessage(getRoutine(), 1, '2026-10-27')"), /Week 2 unlocks/);
   assert.equal(a.run("routineLockMessage(getRoutine(), 0, '2026-11-20')"), '');
-  assert.deepEqual(a.data("routineProgress(getRoutine())"), { done: 0, total: 80 });
+  assert.deepEqual(a.data("routineProgress(getRoutine())"), { done: 0, total: 192 });
   a.run("setRoutineBlock(0, 0, true, '2026-10-26')");
   assert.equal(a.run('routineProgress(getRoutine()).done'), 1);
 });
@@ -84,21 +84,29 @@ test('blocks cannot be checked before their week, but past weeks stay editable',
   assert.equal(a.run('getRoutine().completed[0][0]'), false);
 });
 
-test('celebration occurs only when all ten blocks are complete and only once per week', () => {
+test('celebration requires all ten workouts and fourteen habits, only once per week', () => {
   const a = app();
   a.run("createRoutine('2026-10-26')");
   for (let block = 0; block < 9; block++) {
     assert.equal(a.run(`setRoutineBlock(0, ${block}, true, '2026-10-26').celebrate`), false);
   }
-  assert.equal(a.run("setRoutineBlock(0, 9, true, '2026-10-26').celebrate"), true);
+  assert.equal(a.run("setRoutineBlock(0, 9, true, '2026-10-26').celebrate"), false);
+  for (let day = 0; day < 7; day++) {
+    assert.equal(a.run(`setRoutineDaily(${day}, 0, true, '2026-11-01').celebrate`), false);
+    assert.equal(a.run(`setRoutineDaily(${day}, 1, true, '2026-11-01').celebrate`), day === 6);
+  }
   assert.deepEqual(a.data('getRoutine().celebratedWeeks'), [0]);
   a.run("setRoutineBlock(0, 9, false, '2026-10-26')");
   assert.equal(a.run("setRoutineBlock(0, 9, true, '2026-10-26').celebrate"), false);
   for (let week = 1; week < 8; week++) {
+    a.run(`for (let day = ${week * 7}; day < ${week * 7 + 7}; day++) {
+      setRoutineDaily(day, 0, true, '2026-12-20'); setRoutineDaily(day, 1, true, '2026-12-20');
+    }`);
     a.run(`for (let block = 0; block < 10; block++) setRoutineBlock(${week}, block, true, '2026-12-20')`);
   }
   assert.equal(a.run('getRoutine().completed.flat().filter(Boolean).length'), 80);
   assert.equal(a.run('getRoutine().celebratedWeeks.length'), 8);
+  assert.deepEqual(a.data('routineProgress(getRoutine())'), { done: 192, total: 192 });
 });
 
 test('invalid dates, out-of-range blocks and malformed imports fail without changing saved data', () => {
@@ -119,11 +127,13 @@ test('invalid dates, out-of-range blocks and malformed imports fail without chan
 test('backup round-trip retains progress and old backups do not overwrite the commitment', () => {
   const a = app();
   a.run("createRoutine('2026-10-26'); setRoutineBlock(0, 3, true, '2026-10-26')");
+  a.run("setRoutineDaily(0, 1, true, '2026-10-26')");
   const backup = a.run('exportData()');
   a.run('localStorage.clear()');
   a.context.backup = backup;
   a.run('importData(backup)');
   assert.equal(a.run('getRoutine().completed[0][3]'), true);
+  assert.equal(a.run('getRoutine().days[0].done[1]'), true);
   a.run(`importData('{"sessions":[],"pbs":{}}')`);
   assert.equal(a.run('getRoutine().completed[0][3]'), true);
   a.run(`importData('{"routine":null}')`);
@@ -228,6 +238,7 @@ test('Firestore payload uses eight week maps and round-trips all eighty check-of
   a.run("createRoutine('2026-10-26')");
   a.run("for (let block = 0; block < 10; block++) setRoutineBlock(0, block, true, '2026-10-26')");
   a.run("setRoutineBlock(7, 9, true, '2026-12-20')");
+  a.run("setRoutineDaily(55, 1, true, '2026-12-20')");
   await Promise.resolve();
   const original = a.data('getRoutine()');
   assert.throws(() => assertFirestoreData(original), /Nested arrays/);
@@ -236,6 +247,7 @@ test('Firestore payload uses eight week maps and round-trips all eighty check-of
   assert.equal(payload.completed.length, 8);
   assert.equal(payload.completed[0].blocks.length, 10);
   assert.equal(payload.completed[7].blocks[9], true);
+  assert.equal(payload.days[55].done[1], true);
   a.context.payload = payload;
   assert.deepEqual(a.data('routineFromCloud(payload)'), original);
   assert.deepEqual(a.data('getRoutine()'), original);
@@ -268,4 +280,60 @@ test('synchronous Firestore errors become promise rejections and leave the local
   assert.equal(a.run('getRoutine().startDate'), '2026-10-26');
   assert.equal(a.context.notifications.length, 1);
   await assert.rejects(a.run('syncPushRoutine(getRoutine(), Date.now())'), /validation failed/);
+});
+
+test('existing commitments gain unchecked daily habits without changing workout history', async () => {
+  const a = cloudApp({});
+  a.run("createRoutine('2026-10-26'); setRoutineBlock(0, 0, true, '2026-10-26')");
+  const original = a.data('getRoutine()');
+  delete original.days;
+  original.celebratedWeeks = [0];
+  a.context.legacy = original;
+  a.run('localStorage.setItem(KEYS.ROUTINE, JSON.stringify(legacy))');
+  const upgraded = a.data('getRoutine()');
+  assert.equal(upgraded.days.length, 56);
+  assert.ok(upgraded.days.every(day => day.done.length === 2 && day.done.every(done => done === false)));
+  assert.equal(upgraded.id, original.id);
+  assert.equal(upgraded.startDate, original.startDate);
+  assert.equal(upgraded.updatedAt, original.updatedAt);
+  assert.deepEqual(upgraded.completed, original.completed);
+  assert.deepEqual(upgraded.celebratedWeeks, [0]);
+  a.run("setRoutineDaily(0, 0, true, '2026-10-26')");
+  assert.equal(a.run('JSON.parse(localStorage.getItem(KEYS.ROUTINE)).days[0].done[0]'), true);
+  assert.equal(a.run('getRoutine().days[1].done[0]'), false);
+  a.context.cloud.routine = a.data('routineToCloud(legacy)');
+  a.context.cloud.routineUpdatedAt = upgraded.updatedAt + 10000;
+  await a.run('syncMergeOnSignIn()');
+  assert.equal(a.run('getRoutine().days.length'), 56);
+  assert.equal(a.run('getRoutine().completed[0][0]'), true);
+  a.run('importData(JSON.stringify({ routine: legacy }))');
+  assert.equal(a.run('getRoutine().days.length'), 56);
+});
+
+test('daily habits unlock on their calendar day, allow undo and past entries, and reject invalid input', () => {
+  const a = app();
+  a.run("createRoutine('2026-10-26')");
+  assert.throws(() => a.run("setRoutineDaily(0, 0, true, '2026-10-25')"), /not started/);
+  assert.throws(() => a.run("setRoutineDaily(1, 0, true, '2026-10-26')"), /not started/);
+  for (const [day, goal, value] of [[-1, 0, true], [56, 0, true], [0.5, 0, true], [0, -1, true], [0, 2, true], [0, 0, 1]]) {
+    assert.throws(() => a.run(`setRoutineDaily(${day}, ${goal}, ${value}, '2026-12-20')`), /not be found/);
+  }
+  a.run("setRoutineDaily(0, 0, true, '2026-10-26'); setRoutineDaily(0, 1, true, '2026-10-26')");
+  assert.deepEqual(a.data('routineWeekStats(getRoutine(), 0)'), { workouts: 0, habits: 2, complete: false });
+  a.run("setRoutineDaily(0, 1, false, '2027-01-01')");
+  assert.equal(a.run('getRoutine().days[0].done[1]'), false);
+  a.run("setRoutineDaily(55, 0, true, '2027-01-01')");
+  assert.equal(a.run('getRoutine().days[55].done[0]'), true);
+  assert.equal(a.run('getSessions().length'), 0);
+});
+
+test('malformed daily habit backups cannot overwrite saved progress', () => {
+  const a = app();
+  a.run("createRoutine('2026-10-26')");
+  const original = a.data('getRoutine()');
+  for (const days of [null, [], Array(56).fill({ done: [false] }), Array(56).fill({ done: [false, 1] })]) {
+    a.context.bad = { ...original, days };
+    assert.throws(() => a.run('importData(JSON.stringify({routine: bad}))'), /Invalid routine/);
+    assert.deepEqual(a.data('getRoutine()'), original);
+  }
 });

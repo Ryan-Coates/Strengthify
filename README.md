@@ -20,10 +20,11 @@ Google sign-in and cloud sync require internet access; local-only mode does not.
 
 ## Eight-week commitments
 
-There are two opt-in commitments: **Composable Chaos** and **Glow-Up**. See
+There are two opt-in commitments: **Composible Chaos** and **Glow-Up**. See
 [COMMITMENT_PLAN.md](COMMITMENT_PLAN.md) for the full Glow-Up goal list.
 
-Check-offs are locked until the week (Composable Chaos) or day (Glow-Up) has
+Workout check-offs are locked until the week has started; daily habits in both commitments
+are locked until their day has
 started. If you opt in with a future start date, the boxes are disabled and a
 "Not live yet" banner explains when they unlock. This is expected, not a fault.
 
@@ -33,9 +34,9 @@ Open **Glow-Up** on Home or Plans, choose a start date and opt in. Tick daily
 non-negotiables per day, weekly movement goals (2 runs, 3 weights, 5 abs) and weekly
 "little things" per week. The 5:30am wake-up applies Monday to Friday only.
 
-### Composable Chaos
+### Composible Chaos
 
-Open **Composable Chaos** on Home, or access it from Plans. Choose a start date
+Open **Composible Chaos** on Home, or access it from Plans. Choose a start date
 (defaults to next Monday) and select **I'm in for 8 weeks**.
 
 - Eight seven-day weeks begin on your chosen date, with no assigned workout days.
@@ -45,8 +46,14 @@ Open **Composable Chaos** on Home, or access it from Plans. Choose a start date
 - Each workout card shows the example movements and supplied superset instructions.
 - Check off a block after doing it; untick it to undo. Past weeks remain editable,
   while future weeks can be previewed but not checked off.
-- Completing all ten blocks unlocks a trophy and confetti celebration once per week.
+- Each day has two habit checkboxes: **Cardio**, and **Nutrition** (225g protein
+  plus calories tracked). These are check-offs, not food or calorie-entry forms.
+  Past days remain editable, while future days unlock on their date.
+- Completing all ten workouts and all fourteen daily habits unlocks a trophy and confetti celebration once per week.
   Reduced-motion preferences disable the animation.
+- Overall progress includes 80 workouts and 112 daily habits: 192 check-offs.
+  Existing commitments gain unchecked habits without resetting workout history,
+  dates, or saved celebration markers. Previously celebrated weeks do not replay.
 - Progress is saved locally, included in JSON backups, and synced when signed in.
   Cloud conflicts use the most recently saved whole commitment, like training plans;
   simultaneous offline edits on different devices are not combined.

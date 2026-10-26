@@ -9,8 +9,12 @@ const ROUTINE_WORKOUTS = [
 const ROUTINE_WEEKS = 8;
 const ROUTINE_WEEK_TOTAL = ROUTINE_WORKOUTS.length * 2;
 const ROUTINE_DAY_MS = 86400000;
-const CHAOS_NAME = 'Composable Chaos';
-const CHAOS_TAGLINE = 'Five workouts. Twice each. Zero rules.';
+const CHAOS_NAME = 'Composible Chaos';
+const CHAOS_TAGLINE = 'Flexible workouts. Daily habits. Your rhythm.';
+const CHAOS_DAILY = [
+  { label: 'Cardio', note: 'Daily cardio done' },
+  { label: 'Nutrition', note: '225g protein + calories tracked' },
+];
 let routineViewWeek = null;
 let routineJustTicked = null;
 
@@ -59,9 +63,28 @@ function routineLockMessage(routine, week, date = routineLocalDate()) {
 
 function routineProgress(routine) {
   return {
-    done: routine.completed.flat().filter(Boolean).length,
-    total: ROUTINE_WEEKS * ROUTINE_WEEK_TOTAL,
+    done: routine.completed.flat().filter(Boolean).length +
+      (routine.days || []).reduce((sum, day) => sum + day.done.filter(Boolean).length, 0),
+    total: ROUTINE_WEEKS * (ROUTINE_WEEK_TOTAL + 7 * CHAOS_DAILY.length),
   };
+}
+
+function routineWeekStats(routine, week) {
+  const workouts = routine.completed[week].filter(Boolean).length;
+  const habits = (routine.days || []).slice(week * 7, week * 7 + 7)
+    .reduce((sum, day) => sum + day.done.filter(Boolean).length, 0);
+  return { workouts, habits, complete: workouts === ROUTINE_WEEK_TOTAL && habits === 14 };
+}
+
+function routineEmptyDays() {
+  return Array.from({ length: ROUTINE_WEEKS * 7 }, () => ({ done: CHAOS_DAILY.map(() => false) }));
+}
+
+function upgradeRoutine(routine) {
+  validateRoutine(routine);
+  // Older commitments retain workout history; new daily habits begin unchecked.
+  if (routine.days === undefined) routine.days = routineEmptyDays();
+  return routine;
 }
 
 function validateRoutine(routine) {
@@ -70,6 +93,9 @@ function validateRoutine(routine) {
       !Array.isArray(routine.completed) || routine.completed.length !== ROUTINE_WEEKS ||
       !routine.completed.every(week => Array.isArray(week) && week.length === ROUTINE_WEEK_TOTAL &&
         week.every(done => typeof done === 'boolean')) ||
+      (routine.days !== undefined && (!Array.isArray(routine.days) || routine.days.length !== 56 ||
+        !routine.days.every(day => day && Array.isArray(day.done) && day.done.length === CHAOS_DAILY.length &&
+          day.done.every(done => typeof done === 'boolean')))) ||
       !Array.isArray(routine.celebratedWeeks) ||
       !routine.celebratedWeeks.every(week => Number.isInteger(week) && week >= 0 && week < ROUTINE_WEEKS)) {
     throw new Error('Invalid routine data. Restore a valid backup.');
@@ -81,12 +107,13 @@ function validateRoutine(routine) {
 function getRoutine() {
   const raw = localStorage.getItem(KEYS.ROUTINE);
   const routine = raw ? JSON.parse(raw) : null;
-  if (routine !== null) validateRoutine(routine);
+  if (routine !== null) upgradeRoutine(routine);
   return routine;
 }
 
 function saveRoutine(routine) {
   if (routine !== null) {
+    upgradeRoutine(routine);
     routine.updatedAt = Math.max(Date.now(), (routine.updatedAt || 0) + 1);
     validateRoutine(routine);
   }
@@ -108,6 +135,7 @@ function createRoutine(startDate) {
     id: uuid(), startDate, updatedAt: Date.now(),
     completed: Array.from({ length: ROUTINE_WEEKS }, () => Array(ROUTINE_WEEK_TOTAL).fill(false)),
     celebratedWeeks: [],
+    days: routineEmptyDays(),
   };
   saveRoutine(routine);
   return routine;
@@ -121,7 +149,23 @@ function setRoutineBlock(week, block, done, date = routineLocalDate()) {
   }
   if (week > routineCurrentWeek(routine, date)) throw new Error('This week has not started yet.');
   routine.completed[week][block] = done;
-  const celebrate = routine.completed[week].every(Boolean) && !routine.celebratedWeeks.includes(week);
+  return finishRoutineCheckoff(routine, week);
+}
+
+function setRoutineDaily(day, goal, done, date = routineLocalDate()) {
+  const routine = getRoutine();
+  if (!routine || !Number.isInteger(day) || day < 0 || day >= 56 ||
+      !Number.isInteger(goal) || goal < 0 || goal >= CHAOS_DAILY.length || typeof done !== 'boolean') {
+    throw new Error('That daily habit could not be found.');
+  }
+  const today = routineDateNumber(date) - routineDateNumber(routine.startDate);
+  if (day > today) throw new Error('This day has not started yet.');
+  routine.days[day].done[goal] = done;
+  return finishRoutineCheckoff(routine, Math.floor(day / 7));
+}
+
+function finishRoutineCheckoff(routine, week) {
+  const celebrate = routineWeekStats(routine, week).complete && !routine.celebratedWeeks.includes(week);
   if (celebrate) routine.celebratedWeeks.push(week);
   saveRoutine(routine);
   return { routine, celebrate };
@@ -132,22 +176,23 @@ function renderRoutineHome() {
   const title = document.getElementById('home-routine-title');
   const detail = document.getElementById('home-routine-detail');
   const bar = document.getElementById('home-routine-progress');
+  bar.max = routineProgress(routine || { completed: [] }).total;
   if (!routine) {
     title.textContent = CHAOS_TAGLINE;
-    detail.textContent = 'Commit to 8 weeks of flexible, 25-minute workout blocks.';
+    detail.textContent = '8 weeks of flexible workout blocks, daily cardio and nutrition.';
     bar.value = 0;
     return;
   }
   const current = routineCurrentWeek(routine);
   const week = Math.max(0, Math.min(7, current));
-  const { done: total } = routineProgress(routine);
+  const { done: total, total: target } = routineProgress(routine);
   bar.value = total;
-  bar.textContent = `${total} of 80 blocks completed`;
+  bar.textContent = `${total} of ${target} check-offs completed`;
   title.textContent = current < 0 ? 'You are in. Not live yet.' :
     current >= 8 ? 'Eight weeks, your way' : `Week ${week + 1}: keep showing up`;
   detail.textContent = current < 0 ? `Starts ${routineDateLabel(routine.startDate)}. Check-offs unlock then.` :
-    current >= 8 ? `${total} / 80 blocks completed. Review your journey.` :
-      `${routine.completed[week].filter(Boolean).length} / 10 blocks this week. Mix, match, make it yours.`;
+    current >= 8 ? `${total} / ${target} check-offs completed. Review your journey.` :
+      `${routineWeekStats(routine, week).workouts} / 10 workouts · ${routineWeekStats(routine, week).habits} / 14 habits this week.`;
 }
 
 function openRoutine() {
@@ -182,13 +227,13 @@ function renderRoutine() {
   if (routineViewWeek === null) routineViewWeek = Math.max(0, Math.min(7, current));
   const week = routineViewWeek;
   const count = routine.completed[week].filter(Boolean).length;
-  const { done: total } = routineProgress(routine);
-  const completedWeeks = routine.completed.filter(w => w.every(Boolean)).length;
-  document.getElementById('routine-journey').textContent = `${total} / 80 blocks · ${completedWeeks} / 8 weeks complete`;
+  const { done: total, total: target } = routineProgress(routine);
+  const completedWeeks = routine.completed.filter((_, index) => routineWeekStats(routine, index).complete).length;
+  document.getElementById('routine-journey').textContent = `${total} / ${target} check-offs · ${completedWeeks} / 8 weeks complete`;
   const overall = document.getElementById('routine-overall-progress');
-  overall.max = 80;
+  overall.max = target;
   overall.value = total;
-  overall.textContent = `${total} of 80 blocks completed`;
+  overall.textContent = `${total} of ${target} check-offs completed`;
   document.getElementById('routine-dates').textContent =
     `${routineDateLabel(routine.startDate)} - ${routineDateLabel(routineDateAt(routine.startDate, 55))}`;
   document.getElementById('routine-week-title').textContent = `Week ${week + 1}`;
@@ -200,7 +245,8 @@ function renderRoutine() {
   progress.textContent = `${count} of 10 blocks completed`;
   const lockMessage = routineLockMessage(routine, week);
   document.getElementById('routine-week-message').textContent = lockMessage ||
-    (count === 10 ? 'Week complete! You made room for yourself.' :
+    (routineWeekStats(routine, week).complete ? 'Week complete! Workouts and daily habits nailed.' :
+    count === 10 ? 'Workouts complete! Keep going with your daily habits to finish the week.' :
     week < current ? 'Review this week or catch up on check-offs you forgot to record.' :
     'No fixed days. Stack blocks together or spread them out.');
   const lockBanner = document.getElementById('routine-lock-banner');
@@ -211,12 +257,13 @@ function renderRoutine() {
   tabs.replaceChildren();
   routine.completed.forEach((blocks, index) => {
     const done = blocks.filter(Boolean).length;
+    const stats = routineWeekStats(routine, index);
     const tab = document.createElement('button');
     tab.type = 'button';
-    tab.className = 'routine-week-tab' + (index === week ? ' selected' : '') + (done === 10 ? ' complete' : '');
+    tab.className = 'routine-week-tab' + (index === week ? ' selected' : '') + (stats.complete ? ' complete' : '');
     tab.setAttribute('aria-pressed', String(index === week));
-    tab.setAttribute('aria-label', `Week ${index + 1}, ${done} of 10 complete${index === current ? ', current week' : ''}`);
-    tab.textContent = `${index + 1}${done === 10 ? ' ✓' : ''}`;
+    tab.setAttribute('aria-label', `Week ${index + 1}, ${done} of 10 workouts, ${stats.habits} of 14 habits complete${index === current ? ', current week' : ''}`);
+    tab.textContent = `${index + 1}${stats.complete ? ' ✓' : ''}`;
     tab.addEventListener('click', () => { routineViewWeek = index; renderRoutine(); });
     tabs.appendChild(tab);
   });
@@ -259,7 +306,7 @@ function renderRoutine() {
           renderRoutine();
           renderRoutineHome();
           document.getElementById(input.id).focus();
-          if (result.celebrate) celebrateRoutineWeek(week, result.routine.completed.every(w => w.every(Boolean)));
+          if (result.celebrate) celebrateRoutineWeek(week, routineProgress(result.routine).done === routineProgress(result.routine).total);
         } catch (error) {
           input.checked = !input.checked;
           console.error('[Routine] Check-off failed:', error);
@@ -274,13 +321,65 @@ function renderRoutine() {
     card.append(heading, meta, moves, note, checks);
     checklist.appendChild(card);
   });
+  renderRoutineHabits(routine, week);
+}
+
+function renderRoutineHabits(routine, week) {
+  const stats = routineWeekStats(routine, week);
+  document.getElementById('routine-habit-count').textContent = `${stats.habits} / 14`;
+  const progress = document.getElementById('routine-habit-progress');
+  progress.value = stats.habits;
+  progress.textContent = `${stats.habits} of 14 daily habits completed`;
+  const list = document.getElementById('routine-habits');
+  list.replaceChildren();
+  const today = routineDateNumber(routineLocalDate());
+  for (let day = week * 7; day < week * 7 + 7; day++) {
+    const date = routineDateAt(routine.startDate, day);
+    const locked = routineDateNumber(date) > today;
+    const row = document.createElement('fieldset');
+    row.className = 'chaos-habit-day';
+    const legend = document.createElement('legend');
+    legend.textContent = `${new Date(date + 'T00:00:00Z').toLocaleDateString(undefined, { weekday: 'short', timeZone: 'UTC' })} · ${routineDateLabel(date)}${routineDateNumber(date) === today ? ' · Today' : ''}${locked ? ' · Not started' : ''}`;
+    const checks = document.createElement('div');
+    checks.className = 'routine-blocks';
+    CHAOS_DAILY.forEach((goal, index) => {
+      const label = document.createElement('label');
+      label.className = 'routine-block';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.id = `routine-habit-${day}-${index}`;
+      input.checked = routine.days[day].done[index];
+      input.disabled = locked;
+      input.setAttribute('aria-label', `${goal.label}, ${routineDateLabel(date)}: ${goal.note}`);
+      const text = document.createElement('span');
+      text.textContent = goal.label;
+      input.addEventListener('change', () => {
+        try {
+          const result = setRoutineDaily(day, index, input.checked);
+          renderRoutine();
+          renderRoutineHome();
+          document.getElementById(input.id).focus();
+          if (result.celebrate) celebrateRoutineWeek(week, routineProgress(result.routine).done === routineProgress(result.routine).total);
+        } catch (error) {
+          input.checked = !input.checked;
+          console.error('[Routine] Daily habit failed:', error);
+          toast(error.message, 'error');
+        }
+      });
+      label.append(input, text);
+      checks.appendChild(label);
+    });
+    row.append(legend, checks);
+    list.appendChild(row);
+  }
 }
 
 function celebrateRoutineWeek(week, allDone) {
   const dialog = document.getElementById('routine-celebration');
   document.getElementById('routine-celebration-title').textContent = allDone ? 'All 8 weeks. You did it!' : `Week ${week + 1}, in the bag!`;
   document.getElementById('routine-celebration-copy').textContent = allDone ?
-    '80 blocks. One commitment kept. Take a bow.' : 'Ten blocks complete. A busy week, a stronger you.';
+    '80 workouts and 112 daily habits. One commitment kept. Take a bow.' :
+    'Ten workouts, seven days of cardio and nutrition. You owned the chaos.';
   const confetti = document.getElementById('routine-confetti');
   confetti.replaceChildren();
   for (let i = 0; i < 36; i++) {

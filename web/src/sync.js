@@ -137,8 +137,7 @@ function routineFromCloud(routine) {
     completed: Array.isArray(routine.completed) ?
       routine.completed.map(week => Array.isArray(week) ? week : week?.blocks) : routine.completed,
   };
-  validateRoutine(decoded);
-  return decoded;
+  return upgradeRoutine(decoded);
 }
 
 async function syncPushRoutine(routine, updatedAt) {
