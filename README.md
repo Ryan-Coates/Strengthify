@@ -18,10 +18,11 @@ entry point with the same app for existing bookmarks.
 GitHub Actions builds and deploys this page to GitHub Pages on pushes to `main`.
 Google sign-in and cloud sync require internet access; local-only mode does not.
 
-## Eight-week commitments
+## Commitments
 
-There are two opt-in commitments: **Composible Chaos** and **Glow-Up**. See
-[COMMITMENT_PLAN.md](COMMITMENT_PLAN.md) for the full Glow-Up goal list.
+There are three independent opt-in commitments: eight-week **Composible Chaos** and
+**Glow-Up**, plus ongoing **Clean Sweep**. They can run alongside one another.
+See [COMMITMENT_PLAN.md](COMMITMENT_PLAN.md) for the full goal lists.
 
 Workout check-offs are locked until the week has started; daily habits in both commitments
 are locked until their day has
@@ -66,6 +67,37 @@ Checklist blocks are separate from workout logs: they do not create sets, person
 bests, or XP. Use **Workout** separately for those. Existing GVT/custom plans and
 the mobility routine remain available.
 
+### Clean Sweep
+
+Open **Clean Sweep** on Home or Plans and choose a start date (defaults to today).
+This is an ongoing commitment with no end date, using Glow-Up's pink-and-gold theme
+and heart check-offs.
+
+- Daily: 15 minutes reset and Toilet Swish.
+- Weekly: nine room checkboxes, available on any day and reset each Monday.
+- Saturday: Towels and Ralph's bedding. Sunday: Bedding, Clean Fridge and Microwave.
+  These appear in the daily checklist on their corresponding days.
+- Monthly: Start and End reminder groups, both available throughout the month.
+- Quarterly: Kitchen cupboards & utility organise in February, May, August and
+  November; Dylan's toys & my drawers in March, June, September and December.
+  January, April, July and October have no quarterly job.
+- The date picker lets you review previous days, weeks and months, or preview
+  future chores. Future periods remain locked; the current partial week and month
+  are available immediately when you opt in.
+- Each new calendar period gets fresh checkboxes without deleting earlier ticks.
+  Completing a day's, week's or month's checklist earns a sparkle toast.
+- **Opt out (keep history)** stops check-offs without touching the other plans.
+  **Resume Clean Sweep** re-enables the same commitment with its history intact.
+
+Clean Sweep is included in JSON backups and cloud sync. Its metadata is stored
+on the user document and its history in `cleanSweepPeriods` documents underneath
+that user, so permanent history does not grow a single Firestore document forever.
+Cloud conflicts use the latest edit per period (a day, a week, or a month), rather
+than replacing all history; simultaneous edits to the same period are not combined.
+Backups restore the periods they contain; syncing retains other saved periods for
+the same commitment. Importing `cleanSweep: null` clears the selected commitment,
+but does not delete archived cloud period documents.
+
 ## Backups and sync
 
 Use **Profile > Export backup (JSON)** to download your data, and **Import backup**
@@ -86,5 +118,5 @@ Requires Node.js 18 or later.
 
 The tests use Node's built-in test runner, with no dependencies. They cover week
 boundaries, local dates, check-off limits, persistence, celebrations, backup
-compatibility, and cloud merging. Rebuild after changing sources; do not edit
+compatibility, recurring cleaning schedules, and cloud merging. Rebuild after changing sources; do not edit
 the generated distribution page manually.

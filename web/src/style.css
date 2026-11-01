@@ -24,6 +24,13 @@
   --font:       'Inter', system-ui, -apple-system, sans-serif;
 }
 
+.cleansweep-date-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.cleansweep-note { color: #f2d4ea; font-size: 12px; margin: 10px 0; }
+#cleansweep-screen .routine-week-heading { gap: 10px; align-items: flex-start; }
+#cleansweep-screen .routine-week-heading h2 { font-size: 18px; color: #ffe3f3; }
+#cleansweep-screen .glowup-count { white-space: nowrap; color: #ffd986; }
+#cleansweep-screen .glowup-tick { min-width: 0; }
+
 .chaos-habit-day { border: 0; border-top: 1px solid var(--border); margin-top: 16px; min-width: 0; }
 .chaos-habit-day legend { padding: 0 6px 0 0; font-size: 12px; color: var(--text); }
 .chaos-habit-day .routine-blocks { margin-top: 8px; }

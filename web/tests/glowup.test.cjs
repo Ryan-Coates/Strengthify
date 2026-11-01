@@ -18,7 +18,7 @@ function app() {
     setSyncStatus() {},
     toast() {},
   });
-  for (const name of ['data.js', 'routine.js', 'glowup.js', 'sync.js']) {
+  for (const name of ['data.js', 'routine.js', 'glowup.js', 'cleansweep.js', 'sync.js']) {
     vm.runInContext(readFileSync(join(__dirname, '..', 'src', name), 'utf8'), context);
   }
   return {

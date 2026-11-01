@@ -29,6 +29,7 @@ $files = @{
     syncJs   = Join-Path $SrcDir 'sync.js'
     routineJs = Join-Path $SrcDir 'routine.js'
     glowupJs = Join-Path $SrcDir 'glowup.js'
+    cleanSweepJs = Join-Path $SrcDir 'cleansweep.js'
     appJs    = Join-Path $SrcDir 'app.js'
 }
 
@@ -46,6 +47,7 @@ $chartJs  = Get-Content $files.chartJs  -Raw -Encoding UTF8
 $syncJs   = Get-Content $files.syncJs   -Raw -Encoding UTF8
 $routineJs = Get-Content $files.routineJs -Raw -Encoding UTF8
 $glowupJs = Get-Content $files.glowupJs -Raw -Encoding UTF8
+$cleanSweepJs = Get-Content $files.cleanSweepJs -Raw -Encoding UTF8
 $appJs    = Get-Content $files.appJs    -Raw -Encoding UTF8
 
 # ── Inject CSS ────────────────────────────────────────────────────────────────
@@ -58,6 +60,7 @@ $template = $template -replace '/\* __CHART_JS__ \*/', $chartJs
 $template = $template -replace '/\* __SYNC_JS__ \*/',  $syncJs
 $template = $template -replace '/\* __ROUTINE_JS__ \*/', $routineJs
 $template = $template -replace '/\* __GLOWUP_JS__ \*/', $glowupJs
+$template = $template -replace '/\* __CLEAN_SWEEP_JS__ \*/', $cleanSweepJs
 $template = $template -replace '/\* __APP_JS__ \*/',   $appJs
 
 # ── Stamp build metadata ──────────────────────────────────────────────────────

@@ -12,6 +12,8 @@ const KEYS = {
   ROUTINE_TS: 'sf_routine_ts',
   GLOWUP:   'sf_glowup',
   GLOWUP_TS: 'sf_glowup_ts',
+  CLEAN_SWEEP: 'sf_clean_sweep',
+  CLEAN_SWEEP_TS: 'sf_clean_sweep_ts',
 };
 
 // ── Default / helpers ─────────────────────────────────────────────
@@ -478,6 +480,7 @@ function exportData() {
     pbs:      getPBs(),
     routine:  getRoutine(),
     glowup:   getGlowup(),
+    cleanSweep: getCleanSweep(),
     exportedAt: new Date().toISOString(),
   }, null, 2);
 }
@@ -486,6 +489,7 @@ function importData(jsonStr) {
   const data = JSON.parse(jsonStr);
   if (data.routine != null) validateRoutine(data.routine);
   if (data.glowup != null) validateGlowup(data.glowup);
+  if (data.cleanSweep != null) validateCleanSweep(data.cleanSweep);
   if (data.profile)  saveProfile(data.profile);
   if (data.sessions) {
     localStorage.setItem(KEYS.SESSIONS, JSON.stringify(data.sessions));
@@ -496,6 +500,7 @@ function importData(jsonStr) {
   if (data.pbs)      savePBs(data.pbs);
   if (Object.hasOwn(data, 'routine')) saveRoutine(data.routine);
   if (Object.hasOwn(data, 'glowup')) saveGlowup(data.glowup);
+  if (Object.hasOwn(data, 'cleanSweep')) restoreCleanSweep(data.cleanSweep);
 }
 
 // ── Session update (for editing) ──────────────────────────────────

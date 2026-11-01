@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<!-- Built: 2026-10-26 12:45:19 -->
+<!-- Built: 2026-11-01 08:54:03 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -34,6 +34,13 @@
   --shadow:     0 4px 24px rgba(0,0,0,0.45);
   --font:       'Inter', system-ui, -apple-system, sans-serif;
 }
+
+.cleansweep-date-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.cleansweep-note { color: #f2d4ea; font-size: 12px; margin: 10px 0; }
+#cleansweep-screen .routine-week-heading { gap: 10px; align-items: flex-start; }
+#cleansweep-screen .routine-week-heading h2 { font-size: 18px; color: #ffe3f3; }
+#cleansweep-screen .glowup-count { white-space: nowrap; color: #ffd986; }
+#cleansweep-screen .glowup-tick { min-width: 0; }
 
 .chaos-habit-day { border: 0; border-top: 1px solid var(--border); margin-top: 16px; min-width: 0; }
 .chaos-habit-day legend { padding: 0 6px 0 0; font-size: 12px; color: var(--text); }
@@ -958,7 +965,7 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
       </div>
     </div>
 
-    <!-- 8-week commitments -->
+    <!-- Commitments -->
     <div class="card routine-home chaos-card">
       <div class="routine-kicker">Composible Chaos &middot; 8 weeks</div>
       <h2 id="home-routine-title">Flexible workouts. Daily habits. Your rhythm.</h2>
@@ -973,6 +980,14 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
       <progress id="home-glowup-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Glow-Up progress"></progress>
       <p id="home-glowup-detail"></p>
       <button class="btn glowup-btn" data-open-glowup>Open Glow-Up <span aria-hidden="true">✨</span></button>
+    </div>
+
+    <div class="card glowup-home cleansweep-home">
+      <div class="routine-kicker glowup-kicker">Clean Sweep &middot; Ongoing</div>
+      <h2 id="home-cleansweep-title">Little resets. Lovely rooms. A lighter home.</h2>
+      <progress id="home-cleansweep-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Clean Sweep chores today"></progress>
+      <p id="home-cleansweep-detail"></p>
+      <button class="btn glowup-btn" data-open-cleansweep>Open Clean Sweep <span aria-hidden="true">✨</span></button>
     </div>
 
     <div class="club-wrap">
@@ -1158,6 +1173,13 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
       <div class="routine-kicker glowup-kicker">Want a full glow-up?</div>
       <h2>Daily habits, weekly goals, lovely little rituals.</h2>
       <button class="btn glowup-btn" data-open-glowup>Open Glow-Up ✨</button>
+    </div>
+
+    <div class="card glowup-home cleansweep-home">
+      <div class="routine-kicker glowup-kicker">A lovely home, all year round</div>
+      <h2>Make space for a little sparkle.</h2>
+      <p>An ongoing cleaning rhythm to run alongside Glow-Up.</p>
+      <button class="btn glowup-btn" data-open-cleansweep>Open Clean Sweep ✨</button>
     </div>
 
     <!-- No plan state -->
@@ -1577,6 +1599,75 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 16px
     </div>
   </section>
 
+  <section id="cleansweep-screen" class="hidden" aria-labelledby="cleansweep-heading">
+    <div class="page-header">
+      <h1 id="cleansweep-heading">Clean Sweep ✨</h1>
+      <button class="btn btn-ghost btn-sm back-btn" data-to="home">← Home</button>
+    </div>
+    <div id="cleansweep-setup" class="card glowup-hero">
+      <div class="routine-kicker glowup-kicker">A permanent little promise</div>
+      <h2>Little resets. Lovely rooms. A lighter home.</h2>
+      <p>Daily resets, weekly rooms and a little extra care each month. Opt in alongside Glow-Up:
+        this commitment has no eight-week limit and never finishes on its own.</p>
+      <ul id="cleansweep-preview" class="routine-preview"></ul>
+      <p>Weekly rooms reset every Monday. Monthly chores are available all month under Start and End reminders.
+        January, April, July and October have no quarterly job.</p>
+      <form id="cleansweep-form">
+        <div class="form-group">
+          <label class="form-label" for="cleansweep-start-date">My start date</label>
+          <input class="form-input" id="cleansweep-start-date" type="date" min="1000-01-01" max="9999-12-24" required>
+        </div>
+        <button class="btn glowup-btn" type="submit">I'm in for Clean Sweep</button>
+      </form>
+    </div>
+    <div id="cleansweep-dashboard" class="hidden">
+      <div class="card glowup-hero">
+        <div class="routine-kicker glowup-kicker">Clean Sweep &middot; Ongoing</div>
+        <h2>A fresh-home rhythm, for keeps.</h2>
+        <p id="cleansweep-status"></p>
+        <button class="btn btn-ghost btn-sm" id="cleansweep-toggle">Opt out (keep history)</button>
+      </div>
+      <div class="card glowup-panel">
+        <div class="cleansweep-date-heading">
+          <label class="form-label" for="cleansweep-view-date">View a day, week and month</label>
+          <button class="btn btn-ghost btn-sm" id="cleansweep-today">Today</button>
+        </div>
+        <input class="form-input" id="cleansweep-view-date" type="date" max="9999-12-24" required>
+        <p class="cleansweep-note">Choose a past date to review or catch up. Each new period has a fresh checklist;
+          old ticks stay in your history.</p>
+        <div id="cleansweep-lock" class="lock-banner glowup-lock hidden" role="status"></div>
+      </div>
+      <div class="card glowup-panel">
+        <div class="routine-week-heading">
+          <h2 id="cleansweep-day-title"></h2>
+          <strong id="cleansweep-daily-count" class="glowup-count"></strong>
+        </div>
+        <progress id="cleansweep-daily-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Clean Sweep daily chores"></progress>
+        <div id="cleansweep-daily-list" class="glowup-ticks"></div>
+      </div>
+      <div class="card glowup-panel">
+        <div class="routine-week-heading">
+          <h2>This week's rooms</h2>
+          <strong id="cleansweep-weekly-count" class="glowup-count"></strong>
+        </div>
+        <p id="cleansweep-week-dates" class="cleansweep-note"></p>
+        <progress id="cleansweep-weekly-progress" class="glowup-progress-bar" max="9" value="0" aria-label="Clean Sweep weekly rooms"></progress>
+        <div id="cleansweep-weekly-list"></div>
+      </div>
+      <div class="card glowup-panel">
+        <div class="routine-week-heading">
+          <h2 id="cleansweep-month-title"></h2>
+          <strong id="cleansweep-monthly-count" class="glowup-count"></strong>
+        </div>
+        <p class="cleansweep-note">Start and End are reminders, not locked dates. These chores are available all month.</p>
+        <progress id="cleansweep-monthly-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Clean Sweep monthly chores"></progress>
+        <div id="cleansweep-monthly-list"></div>
+      </div>
+      <p class="routine-footnote">Tick a chore when it is done; untick to undo. Saturday and Sunday chores appear
+        on their own days. Opting out keeps history and does not affect Glow-Up or Composible Chaos.</p>
+    </div>
+  </section>
+
 </div><!-- /#app -->
 
 <dialog id="routine-celebration" class="routine-celebration" aria-labelledby="routine-celebration-title" aria-describedby="routine-celebration-copy">
@@ -1665,6 +1756,8 @@ const KEYS = {
   ROUTINE_TS: 'sf_routine_ts',
   GLOWUP:   'sf_glowup',
   GLOWUP_TS: 'sf_glowup_ts',
+  CLEAN_SWEEP: 'sf_clean_sweep',
+  CLEAN_SWEEP_TS: 'sf_clean_sweep_ts',
 };
 
 // ── Default / helpers ─────────────────────────────────────────────
@@ -2131,6 +2224,7 @@ function exportData() {
     pbs:      getPBs(),
     routine:  getRoutine(),
     glowup:   getGlowup(),
+    cleanSweep: getCleanSweep(),
     exportedAt: new Date().toISOString(),
   }, null, 2);
 }
@@ -2139,6 +2233,7 @@ function importData(jsonStr) {
   const data = JSON.parse(jsonStr);
   if (data.routine != null) validateRoutine(data.routine);
   if (data.glowup != null) validateGlowup(data.glowup);
+  if (data.cleanSweep != null) validateCleanSweep(data.cleanSweep);
   if (data.profile)  saveProfile(data.profile);
   if (data.sessions) {
     localStorage.setItem(KEYS.SESSIONS, JSON.stringify(data.sessions));
@@ -2149,6 +2244,7 @@ function importData(jsonStr) {
   if (data.pbs)      savePBs(data.pbs);
   if (Object.hasOwn(data, 'routine')) saveRoutine(data.routine);
   if (Object.hasOwn(data, 'glowup')) saveGlowup(data.glowup);
+  if (Object.hasOwn(data, 'cleanSweep')) restoreCleanSweep(data.cleanSweep);
 }
 
 // ── Session update (for editing) ──────────────────────────────────
@@ -3589,6 +3685,362 @@ function initGlowup() {
 
 </script>
 <script>
+  const CLEAN_SWEEP_TAGLINE = 'Little resets. Lovely rooms. A lighter home.';
+const CLEAN_SWEEP_DAILY = ['15 minutes reset', 'Toilet Swish'];
+const CLEAN_SWEEP_WEEKLY = [
+  'Kitchen', 'Sitting Room', 'Hallway/Porch', 'Utility', 'Our bedroom',
+  "Dylan's bedroom", 'Spare Room/Office', 'Bathrooms up & down', 'En-suite',
+];
+const CLEAN_SWEEP_SATURDAY = ['Towels', "Ralph's bedding"];
+const CLEAN_SWEEP_SUNDAY = ['Bedding', 'Clean Fridge', 'Microwave'];
+const CLEAN_SWEEP_MONTH_START = ['Banana', 'BMW', 'Blinds', 'Wardrobe refresh'];
+const CLEAN_SWEEP_MONTH_END = ['Windows', 'Garden'];
+let cleanSweepViewDate = null;
+
+function cleanSweepMonday(date) {
+  const weekday = glowupWeekday(date);
+  return routineDateAt(date, -(weekday === 0 ? 6 : weekday - 1));
+}
+
+function cleanSweepQuarterly(date) {
+  const month = Number(date.slice(5, 7));
+  if ([2, 5, 8, 11].includes(month)) return ['Kitchen cupboards & utility organise'];
+  if ([3, 6, 9, 12].includes(month)) return ["Dylan's toys & my drawers"];
+  return [];
+}
+
+function cleanSweepPeriod(group, date) {
+  routineDateNumber(date);
+  if (group === 'daily') {
+    const weekday = glowupWeekday(date);
+    const weekend = weekday === 6 ? CLEAN_SWEEP_SATURDAY : weekday === 0 ? CLEAN_SWEEP_SUNDAY : [];
+    return { key: `daily-${date}`, date, goals: [...CLEAN_SWEEP_DAILY, ...weekend] };
+  }
+  if (group === 'weekly') {
+    const monday = cleanSweepMonday(date);
+    return { key: `weekly-${monday}`, date: monday, goals: CLEAN_SWEEP_WEEKLY };
+  }
+  if (group === 'monthly') {
+    const first = date.slice(0, 7) + '-01';
+    return {
+      key: `monthly-${date.slice(0, 7)}`, date: first,
+      goals: [...CLEAN_SWEEP_MONTH_START, ...CLEAN_SWEEP_MONTH_END, ...cleanSweepQuarterly(date)],
+    };
+  }
+  throw new Error('That Clean Sweep period could not be found.');
+}
+
+function cleanSweepPeriodFromKey(key) {
+  if (typeof key !== 'string') throw new Error('Invalid Clean Sweep period.');
+  const match = /^(daily|weekly|monthly)-(.+)$/.exec(key);
+  if (!match) throw new Error('Invalid Clean Sweep period.');
+  const date = match[1] === 'monthly' ? match[2] + '-01' : match[2];
+  const period = cleanSweepPeriod(match[1], date);
+  if (period.key !== key) throw new Error('Invalid Clean Sweep period.');
+  return { ...period, group: match[1] };
+}
+
+function validateCleanSweepRecord(key, record, startDate) {
+  const period = cleanSweepPeriodFromKey(key);
+  const first = cleanSweepPeriod(period.group, startDate);
+  if (!record || !Number.isFinite(record.updatedAt) || record.updatedAt <= 0 ||
+      !Array.isArray(record.done) || record.done.length !== period.goals.length ||
+      !record.done.every(value => typeof value === 'boolean') ||
+      routineDateNumber(period.date) < routineDateNumber(first.date)) {
+    throw new Error('Invalid Clean Sweep progress. Restore a valid backup.');
+  }
+}
+
+function validateCleanSweep(cleanSweep) {
+  if (!cleanSweep || typeof cleanSweep.id !== 'string' || !/^[\w-]+$/.test(cleanSweep.id) ||
+      typeof cleanSweep.active !== 'boolean' ||
+      !Number.isFinite(cleanSweep.updatedAt) || cleanSweep.updatedAt <= 0 ||
+      !cleanSweep.records || typeof cleanSweep.records !== 'object' || Array.isArray(cleanSweep.records)) {
+    throw new Error('Invalid Clean Sweep data. Restore a valid backup.');
+  }
+  routineDateNumber(cleanSweep.startDate);
+  Object.entries(cleanSweep.records).forEach(([key, record]) =>
+    validateCleanSweepRecord(key, record, cleanSweep.startDate));
+}
+
+function getCleanSweep() {
+  const raw = localStorage.getItem(KEYS.CLEAN_SWEEP);
+  const cleanSweep = raw ? JSON.parse(raw) : null;
+  if (cleanSweep !== null) validateCleanSweep(cleanSweep);
+  return cleanSweep;
+}
+
+function cleanSweepSyncError(error) {
+  console.error('[Clean Sweep] Cloud sync failed:', error);
+  setSyncStatus('error');
+  toast('Clean Sweep saved on this device, but cloud sync failed. Try Sync now when online.', 'error');
+}
+
+function saveCleanSweep(cleanSweep, recordKey = null) {
+  validateCleanSweep(cleanSweep);
+  if (recordKey === null) {
+    cleanSweep.updatedAt = Math.max(Date.now(), cleanSweep.updatedAt + 1,
+      Number(localStorage.getItem(KEYS.CLEAN_SWEEP_TS) || 0) + 1);
+  }
+  localStorage.setItem(KEYS.CLEAN_SWEEP, JSON.stringify(cleanSweep));
+  localStorage.setItem(KEYS.CLEAN_SWEEP_TS, String(cleanSweep.updatedAt));
+  if (recordKey === null) {
+    if (typeof syncPushCleanSweep === 'function') syncPushCleanSweep(cleanSweep)?.catch(cleanSweepSyncError);
+  } else if (typeof syncPushCleanSweepRecord === 'function') {
+    syncPushCleanSweepRecord(cleanSweep.id, recordKey, cleanSweep.records[recordKey])?.catch(cleanSweepSyncError);
+  }
+}
+
+function createCleanSweep(startDate) {
+  routineDateNumber(startDate);
+  if (getCleanSweep()) throw new Error('Clean Sweep already exists. Resume it to keep your history.');
+  const cleanSweep = { id: uuid(), startDate, active: true, updatedAt: Date.now(), records: {} };
+  saveCleanSweep(cleanSweep);
+  return cleanSweep;
+}
+
+function restoreCleanSweep(cleanSweep) {
+  if (cleanSweep === null) {
+    const updatedAt = Math.max(Date.now(), Number(localStorage.getItem(KEYS.CLEAN_SWEEP_TS) || 0) + 1);
+    localStorage.setItem(KEYS.CLEAN_SWEEP, 'null');
+    localStorage.setItem(KEYS.CLEAN_SWEEP_TS, String(updatedAt));
+    if (typeof syncPushCleanSweep === 'function') syncPushCleanSweep(null, updatedAt)?.catch(cleanSweepSyncError);
+    return;
+  }
+  validateCleanSweep(cleanSweep);
+  const existing = getCleanSweep();
+  Object.entries(cleanSweep.records).forEach(([key, record]) => {
+    record.updatedAt = Math.max(Date.now(), record.updatedAt + 1,
+      (existing?.id === cleanSweep.id ? existing.records[key]?.updatedAt || 0 : 0) + 1);
+  });
+  saveCleanSweep(cleanSweep);
+  Object.entries(cleanSweep.records).forEach(([key, record]) => {
+    if (typeof syncPushCleanSweepRecord === 'function') {
+      syncPushCleanSweepRecord(cleanSweep.id, key, record)?.catch(cleanSweepSyncError);
+    }
+  });
+}
+
+function cleanSweepStats(cleanSweep, group, date) {
+  const period = cleanSweepPeriod(group, date);
+  const done = cleanSweep.records[period.key]?.done.filter(Boolean).length || 0;
+  return { done, total: period.goals.length };
+}
+
+function setCleanSweepGoal(group, date, index, done, today = routineLocalDate()) {
+  const cleanSweep = getCleanSweep();
+  const period = cleanSweepPeriod(group, date);
+  if (!cleanSweep || !cleanSweep.active) throw new Error('Opt in to Clean Sweep before ticking chores.');
+  if (!Number.isInteger(index) || index < 0 || index >= period.goals.length || typeof done !== 'boolean') {
+    throw new Error('That Clean Sweep chore could not be found.');
+  }
+  if (routineDateNumber(date) < routineDateNumber(cleanSweep.startDate)) {
+    throw new Error('Clean Sweep had not started on this date.');
+  }
+  if (routineDateNumber(cleanSweep.startDate) > routineDateNumber(today) ||
+      routineDateNumber(period.date) > routineDateNumber(today)) {
+    throw new Error('This Clean Sweep period has not started yet.');
+  }
+  const before = cleanSweepStats(cleanSweep, group, date);
+  const record = cleanSweep.records[period.key] || { done: Array(period.goals.length).fill(false), updatedAt: 0 };
+  record.done[index] = done;
+  record.updatedAt = Math.max(Date.now(), record.updatedAt + 1);
+  cleanSweep.records[period.key] = record;
+  saveCleanSweep(cleanSweep, period.key);
+  const after = cleanSweepStats(cleanSweep, group, date);
+  return { cleanSweep, complete: done && after.done === after.total && before.done < before.total };
+}
+
+function renderCleanSweepHome() {
+  const cleanSweep = getCleanSweep();
+  const title = document.getElementById('home-cleansweep-title');
+  const detail = document.getElementById('home-cleansweep-detail');
+  const bar = document.getElementById('home-cleansweep-progress');
+  title.textContent = CLEAN_SWEEP_TAGLINE;
+  bar.max = 1; bar.value = 0;
+  if (!cleanSweep) {
+    detail.textContent = 'An ongoing home-care commitment. Opt in alongside Glow-Up, with no finish date.';
+    return;
+  }
+  const today = routineLocalDate();
+  if (!cleanSweep.active) {
+    detail.textContent = 'Opted out for now. Your history is kept; resume whenever you like.';
+  } else if (today < cleanSweep.startDate) {
+    detail.textContent = `Starts ${routineDateLabel(cleanSweep.startDate)}. Your fresh-home rhythm is ready.`;
+  } else {
+    const stats = cleanSweepStats(cleanSweep, 'daily', today);
+    bar.max = stats.total; bar.value = stats.done;
+    bar.textContent = `${stats.done} of ${stats.total} chores today`;
+    detail.textContent = `${stats.done} / ${stats.total} today · ${cleanSweepStats(cleanSweep, 'weekly', today).done} / 9 weekly rooms.`;
+  }
+}
+
+function openCleanSweep() {
+  const cleanSweep = getCleanSweep();
+  cleanSweepViewDate = cleanSweep && cleanSweep.startDate > routineLocalDate() ? cleanSweep.startDate : routineLocalDate();
+  renderCleanSweep();
+  showScreen('cleansweep');
+}
+
+function cleanSweepRenderGroup(cleanSweep, group, date, container, sections) {
+  const period = cleanSweepPeriod(group, date);
+  const stats = cleanSweepStats(cleanSweep, group, date);
+  const bar = document.getElementById(`cleansweep-${group}-progress`);
+  bar.max = stats.total; bar.value = stats.done;
+  bar.textContent = `${stats.done} of ${stats.total} chores completed`;
+  document.getElementById(`cleansweep-${group}-count`).textContent = `${stats.done} / ${stats.total}`;
+  const locked = !cleanSweep.active || cleanSweep.startDate > routineLocalDate() || period.date > routineLocalDate();
+  container.replaceChildren();
+  sections.forEach(({ title, offset, goals }) => {
+    const section = document.createElement('section');
+    section.className = 'glowup-weekly-group';
+    const heading = document.createElement('h3');
+    heading.className = 'glowup-section-title';
+    heading.textContent = title;
+    section.appendChild(heading);
+    if (goals.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'cleansweep-note';
+      empty.textContent = 'No quarterly job scheduled this month. Enjoy the breathing room.';
+      section.appendChild(empty);
+    }
+    goals.forEach((goal, index) => {
+      const goalIndex = offset + index;
+      const id = `cleansweep-${group}-${goalIndex}`;
+      const row = glowupTickRow(id, goal, '\u2728', cleanSweep.records[period.key]?.done[goalIndex] || false,
+        locked, `${goal}, ${routineDateLabel(period.date)}${locked ? ', locked' : ''}`, input => {
+          try {
+            const result = setCleanSweepGoal(group, date, goalIndex, input.checked);
+            renderCleanSweep(); renderCleanSweepHome();
+            const replacement = document.getElementById(id);
+            if (input.checked) replacement.closest('label').classList.add('just-ticked');
+            replacement.focus();
+            if (result.complete) toast(`Clean Sweep ${group === 'daily' ? 'day' : group === 'weekly' ? 'week' : 'month'} complete! A little sparkle earned \u2728`);
+          } catch (error) {
+            input.checked = !input.checked;
+            console.error('[Clean Sweep] Check-off failed:', error);
+            toast(error.message, 'error');
+          }
+        }, false);
+      section.appendChild(row);
+    });
+    container.appendChild(section);
+  });
+}
+
+function renderCleanSweep() {
+  const cleanSweep = getCleanSweep();
+  document.getElementById('cleansweep-setup').classList.toggle('hidden', !!cleanSweep);
+  document.getElementById('cleansweep-dashboard').classList.toggle('hidden', !cleanSweep);
+  const start = document.getElementById('cleansweep-start-date');
+  if (!start.value) start.value = routineLocalDate();
+  const preview = document.getElementById('cleansweep-preview');
+  preview.replaceChildren();
+  [
+    ['Daily', CLEAN_SWEEP_DAILY], ['Weekly rooms', CLEAN_SWEEP_WEEKLY],
+    ['Saturday', CLEAN_SWEEP_SATURDAY], ['Sunday', CLEAN_SWEEP_SUNDAY],
+    ['Start of the month', CLEAN_SWEEP_MONTH_START], ['End of the month', CLEAN_SWEEP_MONTH_END],
+    ['Feb / May / Aug / Nov', cleanSweepQuarterly('2026-11-01')],
+    ['Mar / Jun / Sep / Dec', cleanSweepQuarterly('2026-12-01')],
+  ].forEach(([title, goals]) => {
+    const item = document.createElement('li');
+    const heading = document.createElement('strong');
+    heading.textContent = title;
+    const text = document.createElement('span');
+    text.textContent = goals.join(' \u00b7 ');
+    item.append(heading, text);
+    preview.appendChild(item);
+  });
+  if (!cleanSweep) return;
+  const date = cleanSweepViewDate || routineLocalDate();
+  const dateInput = document.getElementById('cleansweep-view-date');
+  dateInput.min = cleanSweep.startDate; dateInput.value = date;
+  document.getElementById('cleansweep-status').textContent =
+    `${cleanSweep.active ? 'Opted in' : 'Opted out'} since ${routineDateLabel(cleanSweep.startDate)} · No finish date`;
+  document.getElementById('cleansweep-toggle').textContent = cleanSweep.active ? 'Opt out (keep history)' : 'Resume Clean Sweep';
+  const banner = document.getElementById('cleansweep-lock');
+  banner.textContent = !cleanSweep.active ? 'Opted out. Your history is safe; resume to tick chores again.' :
+    cleanSweep.startDate > routineLocalDate() ? `Not live yet. Clean Sweep starts ${routineDateLabel(cleanSweep.startDate)}.` :
+    date > routineLocalDate() ? 'Previewing a future day. Daily chores unlock on that date; weekly and monthly chores unlock when their period starts.' : '';
+  banner.classList.toggle('hidden', !banner.textContent);
+  document.getElementById('cleansweep-day-title').textContent = routineDateLabel(date);
+  const monday = cleanSweepMonday(date);
+  document.getElementById('cleansweep-week-dates').textContent =
+    `${routineDateLabel(monday)} - ${routineDateLabel(routineDateAt(monday, 6))} · Resets Monday`;
+  document.getElementById('cleansweep-month-title').textContent =
+    new Date(date + 'T00:00:00Z').toLocaleDateString(undefined, { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const weekday = glowupWeekday(date);
+  const weekend = weekday === 6 ? CLEAN_SWEEP_SATURDAY : weekday === 0 ? CLEAN_SWEEP_SUNDAY : [];
+  const dailySections = [{ title: 'Daily little resets', offset: 0, goals: CLEAN_SWEEP_DAILY }];
+  if (weekend.length) dailySections.push({ title: weekday === 6 ? 'Saturday laundry' : 'Sunday fresh start', offset: 2, goals: weekend });
+  cleanSweepRenderGroup(cleanSweep, 'daily', date, document.getElementById('cleansweep-daily-list'), dailySections);
+  cleanSweepRenderGroup(cleanSweep, 'weekly', date, document.getElementById('cleansweep-weekly-list'),
+    [{ title: 'Weekly room sweep · Any days you like', offset: 0, goals: CLEAN_SWEEP_WEEKLY }]);
+  cleanSweepRenderGroup(cleanSweep, 'monthly', date, document.getElementById('cleansweep-monthly-list'), [
+    { title: 'Start of the month', offset: 0, goals: CLEAN_SWEEP_MONTH_START },
+    { title: 'End of the month', offset: 4, goals: CLEAN_SWEEP_MONTH_END },
+    { title: 'Every three months · This month', offset: 6, goals: cleanSweepQuarterly(date) },
+  ]);
+}
+
+function initCleanSweep() {
+  document.querySelectorAll('[data-open-cleansweep]').forEach(button => button.addEventListener('click', openCleanSweep));
+  document.getElementById('cleansweep-form').addEventListener('submit', event => {
+    event.preventDefault();
+    try {
+      const startDate = document.getElementById('cleansweep-start-date').value;
+      createCleanSweep(startDate);
+      cleanSweepViewDate = startDate > routineLocalDate() ? startDate : routineLocalDate();
+      renderCleanSweep(); renderCleanSweepHome();
+      toast('Welcome to Clean Sweep. A lighter home, one little reset at a time \u2728');
+    } catch (error) {
+      console.error('[Clean Sweep] Opt-in failed:', error);
+      toast(error.message, 'error');
+    }
+  });
+  document.getElementById('cleansweep-view-date').addEventListener('change', event => {
+    try {
+      const date = event.target.value;
+      routineDateNumber(date);
+      if (date < getCleanSweep().startDate) throw new Error('Choose a date on or after your Clean Sweep start.');
+      cleanSweepViewDate = date;
+      renderCleanSweep();
+    } catch (error) {
+      event.target.value = cleanSweepViewDate;
+      console.error('[Clean Sweep] Date selection failed:', error);
+      toast(error.message, 'error');
+    }
+  });
+  document.getElementById('cleansweep-today').addEventListener('click', openCleanSweep);
+  document.getElementById('cleansweep-toggle').addEventListener('click', () => {
+    try {
+      const cleanSweep = getCleanSweep();
+      if (cleanSweep.active && !confirm('Opt out of Clean Sweep? Your check-off history is kept, and Glow-Up is unchanged.')) return;
+      cleanSweep.active = !cleanSweep.active;
+      saveCleanSweep(cleanSweep);
+      renderCleanSweep(); renderCleanSweepHome();
+      toast(cleanSweep.active ? 'Clean Sweep resumed. Welcome back!' : 'Opted out. Your Clean Sweep history is kept.');
+    } catch (error) {
+      console.error('[Clean Sweep] Opt-in change failed:', error);
+      toast(error.message, 'error');
+    }
+  });
+  let lastDate = routineLocalDate();
+  const refresh = () => {
+    const date = routineLocalDate();
+    if (date === lastDate) return;
+    lastDate = date;
+    cleanSweepViewDate = null;
+    if (getProfile()) renderCleanSweepHome();
+    if (currentScreen === 'cleansweep') openCleanSweep();
+  };
+  window.addEventListener('focus', refresh);
+  document.addEventListener('visibilitychange', refresh);
+  setInterval(refresh, 60000);
+}
+
+</script>
+<script>
   // =====================================================================
 // Strengthify Web — Cloud Sync (Firebase + Google Sign-In)
 // =====================================================================
@@ -3742,6 +4194,65 @@ async function syncPushGlowup(glowup, updatedAt) {
   return _userDoc().set({ glowup, glowupUpdatedAt: updatedAt }, { merge: true });
 }
 
+async function syncPushCleanSweep(cleanSweep, updatedAt = cleanSweep?.updatedAt) {
+  if (!_syncDb || !_syncUser) return;
+  let metadata = null;
+  if (cleanSweep !== null) {
+    validateCleanSweep(cleanSweep);
+    metadata = {
+      id: cleanSweep.id, startDate: cleanSweep.startDate,
+      active: cleanSweep.active, updatedAt: cleanSweep.updatedAt,
+    };
+  }
+  return _userDoc().set({ cleanSweep: metadata, cleanSweepUpdatedAt: updatedAt }, { merge: true });
+}
+
+async function syncPushCleanSweepRecord(commitmentId, key, record) {
+  if (!_syncDb || !_syncUser) return;
+  return _userDoc().collection('cleanSweepPeriods').doc(`${commitmentId}_${key}`)
+    .set({ commitmentId, key, done: record.done, updatedAt: record.updatedAt });
+}
+
+async function syncMergeCleanSweep(cloud) {
+  const local = getCleanSweep();
+  const localTs = Number(localStorage.getItem(KEYS.CLEAN_SWEEP_TS) || local?.updatedAt || 0);
+  const cloudTs = cloud.cleanSweepUpdatedAt || 0;
+  let winner = local;
+  if (cloudTs > localTs) {
+    winner = cloud.cleanSweep ? { ...cloud.cleanSweep, records: {} } : null;
+    if (winner) {
+      validateCleanSweep(winner);
+      if (local?.id === winner.id) winner.records = local.records;
+    }
+  }
+  if (winner) {
+    // Permanent history is split into period documents, not an ever-growing root document.
+    const snap = await _userDoc().collection('cleanSweepPeriods')
+      .where('commitmentId', '==', winner.id).get();
+    const records = { ...winner.records };
+    const cloudRecords = new Map();
+    snap.docs.forEach(doc => {
+      const record = doc.data();
+      if (record.commitmentId !== winner.id) throw new Error('Invalid Clean Sweep cloud commitment.');
+      validateCleanSweepRecord(record.key, record, winner.startDate);
+      cloudRecords.set(record.key, record);
+      if (!records[record.key] || record.updatedAt > records[record.key].updatedAt) {
+        records[record.key] = { done: record.done, updatedAt: record.updatedAt };
+      }
+    });
+    winner = { ...winner, records };
+    validateCleanSweep(winner);
+    for (const [key, record] of Object.entries(records)) {
+      if (!cloudRecords.has(key) || record.updatedAt > cloudRecords.get(key).updatedAt) {
+        await syncPushCleanSweepRecord(winner.id, key, record);
+      }
+    }
+  }
+  if (localTs > cloudTs) await syncPushCleanSweep(winner, localTs);
+  localStorage.setItem(KEYS.CLEAN_SWEEP, JSON.stringify(winner));
+  localStorage.setItem(KEYS.CLEAN_SWEEP_TS, String(Math.max(localTs, cloudTs)));
+}
+
 function syncPushSession(session) {
   if (!_syncDb || !_syncUser) return;
   console.log('[Sync] Pushing session:', session.id, session.date);
@@ -3825,6 +4336,7 @@ async function syncMergeOnSignIn() {
   } else if (localGlowupTs > cloudGlowupTs) {
     await syncPushGlowup(localGlowup, localGlowupTs);
   }
+  await syncMergeCleanSweep(cloud);
 
   const localProf   = getProfile();
   const localPbs    = getPBs();
@@ -3934,7 +4446,7 @@ async function syncMergeOnSignIn() {
 
 // ── Screen registry ───────────────────────────────────────────────
 
-const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder', 'mobility', 'routine', 'glowup'];
+const SCREENS = ['home', 'workout', 'logging', 'results', 'progress', 'standards', 'profile', 'onboarding', 'signin', 'session-detail', 'session-edit', 'plans', 'plan-builder', 'mobility', 'routine', 'glowup', 'cleansweep'];
 let currentScreen = null;
 const KG_PER_LB = 0.45359237;
 const LB_PER_KG = 1 / KG_PER_LB;
@@ -4010,6 +4522,7 @@ function renderHome() {
   renderThousandClubCard(pbs);
   renderRoutineHome();
   renderGlowupHome();
+  renderCleanSweepHome();
 
   // Plan next-workout card
   const plan = getActivePlan();
@@ -5823,6 +6336,7 @@ function init() {
   initOnboarding();
   initRoutine();
   initGlowup();
+  initCleanSweep();
 
   // Cloud sync
   initSync();

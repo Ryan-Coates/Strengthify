@@ -151,6 +151,65 @@ async function syncPushGlowup(glowup, updatedAt) {
   return _userDoc().set({ glowup, glowupUpdatedAt: updatedAt }, { merge: true });
 }
 
+async function syncPushCleanSweep(cleanSweep, updatedAt = cleanSweep?.updatedAt) {
+  if (!_syncDb || !_syncUser) return;
+  let metadata = null;
+  if (cleanSweep !== null) {
+    validateCleanSweep(cleanSweep);
+    metadata = {
+      id: cleanSweep.id, startDate: cleanSweep.startDate,
+      active: cleanSweep.active, updatedAt: cleanSweep.updatedAt,
+    };
+  }
+  return _userDoc().set({ cleanSweep: metadata, cleanSweepUpdatedAt: updatedAt }, { merge: true });
+}
+
+async function syncPushCleanSweepRecord(commitmentId, key, record) {
+  if (!_syncDb || !_syncUser) return;
+  return _userDoc().collection('cleanSweepPeriods').doc(`${commitmentId}_${key}`)
+    .set({ commitmentId, key, done: record.done, updatedAt: record.updatedAt });
+}
+
+async function syncMergeCleanSweep(cloud) {
+  const local = getCleanSweep();
+  const localTs = Number(localStorage.getItem(KEYS.CLEAN_SWEEP_TS) || local?.updatedAt || 0);
+  const cloudTs = cloud.cleanSweepUpdatedAt || 0;
+  let winner = local;
+  if (cloudTs > localTs) {
+    winner = cloud.cleanSweep ? { ...cloud.cleanSweep, records: {} } : null;
+    if (winner) {
+      validateCleanSweep(winner);
+      if (local?.id === winner.id) winner.records = local.records;
+    }
+  }
+  if (winner) {
+    // Permanent history is split into period documents, not an ever-growing root document.
+    const snap = await _userDoc().collection('cleanSweepPeriods')
+      .where('commitmentId', '==', winner.id).get();
+    const records = { ...winner.records };
+    const cloudRecords = new Map();
+    snap.docs.forEach(doc => {
+      const record = doc.data();
+      if (record.commitmentId !== winner.id) throw new Error('Invalid Clean Sweep cloud commitment.');
+      validateCleanSweepRecord(record.key, record, winner.startDate);
+      cloudRecords.set(record.key, record);
+      if (!records[record.key] || record.updatedAt > records[record.key].updatedAt) {
+        records[record.key] = { done: record.done, updatedAt: record.updatedAt };
+      }
+    });
+    winner = { ...winner, records };
+    validateCleanSweep(winner);
+    for (const [key, record] of Object.entries(records)) {
+      if (!cloudRecords.has(key) || record.updatedAt > cloudRecords.get(key).updatedAt) {
+        await syncPushCleanSweepRecord(winner.id, key, record);
+      }
+    }
+  }
+  if (localTs > cloudTs) await syncPushCleanSweep(winner, localTs);
+  localStorage.setItem(KEYS.CLEAN_SWEEP, JSON.stringify(winner));
+  localStorage.setItem(KEYS.CLEAN_SWEEP_TS, String(Math.max(localTs, cloudTs)));
+}
+
 function syncPushSession(session) {
   if (!_syncDb || !_syncUser) return;
   console.log('[Sync] Pushing session:', session.id, session.date);
@@ -234,6 +293,7 @@ async function syncMergeOnSignIn() {
   } else if (localGlowupTs > cloudGlowupTs) {
     await syncPushGlowup(localGlowup, localGlowupTs);
   }
+  await syncMergeCleanSweep(cloud);
 
   const localProf   = getProfile();
   const localPbs    = getPBs();

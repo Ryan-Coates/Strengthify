@@ -131,7 +131,7 @@
       </div>
     </div>
 
-    <!-- 8-week commitments -->
+    <!-- Commitments -->
     <div class="card routine-home chaos-card">
       <div class="routine-kicker">Composible Chaos &middot; 8 weeks</div>
       <h2 id="home-routine-title">Flexible workouts. Daily habits. Your rhythm.</h2>
@@ -146,6 +146,14 @@
       <progress id="home-glowup-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Glow-Up progress"></progress>
       <p id="home-glowup-detail"></p>
       <button class="btn glowup-btn" data-open-glowup>Open Glow-Up <span aria-hidden="true">✨</span></button>
+    </div>
+
+    <div class="card glowup-home cleansweep-home">
+      <div class="routine-kicker glowup-kicker">Clean Sweep &middot; Ongoing</div>
+      <h2 id="home-cleansweep-title">Little resets. Lovely rooms. A lighter home.</h2>
+      <progress id="home-cleansweep-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Clean Sweep chores today"></progress>
+      <p id="home-cleansweep-detail"></p>
+      <button class="btn glowup-btn" data-open-cleansweep>Open Clean Sweep <span aria-hidden="true">✨</span></button>
     </div>
 
     <div class="club-wrap">
@@ -331,6 +339,13 @@
       <div class="routine-kicker glowup-kicker">Want a full glow-up?</div>
       <h2>Daily habits, weekly goals, lovely little rituals.</h2>
       <button class="btn glowup-btn" data-open-glowup>Open Glow-Up ✨</button>
+    </div>
+
+    <div class="card glowup-home cleansweep-home">
+      <div class="routine-kicker glowup-kicker">A lovely home, all year round</div>
+      <h2>Make space for a little sparkle.</h2>
+      <p>An ongoing cleaning rhythm to run alongside Glow-Up.</p>
+      <button class="btn glowup-btn" data-open-cleansweep>Open Clean Sweep ✨</button>
     </div>
 
     <!-- No plan state -->
@@ -750,6 +765,75 @@
     </div>
   </section>
 
+  <section id="cleansweep-screen" class="hidden" aria-labelledby="cleansweep-heading">
+    <div class="page-header">
+      <h1 id="cleansweep-heading">Clean Sweep ✨</h1>
+      <button class="btn btn-ghost btn-sm back-btn" data-to="home">← Home</button>
+    </div>
+    <div id="cleansweep-setup" class="card glowup-hero">
+      <div class="routine-kicker glowup-kicker">A permanent little promise</div>
+      <h2>Little resets. Lovely rooms. A lighter home.</h2>
+      <p>Daily resets, weekly rooms and a little extra care each month. Opt in alongside Glow-Up:
+        this commitment has no eight-week limit and never finishes on its own.</p>
+      <ul id="cleansweep-preview" class="routine-preview"></ul>
+      <p>Weekly rooms reset every Monday. Monthly chores are available all month under Start and End reminders.
+        January, April, July and October have no quarterly job.</p>
+      <form id="cleansweep-form">
+        <div class="form-group">
+          <label class="form-label" for="cleansweep-start-date">My start date</label>
+          <input class="form-input" id="cleansweep-start-date" type="date" min="1000-01-01" max="9999-12-24" required>
+        </div>
+        <button class="btn glowup-btn" type="submit">I'm in for Clean Sweep</button>
+      </form>
+    </div>
+    <div id="cleansweep-dashboard" class="hidden">
+      <div class="card glowup-hero">
+        <div class="routine-kicker glowup-kicker">Clean Sweep &middot; Ongoing</div>
+        <h2>A fresh-home rhythm, for keeps.</h2>
+        <p id="cleansweep-status"></p>
+        <button class="btn btn-ghost btn-sm" id="cleansweep-toggle">Opt out (keep history)</button>
+      </div>
+      <div class="card glowup-panel">
+        <div class="cleansweep-date-heading">
+          <label class="form-label" for="cleansweep-view-date">View a day, week and month</label>
+          <button class="btn btn-ghost btn-sm" id="cleansweep-today">Today</button>
+        </div>
+        <input class="form-input" id="cleansweep-view-date" type="date" max="9999-12-24" required>
+        <p class="cleansweep-note">Choose a past date to review or catch up. Each new period has a fresh checklist;
+          old ticks stay in your history.</p>
+        <div id="cleansweep-lock" class="lock-banner glowup-lock hidden" role="status"></div>
+      </div>
+      <div class="card glowup-panel">
+        <div class="routine-week-heading">
+          <h2 id="cleansweep-day-title"></h2>
+          <strong id="cleansweep-daily-count" class="glowup-count"></strong>
+        </div>
+        <progress id="cleansweep-daily-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Clean Sweep daily chores"></progress>
+        <div id="cleansweep-daily-list" class="glowup-ticks"></div>
+      </div>
+      <div class="card glowup-panel">
+        <div class="routine-week-heading">
+          <h2>This week's rooms</h2>
+          <strong id="cleansweep-weekly-count" class="glowup-count"></strong>
+        </div>
+        <p id="cleansweep-week-dates" class="cleansweep-note"></p>
+        <progress id="cleansweep-weekly-progress" class="glowup-progress-bar" max="9" value="0" aria-label="Clean Sweep weekly rooms"></progress>
+        <div id="cleansweep-weekly-list"></div>
+      </div>
+      <div class="card glowup-panel">
+        <div class="routine-week-heading">
+          <h2 id="cleansweep-month-title"></h2>
+          <strong id="cleansweep-monthly-count" class="glowup-count"></strong>
+        </div>
+        <p class="cleansweep-note">Start and End are reminders, not locked dates. These chores are available all month.</p>
+        <progress id="cleansweep-monthly-progress" class="glowup-progress-bar" max="1" value="0" aria-label="Clean Sweep monthly chores"></progress>
+        <div id="cleansweep-monthly-list"></div>
+      </div>
+      <p class="routine-footnote">Tick a chore when it is done; untick to undo. Saturday and Sunday chores appear
+        on their own days. Opting out keeps history and does not affect Glow-Up or Composible Chaos.</p>
+    </div>
+  </section>
+
 </div><!-- /#app -->
 
 <dialog id="routine-celebration" class="routine-celebration" aria-labelledby="routine-celebration-title" aria-describedby="routine-celebration-copy">
@@ -834,6 +918,9 @@
 </script>
 <script>
   /* __GLOWUP_JS__ */
+</script>
+<script>
+  /* __CLEAN_SWEEP_JS__ */
 </script>
 <script>
   /* __SYNC_JS__ */
